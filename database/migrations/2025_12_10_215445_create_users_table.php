@@ -17,6 +17,16 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // 0: User, 1: Admin, 2: SuperAdmin
+            $table->unsignedTinyInteger('role')->default(0);
+
+            // KONTEKST: Aktualnie wybrana parafia przez administratora
+            $table->foreignId('current_parish_id')
+                ->nullable()
+                ->constrained('parishes')
+                ->nullOnDelete();
+
             $table->rememberToken();
             $table->timestamps();
         });

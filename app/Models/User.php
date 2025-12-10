@@ -2,47 +2,43 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name', 'email', 'password', 'role', 'current_parish_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    // --- RELACJE ---
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    // Wszystkie parafie, do których user ma dostęp (jako admin)
+    public function parishes(): BelongsToMany
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsToMany(Parish::class);
+    }
+
+    // Parafia, w której aktualnie "pracuje" (Kontekst)
+    public function currentParish(): BelongsTo
+    {
+        return $this->belongsTo(Parish::class, 'current_parish_id');
+    }
+
+    // --- HELPERY DO RÓL ---
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 2;
+    }
+
+    public function isAdmin(): bool
+    {
+        // Admin (1) lub SuperAdmin (2) mają dostęp do paneli zarządczych
+        return $this->role >= 1;
     }
 }

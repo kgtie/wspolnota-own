@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
     plugins: [
@@ -8,11 +8,12 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
         }),
-        tailwindcss(),
+        VitePWA({
+            registerType: 'autoUpdate',
+            injectRegister: 'auto',
+            workbox: {
+                globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+            }
+        })
     ],
-    server: {
-        watch: {
-            ignored: ['**/storage/framework/views/**'],
-        },
-    },
 });
