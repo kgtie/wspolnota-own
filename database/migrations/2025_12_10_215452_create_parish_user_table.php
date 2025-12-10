@@ -17,6 +17,9 @@ return new class extends Migration
 
             // Unikamy duplikatów: jeden user w jednej parafii tylko raz
             $table->primary(['user_id', 'parish_id']); 
+
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
         });
     }
 

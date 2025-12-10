@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use Notifiable;
+    use Notifiable , HasFactory;
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'current_parish_id',
@@ -20,7 +22,7 @@ class User extends Authenticatable
     // Wszystkie parafie, do których user ma dostęp (jako admin)
     public function parishes(): BelongsToMany
     {
-        return $this->belongsToMany(Parish::class);
+        return $this->belongsToMany(Parish::class)->withTimestamps();
     }
 
     // Parafia, w której aktualnie "pracuje" (Kontekst)
