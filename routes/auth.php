@@ -56,4 +56,7 @@ Route::middleware('auth')->group(function () {
 
     Route::any('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+    Route::get('after-login', function () {
+        return redirect('/app');
+    })->name('dashboard');
 });

@@ -1,52 +1,71 @@
 <x-guest-layout>
+    <div class="text-center mb-4">
+        <h4 class="fw-bold">Utwórz konto</h4>
+        <p class="text-muted small">Wybierz swoją parafię i dołącz do nas</p>
+    </div>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        <div class="form-floating mb-3">
+            <select class="form-select @error('parish_id') is-invalid @enderror" id="parish_id" name="parish_id"
+                aria-label="Wybierz parafię" style="background-color: transparent;">
+                <option value="" selected disabled>Wybierz z listy...</option>
+                @foreach($parishes as $parish)
+                    <option value="{{ $parish->id }}">
+                        {{ $parish->name }} ({{ $parish->city }})
+                    </option>
+                @endforeach
+            </select>
+            <label for="parish_id">Twoja Parafia</label>
+            @error('parish_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
+                value="{{ old('name') }}" placeholder="Jan Kowalski" required autofocus>
+            <label for="name">Imię i Nazwisko</label>
+            @error('name')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="form-floating mb-3">
+            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email"
+                value="{{ old('email') }}" placeholder="name@example.com" required>
+            <label for="email">Adres Email</label>
+            @error('email')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <div class="form-floating mb-3">
+            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
+                name="password" placeholder="Hasło" required>
+            <label for="password">Hasło</label>
+            @error('password')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
+        <div class="form-floating mb-4">
+            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation"
+                placeholder="Potwierdź hasło" required>
+            <label for="password_confirmation">Potwierdź hasło</label>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-md-primary btn-lg">
+                Zarejestruj się
+            </button>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{{ route('login') }}" class="text-decoration-none small text-muted">
+                Masz już konto? Zaloguj się
             </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
         </div>
     </form>
 </x-guest-layout>

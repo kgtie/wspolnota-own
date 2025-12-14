@@ -7,6 +7,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsSuperAdmin;
 
+use App\Http\Middleware\ForceEmailVerification;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -17,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'superadmin' => EnsureUserIsSuperAdmin::class,
+        ]);
+        $middleware->web(append: [
+            ForceEmailVerification::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

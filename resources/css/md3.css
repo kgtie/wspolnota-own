@@ -1,0 +1,52 @@
+:root {
+    --md-sys-color-primary: #6750a4;
+    /* MD3 Purple */
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-surface: #fdf8fd;
+    --md-sys-color-surface-container: #f3edf7;
+    --md-sys-shape-corner-extra-large: 28px;
+}
+
+body {
+    background-color: var(--md-sys-color-surface);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Karty w stylu MD3 */
+.md-card {
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    border: none;
+    box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Inputy MD3 (Floating Labels) */
+.form-floating>.form-control {
+    border: 1px solid #79747e;
+    border-radius: 8px;
+    /* Mniejsze zaokrąglenie dla inputów */
+    background-color: transparent;
+}
+
+.form-floating>.form-control:focus {
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.2);
+}
+
+/* Przyciski MD3 */
+.btn-md-primary {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-radius: 100px;
+    /* Pill shape */
+    padding: 10px 24px;
+    font-weight: 500;
+    transition: box-shadow 0.2s;
+    border: none;
+}
+
+.btn-md-primary:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    background-color: #5f489a;
+    color: white;
+}
