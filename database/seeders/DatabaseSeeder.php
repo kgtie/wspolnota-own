@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Parish;
+use App\Models\MailingList;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -51,6 +52,11 @@ class DatabaseSeeder extends Seeder
             'short_name' => 'Parafia Krakowiaków',
             'city' => 'Kraków',
             'slug' => 'krakowiakow',
+        ]);
+
+        // Tworzę podstawową listę mailingową
+        $mailingList = MailingList::create([
+            'name' => 'Oczekujący na usługę',
         ]);
 
         // 5. RELACJE (Test Multi-tenancy)
