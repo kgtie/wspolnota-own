@@ -1,10 +1,20 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return 'Siemano Wspólnota!';
+use App\Http\Controllers\Landing\HomeController;
+use App\Http\Controllers\Landing\MailingWaitlistController;
+
+/**
+ * Routing dla LANDING
+ */
+Route::name("landing.")->group(function () {
+    // Strona główna
+    Route::get("/", [HomeController::class, "index"])->name("home");
+    // Potwierdzenie dopisania do listy mailingowej osób oczekujących na uruchomienie usługi
+    Route::get('/mailing/confirm/{token}', [MailingWaitlistController::class, 'confirm'])->name('mailing.confirm');
+    Route::get('/mailing/unsubscribe/{token}', [MailingWaitlistController::class, 'unsubscribe'])->name('mailing.unsubscribe');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
