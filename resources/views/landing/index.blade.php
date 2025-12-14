@@ -254,7 +254,7 @@
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <span class="badge rounded-pill bg-warning text-dark mb-3 px-3 py-2 shadow-sm">
-                        <i class="bi bi-rocket-takeoff-fill me-1"></i> Wersja Beta 0.1
+                        <i class="bi bi-rocket-takeoff-fill me-1"></i> Wersja wczesnorozwojowa Alpha 0.1
                     </span>
                     <h1 class="display-3 fw-bold mb-4">Zarządzanie Parafią<br>w Epoce Cyfrowej</h1>
                     <p class="lead mb-5 opacity-75">
@@ -444,6 +444,18 @@
                     </p>
                     <livewire:landing.join-waitlist />
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 mb-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">A może po prostu masz jakieś inne pytanie? A może po prostu chcesz do nas napisać?
+                </h2>
+                <p class="opacity-75">Ok :) Jesteśmy dostępni pod adresem: <a
+                        href="mailto:wspolnota@wspolnota.app"><span class="badge text-bg-success">
+                            wspolnota@wspolnota.app </span></a></p>
             </div>
         </div>
     </section>
