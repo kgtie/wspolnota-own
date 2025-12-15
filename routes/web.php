@@ -12,6 +12,10 @@ use App\Http\Controllers\App\AnnouncementsController as AppAnnouncementsControll
 use App\Http\Controllers\App\MassCalendarController as AppMassCalendarController;
 use App\Http\Controllers\App\OfficeController as AppOfficeController;
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+
+use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
+
 use Illuminate\Support\Facades\App;
 
 /**
@@ -47,18 +51,14 @@ Route::name('app.')->prefix('app')->group(function () {
  * Routing dla ADMIN
  */
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', function () {
-        echo 'Ok, jesteś adminem.';
-    })->name('dashboard');
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 });
 
 /**
  * Routing dla SUPERADMIN
  */
 Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
-    Route::get('/', function () {
-        echo 'Ok, jesteś superadminem.';
-    })->name('dashboard');
+    Route::get('/', [SuperadminDashboardController::class, 'index'])->name('dashboard');
 });
 
 require __DIR__.'/auth.php';

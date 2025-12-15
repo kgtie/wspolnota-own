@@ -12,7 +12,20 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Tworzymy SUPERADMINA (Ty)
+        $parishA = Parish::create([
+            'name' => 'Parafia p.w. św. Stanisława BM w Wiskitkach',
+            'short_name' => 'Parafia Wiskitki',
+            'city' => 'Wiskitki',
+            'slug' => 'wiskitki',
+        ]);
+
+        $parishB = Parish::create([
+            'name' => 'Parafia p.w. św. Krakowiaków w Krakowie',
+            'short_name' => 'Parafia Krakowiaków',
+            'city' => 'Kraków',
+            'slug' => 'krakowiakow',
+        ]);
+
         $superAdmin = User::create([
             'name' => 'Konrad Gruza',
             'email' => 'konrad@wspolnota.app',
@@ -40,21 +53,6 @@ class DatabaseSeeder extends Seeder
             'role' => 0, // 0 = User
         ]);
 
-        // 4. Tworzymy KONKRETNE PARAFIE
-        $parishA = Parish::create([
-            'name' => 'Parafia p.w. św. Stanisława BM w Wiskitkach',
-            'short_name' => 'Parafia Wiskitki',
-            'city' => 'Wiskitki',
-            'slug' => 'wiskitki',
-        ]);
-
-        $parishB = Parish::create([
-            'name' => 'Parafia p.w. św. Krakowiaków w Krakowie',
-            'short_name' => 'Parafia Krakowiaków',
-            'city' => 'Kraków',
-            'slug' => 'krakowiakow',
-        ]);
-
         // Tworzę podstawową listę mailingową
         $mailingList = MailingList::create([
             'name' => 'Oczekujący na usługę',
@@ -65,6 +63,7 @@ class DatabaseSeeder extends Seeder
         // Przypisz Admina Jana do OBU parafii
         // To testuje czy admin może mieć wiele parafii
         $adminOne->parishes()->attach([$parishA->id, $parishB->id]);
+        $superAdmin->parishes()->attach([$parishA->id, $parishB->id]);
         
         // Ustaw domyślny kontekst dla Jana na Katedrę
         $adminOne->update(['current_parish_id' => $parishA->id]);
