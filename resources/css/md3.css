@@ -193,3 +193,16 @@
             scroll-snap-align: start;
             /* Opcjonalnie: dociąganie karty do krawędzi */
         }
+
+        .desktop-sidebar a {
+            display: flex;
+            align-items: center;
+        }
+
+        .desktop-sidebar a .material-symbols-outlined {
+            margin-right: 12px;
+        }
+
+        .desktop-sidebar a .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }

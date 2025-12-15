@@ -26,7 +26,7 @@
         <div class="form-floating mb-3">
             <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name"
                 value="{{ old('name') }}" placeholder="Jan Kowalski" required autofocus>
-            <label for="name">Imię i Nazwisko</label>
+            <label for="name">Nazwa konta</label>
             @error('name')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
