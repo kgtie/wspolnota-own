@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Landing\HomeController;
 use App\Http\Controllers\Landing\MailingWaitlistController;
 
+use App\Http\Controllers\App\AppController;
+use App\Http\Controllers\App\HomeController as AppHomeController;
+
+use Illuminate\Support\Facades\App;
+
 /**
  * Routing dla LANDING
  */
@@ -15,6 +20,18 @@ Route::name("landing.")->group(function () {
     // Potwierdzenie dopisania do listy mailingowej osób oczekujących na uruchomienie usługi
     Route::get('/mailing/confirm/{token}', [MailingWaitlistController::class, 'confirm'])->name('mailing.confirm');
     Route::get('/mailing/unsubscribe/{token}', [MailingWaitlistController::class, 'unsubscribe'])->name('mailing.unsubscribe');
+});
+
+/**
+ * Routing dla APP
+ */
+Route::name('app.')->prefix('app')->group(function () {
+    // Rozdzielacz tras w razie zaistnienia różnych scenariuszy (czy pierwszy raz się loguje -> onboarding; czy ma parafię -> przekierowanie; itp.)
+    Route::get('/', [AppController::class, 'app_route']);
+    Route::prefix('{parish}')->middleware(['parish.active'])->group(function () {
+        // Strona główna aplikacji dla danej parafii (index lub home)
+        Route::get('/', [AppHomeController::class, 'index'])->name('home');
+    });
 });
 
 /**

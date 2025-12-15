@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'superadmin' => EnsureUserIsSuperAdmin::class,
+            'parish.active' => \App\Http\Middleware\EnsureParishIsActive::class,
         ]);
         $middleware->web(append: [
             ForceEmailVerification::class,

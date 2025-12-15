@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'konrad@wspolnota.app',
             'password' => Hash::make('Pwnaged1'),
             'email_verified_at' => now(),
+            'current_parish_id' => '1',
             'role' => 2, // 2 = SuperAdmin
         ]);
 
