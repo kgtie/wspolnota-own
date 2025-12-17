@@ -3,20 +3,25 @@
 
 use Illuminate\Support\Facades\Route;
 
+// Importowanie kontrolerów LANDING
 use App\Http\Controllers\Landing\HomeController;
 use App\Http\Controllers\Landing\MailingWaitlistController;
 
+// Importowanie kontrolerów APP
 use App\Http\Controllers\App\AppController;
 use App\Http\Controllers\App\HomeController as AppHomeController;
 use App\Http\Controllers\App\AnnouncementsController as AppAnnouncementsController;
 use App\Http\Controllers\App\MassCalendarController as AppMassCalendarController;
 use App\Http\Controllers\App\OfficeController as AppOfficeController;
 
+// Importowanie kontrolerów ADMIN
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\UsersController as AdminUsersController;
 
+// Importowanie kontrolerów SUPERADMIN
 use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
+use App\Http\Controllers\Superadmin\UsersController as SuperadminUsersController;
 
-use Illuminate\Support\Facades\App;
 
 /**
  * Routing dla LANDING
@@ -52,6 +57,7 @@ Route::name('app.')->prefix('app')->group(function () {
  */
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/users', [AdminUsersController::class, 'index'])->name('users');
 });
 
 /**
@@ -59,6 +65,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
  */
 Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperadminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/users', [SuperadminUsersController::class, 'index'])->name('users');
+
 });
 
 require __DIR__.'/auth.php';

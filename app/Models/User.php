@@ -43,4 +43,10 @@ class User extends Authenticatable implements MustVerifyEmail
         // Admin (1) lub SuperAdmin (2) mają dostęp do paneli zarządczych
         return $this->role >= 1;
     }
+
+    public function isVerified(): bool
+    {
+        return !is_null($this->email_verified_at);
+    }
 }
+

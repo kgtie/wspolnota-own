@@ -10,14 +10,22 @@ class Parish extends Model
     use HasFactory;
     protected $fillable = ['name', 'city', 'slug'];
 
-    // Route model binding po slugu
-    public function getRouteKeyName()
-    {
-        return 'slug';
-    }
-
-    public function admins()
-    {
-        return $this->belongsToMany(User::class);
-    }
+    /**
+     * RELACJE
+     */
+        public function admins()
+        {
+            return $this->belongsToMany(User::class);
+        }
+        public function users()
+        {
+            return $this->hasMany(User::class, 'current_parish_id');
+        }
+    /**
+     * HELPERY
+     */
+        public function getRouteKeyName()
+        {
+            return 'slug';
+        }
 }
