@@ -15,7 +15,7 @@ class DashboardController extends Controller
         $parish = Parish::where('id', Auth::user()->current_parish_id)->first();
 
         $stats = [
-            'users' => $parish->users()->count(),
+            'users' => $parish->parishioners()->count(),
         ];
         $pageInfo = [
             'meta.title' => 'Zarządzanie parafią ' . $parish->name . ' - Usługa Wspólnota',

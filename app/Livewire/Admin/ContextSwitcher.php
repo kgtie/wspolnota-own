@@ -21,7 +21,7 @@ class ContextSwitcher extends Component
         $user = Auth::user();
 
         // SECURITY: Sprawdzamy czy user MA PRAWO przełączyć się na tę parafię
-        $hasAccess = $user->parishes()->where('id', $value)->exists();
+        $hasAccess = $user->managedParishes()->where('id', $value)->exists();
 
         if ($hasAccess) {
             $user->current_parish_id = $value;
@@ -38,7 +38,7 @@ class ContextSwitcher extends Component
     public function render()
     {
         // Pobieramy tylko te parafie, do których admin ma dostęp
-        $myParishes = Auth::user()->parishes;
+        $myParishes = Auth::user()->managedParishes;
 
         return view('livewire.admin.context-switcher', [
             'parishes' => $myParishes

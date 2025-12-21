@@ -62,24 +62,24 @@ class DatabaseSeeder extends Seeder
         
         // Przypisz Admina Jana do OBU parafii
         // To testuje czy admin może mieć wiele parafii
-        $adminOne->parishes()->attach([$parishA->id, $parishB->id]);
-        $superAdmin->parishes()->attach([$parishA->id, $parishB->id]);
+        $adminOne->managedParishes()->attach([$parishA->id, $parishB->id]);
+        $superAdmin->managedParishes()->attach([$parishA->id, $parishB->id]);
         
         // Ustaw domyślny kontekst dla Jana na Katedrę
         $adminOne->update(['current_parish_id' => $parishA->id]);
 
         // 6. Dogeneruj losowe dane (dla tłumu)
         // 10 losowych parafii
-        Parish::factory(10)->create();
+        Parish::factory(30)->create();
         
         // 50 losowych userów
-        User::factory(50)->create();
+        User::factory(500)->create();
         
         // Opcjonalnie: Przypisz losowych adminów do losowych parafii
         $randomAdmins = User::factory(5)->create(['role' => 1]);
         foreach($randomAdmins as $admin) {
             $randomParish = Parish::inRandomOrder()->first();
-            $admin->parishes()->attach($randomParish->id);
+            $admin->managedParishes()->attach($randomParish->id);
             $admin->update(['current_parish_id' => $randomParish->id]);
         }
     }

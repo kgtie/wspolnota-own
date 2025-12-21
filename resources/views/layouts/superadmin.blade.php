@@ -86,7 +86,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('superadmin.users') }}" class="nav-link">
+                            <a href="{{ route('superadmin.users.index') }}" class="nav-link">
                                 <i class="nav-icon fa-solid fa-users"></i>
                                 <p>Użytkownicy</p>
                             </a>

@@ -45,7 +45,7 @@
                                 <img src="./assets/img/user2-160x160.jpg" class="rounded-circle shadow" alt="User Image">
                                 <p>
                                     {{ Auth::user()->name }}
-                                    <small>{{ $parish['name'] }}</small>
+                                    <small>Dodać nazwę parafii!</small>
                                 </p>
                             </li>
                             <li class="user-body">
@@ -87,7 +87,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('admin.users') }}" class="nav-link">
+                            <a href="{{ route('admin.users.index') }}" class="nav-link">
                                 <i class="nav-icon fa-solid fa-users"></i>
                                 <p>Parafianie</p>
                             </a>

@@ -6,26 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // Tabela Pivot do relacji Many-to-Many
+        // Głównie dla Administratorów, którzy mogą zarządzać wieloma parafiami [cite: 155]
         Schema::create('parish_user', function (Blueprint $table) {
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('parish_id')->constrained()->cascadeOnDelete();
-
-            // Unikamy duplikatów: jeden user w jednej parafii tylko raz
+                        
             $table->primary(['user_id', 'parish_id']); 
-
-            $table->timestamp('created_at')->nullable();
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('parish_user');

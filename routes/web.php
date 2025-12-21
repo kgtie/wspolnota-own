@@ -57,7 +57,8 @@ Route::name('app.')->prefix('app')->group(function () {
  */
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/users', [AdminUsersController::class, 'index'])->name('users');
+    Route::resource('users', AdminUsersController::class);
+    Route::post('/users/{user}/send-reset', [AdminUsersController::class, 'sendResetEmail'])->name('users.send-reset');
 });
 
 /**
@@ -65,7 +66,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
  */
 Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperadminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/users', [SuperadminUsersController::class, 'index'])->name('users');
+    Route::resource('users', SuperadminUsersController::class);
 
 });
 
