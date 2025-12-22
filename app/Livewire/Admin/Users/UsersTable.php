@@ -26,6 +26,8 @@ class UsersTable extends Component
     public string $sortCol = 'created_at';
     public string $sortDir = 'desc';
 
+    protected string $paginationTheme = 'bootstrap'; // Zabezpieczenie paginacji, aby się style nie rozjezdzały
+
     public function updatedSearch() { $this->resetPage(); }
     public function updatedFilterEmailStatus() { $this->resetPage(); }
     public function updatedFilterParishStatus() { $this->resetPage(); }

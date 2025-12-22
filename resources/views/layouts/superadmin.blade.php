@@ -91,6 +91,12 @@
                                 <p>Użytkownicy</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('superadmin.masses.index') }}" class="nav-link">
+                                <i class="nav-icon fa-solid fa-person-praying"></i>
+                                <p>Msze święte</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>

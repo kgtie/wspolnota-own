@@ -17,10 +17,12 @@ use App\Http\Controllers\App\OfficeController as AppOfficeController;
 // Importowanie kontrolerów ADMIN
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UsersController as AdminUsersController;
+use App\Http\Controllers\Admin\MassesController as AdminMassesController;
 
 // Importowanie kontrolerów SUPERADMIN
 use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Superadmin\UsersController as SuperadminUsersController;
+use App\Http\Controllers\Superadmin\MassesController as SuperadminMassesController;
 
 
 /**
@@ -58,6 +60,8 @@ Route::name('app.')->prefix('app')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', AdminUsersController::class);
+    Route::get('/masses', [AdminMassesController::class, 'index'])->name('masses.index');
+    Route::get('/masses/print', [AdminMassesController::class, 'print'])->name('masses.print'); // Generowanie wydruku
 });
 
 /**
@@ -69,6 +73,7 @@ Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmi
     Route::put('/users/{id}/restore', [SuperadminUsersController::class, 'restore'])->name('users.restore');
     Route::delete('/users/{id}/force-delete', [SuperadminUsersController::class, 'forceDelete'])->name('users.force_delete');
     Route::resource('users', SuperadminUsersController::class);
+    Route::resource('masses', SuperadminMassesController::class);    
 });
 
 require __DIR__.'/auth.php';

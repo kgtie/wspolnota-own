@@ -64,4 +64,12 @@ class Parish extends Model
     {
         return $this->hasMany(User::class, 'home_parish_id');
     }
+
+    /**
+     * Msze (wszystkie nadchodzące w danej parafii)
+     */
+    public function masses(): HasMany
+    {
+        return $this->hasMany(Mass::class, 'parish_id');
+    }
 }

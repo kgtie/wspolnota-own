@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\User;
+use App\Models\Mass;
 
 class DashboardController extends Controller
 {
@@ -13,6 +14,7 @@ class DashboardController extends Controller
     {
         $stats = [
             'users' => User::count(),
+            'masses' => Mass::where('start_time', '>', now())->count(),
         ];
         $pageInfo = [
             'meta.title' => 'Zarządzanie usługą',

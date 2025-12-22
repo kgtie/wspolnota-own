@@ -8,6 +8,8 @@ use App\Models\MailingList;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
+use Database\Seeders\MassSeeder;
+
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
@@ -73,7 +75,7 @@ class DatabaseSeeder extends Seeder
         Parish::factory(30)->create();
         
         // 50 losowych userów
-        User::factory(500)->create();
+        User::factory(1500)->create();
         
         // Opcjonalnie: Przypisz losowych adminów do losowych parafii
         $randomAdmins = User::factory(5)->create(['role' => 1]);
@@ -82,5 +84,9 @@ class DatabaseSeeder extends Seeder
             $admin->managedParishes()->attach($randomParish->id);
             $admin->update(['current_parish_id' => $randomParish->id]);
         }
+        // Seeder dla MassSeeder
+        $this->call([
+            MassSeeder::class,
+        ]);
     }
 }

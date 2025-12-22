@@ -92,6 +92,12 @@
                                 <p>Parafianie</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.masses.index') }}" class="nav-link">
+                                <i class="nav-icon fa-solid fa-person-praying"></i>
+                                <p>Msze święte</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
