@@ -58,7 +58,6 @@ Route::name('app.')->prefix('app')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', AdminUsersController::class);
-    Route::post('/users/{user}/send-reset', [AdminUsersController::class, 'sendResetEmail'])->name('users.send-reset');
 });
 
 /**
@@ -66,8 +65,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
  */
 Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/', [SuperadminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/users/trash', [SuperadminUsersController::class, 'trash'])->name('users.trash');
+    Route::put('/users/{id}/restore', [SuperadminUsersController::class, 'restore'])->name('users.restore');
+    Route::delete('/users/{id}/force-delete', [SuperadminUsersController::class, 'forceDelete'])->name('users.force_delete');
     Route::resource('users', SuperadminUsersController::class);
-
 });
 
 require __DIR__.'/auth.php';

@@ -60,6 +60,34 @@ return [
             'report' => false,
         ],
 
+        // ... (istniejące dyski local, public, s3)
+
+        // 1. Dysk na profile (avatary, grafiki parafii) - PUBLICZNY
+        'profiles' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/profiles'),
+            'url' => env('APP_URL').'/storage/profiles',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        // 2. Dysk na aktualności (zdjęcia, pliki do newsów) - PUBLICZNY
+        'news' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/news'),
+            'url' => env('APP_URL').'/storage/news',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        // 3. Dysk na Kancelarię Online (dokumenty, RODO) - PRYWATNY
+        'office' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/office'), // Katalog 'private' nie jest dostępny z przeglądarki
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
     ],
 
     /*
