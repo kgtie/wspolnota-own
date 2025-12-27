@@ -13,6 +13,7 @@ use App\Http\Controllers\App\HomeController as AppHomeController;
 use App\Http\Controllers\App\AnnouncementsController as AppAnnouncementsController;
 use App\Http\Controllers\App\MassCalendarController as AppMassCalendarController;
 use App\Http\Controllers\App\OfficeController as AppOfficeController;
+use App\Http\Controllers\App\SettingsController as AppSettingsController;
 
 // Importowanie kontrolerów ADMIN
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -52,6 +53,8 @@ Route::name('app.')->prefix('app')->group(function () {
         // Biuro parafialne, a więc "kancelaria parafialna online". DOSTĘP: zalogowani oraz zweryfikowani co do adresu email.
         Route::get('/office', [AppOfficeController::class, 'index'])->middleware(['auth', 'verified'])->name('office');
     });
+    Route::get('settings/account', [AppSettingsController::class, 'account'])->middleware(['auth'])->name('settings.account');
+    Route::get('settings/profile', [AppSettingsController::class, 'profile'])->middleware(['auth'])->name('settings.profile');
 });
 
 /**

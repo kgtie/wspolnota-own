@@ -104,22 +104,26 @@
       
     <div class="offcanvas offcanvas-end" tabindex="-1" id="rightPanel" aria-labelledby="rightPanelLabel">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="rightPanelLabel">Offcanvas</h5>
+            <h5 class="offcanvas-title" id="rightPanelLabel">Wspólnota</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
-            <div>
-                Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-            </div>
-            <div class="dropdown mt-3">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    Dropdown button
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Action</a></li>
-                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                </ul>
+            <div class="row h-100 flex-column justify-content-between">
+                <div class="col align-content-start">
+                    @if (Auth::check())
+                        <a href="{{ route('app.settings.account') }}" role="button" class="btn btn-outline-secondary btn-lg w-100 my-1">Ustawienia konta</a>
+                    @endif
+                    @if (Auth::check())
+                        <a href="{{ route('app.settings.profile') }}" role="button" class="btn btn-outline-secondary btn-lg w-100 my-1">Ustawienia profilu</a>
+                    @endif
+                </div>
+                <div class="col align-content-end">
+                    @if (Auth::check())
+                        <a href="{{ route('logout') }}" role="button" class="btn btn-danger btn-lg w-100">Wyloguj</a>
+                    @else
+                        <a href="{{ route('login') }}" role="button" class="btn btn-primary btn-lg w-100">Zaloguj</a>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
