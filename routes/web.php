@@ -14,16 +14,6 @@ use App\Http\Controllers\App\AnnouncementsController as AppAnnouncementsControll
 use App\Http\Controllers\App\MassCalendarController as AppMassCalendarController;
 use App\Http\Controllers\App\OfficeController as AppOfficeController;
 
-// Importowanie kontrolerów ADMIN
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\UsersController as AdminUsersController;
-use App\Http\Controllers\Admin\MassesController as AdminMassesController;
-
-// Importowanie kontrolerów SUPERADMIN
-use App\Http\Controllers\Superadmin\DashboardController as SuperadminDashboardController;
-use App\Http\Controllers\Superadmin\UsersController as SuperadminUsersController;
-use App\Http\Controllers\Superadmin\MassesController as SuperadminMassesController;
-
 
 /**
  * Routing dla LANDING
@@ -52,28 +42,6 @@ Route::name('app.')->prefix('app')->group(function () {
         // Biuro parafialne, a więc "kancelaria parafialna online". DOSTĘP: zalogowani oraz zweryfikowani co do adresu email.
         Route::get('/office', [AppOfficeController::class, 'index'])->middleware(['auth', 'verified'])->name('office');
     });
-});
-
-/**
- * Routing dla ADMIN
- */
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::resource('users', AdminUsersController::class);
-    Route::get('/masses', [AdminMassesController::class, 'index'])->name('masses.index');
-    Route::get('/masses/print', [AdminMassesController::class, 'print'])->name('masses.print'); // Generowanie wydruku
-});
-
-/**
- * Routing dla SUPERADMIN
- */
-Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
-    Route::get('/', [SuperadminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/users/trash', [SuperadminUsersController::class, 'trash'])->name('users.trash');
-    Route::put('/users/{id}/restore', [SuperadminUsersController::class, 'restore'])->name('users.restore');
-    Route::delete('/users/{id}/force-delete', [SuperadminUsersController::class, 'forceDelete'])->name('users.force_delete');
-    Route::resource('users', SuperadminUsersController::class);
-    Route::resource('masses', SuperadminMassesController::class);    
 });
 
 require __DIR__.'/auth.php';

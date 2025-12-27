@@ -2,72 +2,106 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasTenants;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 
-class User extends Authenticatable implements MustVerifyEmail
+/**
+ * Model User - Użytkownicy systemu Wspólnota
+ * 
+ * Obsługuje:
+ * - Zwykłych użytkowników (role = 0) - parafianie
+ * - Administratorów (role = 1) - zarządzają przypisanymi parafiami
+ * - Superadministratorów (role = 2) - pełny dostęp
+ * 
+ * @property int $id
+ * @property string $name
+ * @property string|null $full_name
+ * @property string $email
+ * @property \Carbon\Carbon|null $email_verified_at
+ * @property string $password
+ * @property string|null $avatar
+ * @property int $role (0=user, 1=admin, 2=superadmin)
+ * @property int|null $home_parish_id - Parafia domowa użytkownika
+ * @property int|null $current_parish_id - Aktualnie przeglądana parafia
+ * @property string|null $verification_code - 9-cyfrowy kod do weryfikacji przez proboszcza
+ * @property bool $is_user_verified - Czy użytkownik jest zweryfikowany przez proboszcza
+ * @property \Carbon\Carbon|null $user_verified_at
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ */
+class User extends Authenticatable implements FilamentUser, HasTenants, MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var list<string>
      */
     protected $fillable = [
         'name',
         'full_name',
         'email',
         'password',
-        'role',              // 0: User, 1: Admin, 2: SuperAdmin
-        'home_parish_id',    // ID parafii domowej (dla parafianina)
-        'verification_code', // Kod 9 cyfr
-        'is_user_verified',  // Czy zatwierdzony przez proboszcza
-        'current_parish_id', // Kontekst sesji (ostatnio wybrana parafia)
         'avatar',
+        'role',
+        'home_parish_id',
+        'current_parish_id',
+        'verification_code',
+        'is_user_verified',
+        'user_verified_at',
+        'email_verified_at',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
      */
     protected $hidden = [
         'password',
         'remember_token',
-        'verification_code', // Ukrywamy kod bezpieczeństwa w API/JSON
     ];
 
     /**
      * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'user_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_parish_verified' => 'boolean',
+            'is_user_verified' => 'boolean',
             'role' => 'integer',
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relacje (Relationships)
-    |--------------------------------------------------------------------------
-    */
+    /**
+     * Boot the model - generuje kod weryfikacyjny przy tworzeniu
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (User $user) {
+            if (empty($user->verification_code)) {
+                $user->verification_code = str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+
+    // =========================================
+    // RELACJE
+    // =========================================
 
     /**
-     * Relacja 1: Parafia domowa (dla ZWYKŁEGO PARAFIANINA).
-     * To jest parafia, do której user się zapisał.
+     * Parafia domowa użytkownika (jako parafianin)
      */
     public function homeParish(): BelongsTo
     {
@@ -75,45 +109,111 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Relacja 2: Parafie zarządzane (dla ADMINISTRATORA).
-     * To są parafie, do których user ma dostęp zarządczy (przez tabelę pivot).
-     */
-    public function managedParishes(): BelongsToMany
-    {
-        return $this->belongsToMany(Parish::class, 'parish_user')
-                    ->withTimestamps();
-    }
-
-    /**
-     * Relacja 3: Aktualny kontekst (dla UI).
-     * Parafia, którą użytkownik aktualnie przegląda lub zarządza.
+     * Aktualnie przeglądana parafia
      */
     public function currentParish(): BelongsTo
     {
         return $this->belongsTo(Parish::class, 'current_parish_id');
     }
 
+    /**
+     * Parafie zarządzane przez użytkownika (dla adminów)
+     * Relacja many-to-many przez tabelę parish_user
+     */
+    public function parishes(): BelongsToMany
+    {
+        return $this->belongsToMany(Parish::class, 'parish_user')
+            ->withTimestamps();
+    }
 
+    public function managedParishes(): BelongsToMany
+    {
+        return $this->belongsToMany(Parish::class,'parish_user')->withTimestamps();
+    }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Helpery i Logika Biznesowa
-    |--------------------------------------------------------------------------
-    */
+    // =========================================
+    // FILAMENT INTERFACES
+    // =========================================
 
+    /**
+     * Czy użytkownik może uzyskać dostęp do panelu Filament
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Superadmin panel - tylko rola 2
+        if ($panel->getId() === 'superadmin') {
+            return $this->role === 2;
+        }
+
+        // Admin panel - rola 1 lub 2, i musi mieć przypisane parafie
+        if ($panel->getId() === 'admin') {
+            return $this->role >= 1 && $this->parishes()->exists();
+        }
+
+        return false;
+    }
+
+    /**
+     * Zwraca tenanty (parafie) dostępne dla użytkownika
+     * Wymagane przez HasTenants interface
+     */
+    public function getTenants(Panel $panel): Collection
+    {
+        return $this->parishes;
+    }
+
+    /**
+     * Sprawdza czy użytkownik może uzyskać dostęp do danego tenanta
+     * Wymagane przez HasTenants interface
+     */
+    public function canAccessTenant(Model $tenant): bool
+    {
+        return $this->parishes()->whereKey($tenant)->exists();
+    }
+
+    // =========================================
+    // HELPERY
+    // =========================================
+
+    /**
+     * Czy użytkownik jest superadminem
+     */
     public function isSuperAdmin(): bool
     {
         return $this->role === 2;
     }
 
+    /**
+     * Czy użytkownik jest adminem (lub superadminem)
+     */
     public function isAdmin(): bool
     {
         return $this->role >= 1;
     }
-    
-    // Czy użytkownik jest zatwierdzonym parafianinem w SWOJEJ parafii domowej?
-    public function isVerifiedParishioner(): bool
+
+    /**
+     * Czy użytkownik jest zwykłym parafianinem
+     */
+    public function isParishioner(): bool
     {
-        return $this->is_user_verified === true;
+        return $this->role === 0;
+    }
+
+    /**
+     * Czy użytkownik jest zweryfikowany jako parafianin
+     */
+    public function isVerified(): bool
+    {
+        return $this->is_user_verified;
+    }
+
+    /**
+     * Generuje nowy kod weryfikacyjny
+     */
+    public function regenerateVerificationCode(): string
+    {
+        $code = str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
+        $this->update(['verification_code' => $code]);
+        return $code;
     }
 }

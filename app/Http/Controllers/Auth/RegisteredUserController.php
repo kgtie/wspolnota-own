@@ -44,6 +44,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'role' => 0, // Zwykły user
             'current_parish_id' => $request->parish_id, // Ustawiamy kontekst od razu
+            'verification_code' => rand(100000000, 999999999),
         ]);
 
         // Przypisujemy usera do parafii w tabeli pivot

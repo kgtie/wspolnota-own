@@ -25,20 +25,17 @@ class AuthenticatedSessionController extends Controller
 public function store(LoginRequest $request): RedirectResponse
 {
     $request->authenticate();
-
     $request->session()->regenerate();
-
-    // --- TWOJA LOGIKA PRZEKIEROWAŃ ---
     $user = $request->user();
 
     // 1. SuperAdmin
     if ($user->isSuperAdmin()) {
-        return redirect()->intended(route('superadmin.dashboard', absolute: false));
+        return redirect()->intended(route('filament.superadmin.pages.dashboard' , absolute: false));
     }
 
     // 2. Admin
     if ($user->isAdmin()) {
-        return redirect()->intended(route('admin.dashboard', absolute: false));
+        return redirect()->intended(route('filament.admin.pages.dashboard', absolute: false));
     }
 
     // 3. Zwykły User -> /app/{slug}
