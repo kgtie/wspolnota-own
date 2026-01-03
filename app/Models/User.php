@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Model User - Użytkownicy systemu Wspólnota
@@ -40,7 +41,11 @@ use Illuminate\Support\Collection;
  */
 class User extends Authenticatable implements FilamentUser, HasTenants, MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
+
+    public const ROLE_USER = 0;
+    public const ROLE_ADMIN = 1;
+    public const ROLE_SUPERADMIN = 2;
 
     /**
      * The attributes that are mass assignable.
@@ -140,12 +145,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        // Superadmin panel - tylko rola 2
         if ($panel->getId() === 'superadmin') {
             return $this->role === 2;
         }
 
-        // Admin panel - rola 1 lub 2, i musi mieć przypisane parafie
         if ($panel->getId() === 'admin') {
             return $this->role >= 1 && $this->parishes()->exists();
         }
@@ -153,13 +156,20 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         return false;
     }
 
+
     /**
      * Zwraca tenanty (parafie) dostępne dla użytkownika
      * Wymagane przez HasTenants interface
      */
     public function getTenants(Panel $panel): Collection
     {
-        return $this->parishes;
+        // Tenancy potrzebujemy tylko w panelu admina (proboszcz zarządza parafiami).
+        if ($panel->getId() === 'admin') {
+            return $this->parishes;
+        }
+
+        // Superadmin jest globalny – bez tenantów.
+        return collect();
     }
 
     /**
@@ -213,7 +223,19 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
     public function regenerateVerificationCode(): string
     {
         $code = str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
-        $this->update(['verification_code' => $code]);
+        $this->forceFill([
+            'verification_code' => $code,
+            'is_user_verified' => false,
+            'user_verified_at' => null,
+        ])->save();
         return $code;
+    }
+    public static function roleOptions(): array
+    {
+        return [
+            self::ROLE_USER => 'Użytkownik',
+            self::ROLE_ADMIN => 'Admin (proboszcz)',
+            self::ROLE_SUPERADMIN => 'Superadmin',
+        ];
     }
 }

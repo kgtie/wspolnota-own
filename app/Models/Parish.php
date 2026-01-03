@@ -35,26 +35,29 @@ class Parish extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'short_name',
-        'slug',
-        'diocese',
-        'decanate',
-        'street',
-        'city',
-        'postal_code',
-        'email',
-        'phone',
-        'website',
-        'avatar',
-        'is_active',
-    ];
+protected $fillable = [
+    'name',
+    'short_name',
+    'slug',
+    'diocese',
+    'decanate',
+    'street',
+    'city',
+    'postal_code',
+    'email',
+    'phone',
+    'website',
+    'avatar',
+    'cover_image',
+    'settings',
+    'is_active',
+];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'settings' => 'array',
         ];
     }
 
@@ -69,6 +72,7 @@ class Parish extends Model
     public function admins(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'parish_user')
+            ->where('role', '>=', 1) // Tylko użytkownicy z rolą admina
             ->withTimestamps();
     }
 
@@ -77,8 +81,7 @@ class Parish extends Model
      */
     public function parishioners(): HasMany
     {
-        return $this->hasMany(User::class, 'home_parish_id')
-            ->where('role', 0);
+        return $this->hasMany(User::class, 'home_parish_id');
     }
 
     /**
@@ -103,14 +106,6 @@ class Parish extends Model
     public function announcementSets(): HasMany
     {
         return $this->hasMany(AnnouncementSet::class);
-    }
-
-    /**
-     * Aktualności/wpisy blogowe parafii (placeholder)
-     */
-    public function posts(): HasMany
-    {
-        return $this->hasMany(Post::class);
     }
 
     // =========================================
