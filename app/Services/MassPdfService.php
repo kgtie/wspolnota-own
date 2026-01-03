@@ -22,6 +22,6 @@ class MassPdfService
             'masses' => $masses,
             'from' => $from,
             'to' => $to,
-        ]);
+        ])->setPaper('a4');
     }
 }
