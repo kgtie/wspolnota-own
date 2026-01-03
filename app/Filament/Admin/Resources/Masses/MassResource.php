@@ -21,6 +21,11 @@ class MassResource extends Resource
         return 'Msze święte';
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Liturgia';
+    }
+
     public static function getNavigationIcon(): ?string
     {
         return 'heroicon-o-calendar-days';

@@ -11,6 +11,11 @@ class MassCalendar extends Page
         return 'Kalendarz mszy';
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Parafia';
+    }
+
     public static function getNavigationIcon(): ?string
     {
         return 'heroicon-o-calendar';

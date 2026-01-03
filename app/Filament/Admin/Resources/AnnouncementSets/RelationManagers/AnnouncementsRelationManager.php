@@ -2,74 +2,64 @@
 
 namespace App\Filament\Admin\Resources\AnnouncementSets\RelationManagers;
 
-use Filament\Actions\AssociateAction;
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\DissociateAction;
-use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreAction;
-use Filament\Actions\RestoreBulkAction;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 
 class AnnouncementsRelationManager extends RelationManager
 {
     protected static string $relationship = 'announcements';
 
+    protected static ?string $title = 'Punkty ogłoszeń';
+
     public function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextInput::make('Ogłoszenia')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+        return $schema->components([
+            RichEditor::make('content')
+                ->label('Treść ogłoszenia')
+                ->required()
+                ->columnSpanFull(),
+
+            Toggle::make('is_highlighted')
+                ->label('Wyróżnij jako ważne'),
+        ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('Ogłoszenia')
+            ->reorderable('sort_order')
+            ->defaultSort('sort_order')
             ->columns([
-                TextColumn::make('Ogłoszenia')
-                    ->searchable(),
-            ])
-            ->filters([
-                TrashedFilter::make(),
-            ])
-            ->headerActions([
-                CreateAction::make(),
-                AssociateAction::make(),
+                TextColumn::make('short_content')
+                    ->label('Treść')
+                    ->wrap(),
+
+                IconColumn::make('is_highlighted')
+                    ->label('Ważne')
+                    ->boolean(),
             ])
             ->recordActions([
                 EditAction::make(),
-                DissociateAction::make(),
                 DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DissociateBulkAction::make(),
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                ]),
-            ])
-            ->modifyQueryUsing(fn (Builder $query) => $query
-                ->withoutGlobalScopes([
-                    SoftDeletingScope::class,
-                ]));
+                CreateAction::make()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $set = $this->getOwnerRecord();
+
+                        $max = $set->announcements()->max('sort_order') ?? 0;
+                        $data['sort_order'] = $max + 1;
+
+                        return $data;
+                    }),
+            ]);
     }
 }

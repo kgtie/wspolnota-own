@@ -23,6 +23,11 @@ class ParishionerResource extends Resource
         return 'Parafianie';
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Parafia';
+    }
+
     public static function getModelLabel(): string
     {
         return 'Parafianin';
