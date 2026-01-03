@@ -71,10 +71,7 @@ class DatabaseSeeder extends Seeder
         $adminOne->update(['current_parish_id' => $parishA->id]);
 
         // 6. Dogeneruj losowe dane (dla tłumu)
-        // 10 losowych parafii
         Parish::factory(30)->create();
-        
-        // 50 losowych userów
         User::factory(1500)->create();
         
         // Opcjonalnie: Przypisz losowych adminów do losowych parafii
@@ -84,10 +81,11 @@ class DatabaseSeeder extends Seeder
             $admin->managedParishes()->attach($randomParish->id);
             $admin->update(['current_parish_id' => $randomParish->id]);
         }
-        // Seeder dla MassSeeder
+        // Seeder
         $this->call([
             MassSeeder::class,
             MassesAndAnnouncementsSeeder::class,
+            NewsSeeder::class,
         ]);
     }
 }
