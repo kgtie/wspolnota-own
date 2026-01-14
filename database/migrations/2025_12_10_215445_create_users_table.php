@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('email')->unique(); // Email użytkownika
             $table->timestamp('email_verified_at')->nullable(); // Weryfikacja email
             $table->string('password'); // Hasło (zahashowane)
+            $table->enum('status', ['active', 'inactive', 'banned'])->default('active'); // Status konta
 
             $table->unsignedTinyInteger('role')->default(0); // ROLA: 0: User, 1: Admin, 2: SuperAdmin
 

@@ -48,24 +48,4 @@ class Announcement extends Model
     {
         return $this->belongsTo(AnnouncementSet::class);
     }
-
-    /**
-     * Parafia (przez zestaw ogłoszeń)
-     */
-    public function getParishAttribute(): ?Parish
-    {
-        return $this->announcementSet?->parish;
-    }
-
-    // =========================================
-    // HELPERY
-    // =========================================
-
-    /**
-     * Skrócona treść ogłoszenia (dla podglądu)
-     */
-    public function getShortContentAttribute(): string
-    {
-        return \Illuminate\Support\Str::limit(strip_tags($this->content), 100);
-    }
 }

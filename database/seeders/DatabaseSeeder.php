@@ -84,7 +84,6 @@ class DatabaseSeeder extends Seeder
         // Seeder
         $this->call([
             MassSeeder::class,
-            MassesAndAnnouncementsSeeder::class,
             NewsSeeder::class,
         ]);
     }

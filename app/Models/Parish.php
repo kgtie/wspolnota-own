@@ -60,6 +60,14 @@ protected $fillable = [
             'settings' => 'array',
         ];
     }
+    
+    /**
+     * Zwraca route key name dla URL
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     // =========================================
     // RELACJE
@@ -85,14 +93,6 @@ protected $fillable = [
     }
 
     /**
-     * Wszyscy użytkownicy powiązani z parafią (parafianie + aktualnie przeglądający)
-     */
-    public function users(): HasMany
-    {
-        return $this->hasMany(User::class, 'home_parish_id');
-    }
-
-    /**
      * Msze święte w parafii (placeholder)
      */
     public function masses(): HasMany
@@ -106,46 +106,5 @@ protected $fillable = [
     public function announcementSets(): HasMany
     {
         return $this->hasMany(AnnouncementSet::class);
-    }
-
-    // =========================================
-    // HELPERY
-    // =========================================
-
-    /**
-     * Pełny adres parafii
-     */
-    public function getFullAddressAttribute(): ?string
-    {
-        $parts = array_filter([
-            $this->street,
-            $this->postal_code . ' ' . $this->city,
-        ]);
-
-        return count($parts) > 0 ? implode(', ', $parts) : null;
-    }
-
-    /**
-     * Liczba zweryfikowanych parafian
-     */
-    public function getVerifiedParishionersCountAttribute(): int
-    {
-        return $this->parishioners()->where('is_user_verified', true)->count();
-    }
-
-    /**
-     * Liczba parafian oczekujących na weryfikację
-     */
-    public function getPendingParishionersCountAttribute(): int
-    {
-        return $this->parishioners()->where('is_user_verified', false)->count();
-    }
-
-    /**
-     * Zwraca route key name dla URL
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
     }
 }

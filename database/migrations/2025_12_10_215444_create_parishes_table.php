@@ -22,7 +22,7 @@ return new class extends Migration
             // Dane kontaktowe
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
-            $table->string('website')->nullable();
+            $table->string('website')->nullable(); // Dotychczasowa strona www parafii
             
             // Adres
             $table->string('street')->nullable();
@@ -37,6 +37,9 @@ return new class extends Migration
             
             // Status
             $table->boolean('is_active')->default(true);
+            $table->date('activated_at')->nullable()->comment('Data (ostatniej) aktywacji parafii w systemie'); // Data aktywacji
+            $table->date('expiration_date')->nullable()->comment('Data wygaśnięcia działalności parafii w systemie'); // Data wygaśnięcia
+            $table->decimal('subscription_fee', 8, 2)->default(0.00)->comment('Opłata subskrypcyjna parafii'); // Opłata subskrypcyjna
             
             // Ustawienia (JSON)
             $table->json('settings')->nullable();

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class NewsPost extends Model
 {
@@ -25,15 +26,5 @@ class NewsPost extends Model
     public function author()
     {
         return $this->belongsTo(User::class, 'author_user_id');
-    }
-
-    public function comments(): HasMany
-    {
-        return $this->hasMany(NewsComment::class);
-    }
-
-    public function media()
-    {
-        return $this->morphMany(MediaFile::class, 'attachable');
     }
 }

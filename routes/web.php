@@ -44,4 +44,7 @@ Route::name('app.')->prefix('app')->group(function () {
     });
 });
 
+/**
+ * Dodatkowy routing
+ */
 require __DIR__.'/auth.php';
