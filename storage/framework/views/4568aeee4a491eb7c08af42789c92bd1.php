@@ -63,7 +63,11 @@ unset($__defined_vars, $__key, $__value); ?>
         ?>
 
         <title>
-            <?php echo e(filled($title) ? "{$title} - " : null); ?> <?php echo e($brandName); ?>
+            <?php echo e(filled($title) ? $title : null); ?>
+
+            <?php echo e(filled($brandName) && filled($title) ? ' - ' : null); ?>
+
+            <?php echo e(filled($brandName) ? $brandName : null); ?>
 
         </title>
 
@@ -97,6 +101,12 @@ unset($__defined_vars, $__key, $__value); ?>
         <?php echo \Filament\Support\Facades\FilamentAsset::renderStyles() ?>
 
         <?php echo e(filament()->getTheme()->getHtml()); ?>
+
+        <?php echo e(filament()->getFontPreloadHtml()); ?>
+
+        <?php echo e(filament()->getMonoFontPreloadHtml()); ?>
+
+        <?php echo e(filament()->getSerifFontPreloadHtml()); ?>
 
         <?php echo e(filament()->getFontHtml()); ?>
 
@@ -203,7 +213,7 @@ if (isset($__slots)) unset($__slots);
             </script>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        <?php if(filament()->hasDarkMode() && (! filament()->hasDarkModeForced())): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(filament()->hasDarkMode() && (! filament()->hasDarkModeForced())): ?>
             <script>
                 loadDarkMode()
             </script>

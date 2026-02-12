@@ -342,40 +342,13 @@ unset($__defined_vars, $__key, $__value); ?>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if((! app()->hasDebugModeEnabled()) && $this->hasErrorNotifications()): ?>
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(! app()->hasDebugModeEnabled()): ?>
             <?php
         $__scriptKey = '2975611257-2';
         ob_start();
     ?>
             <script>
-                const errorNotifications = <?php echo \Illuminate\Support\Js::from($this->getErrorNotifications())->toHtml() ?>
-
-                Livewire.hook('request', ({ payload, fail }) => {
-                    fail(({ status, preventDefault }) => {
-                        if (JSON.parse(payload).components.length === 1) {
-                            for (const component of JSON.parse(payload)
-                                .components) {
-                                if (
-                                    JSON.parse(component.snapshot).data
-                                        .isFilamentNotificationsComponent
-                                ) {
-                                    return
-                                }
-                            }
-                        }
-
-                        preventDefault()
-
-                        const errorNotification =
-                            errorNotifications[status] ?? errorNotifications['']
-
-                        new FilamentNotification()
-                            .title(errorNotification.title)
-                            .body(errorNotification.body)
-                            .danger()
-                            .send()
-                    })
-                })
+                window.filamentErrorNotifications = <?php echo \Illuminate\Support\Js::from($this->hasErrorNotifications() ? $this->getErrorNotifications() : null)->toHtml() ?>
             </script>
             <?php
         $__output = ob_get_clean();

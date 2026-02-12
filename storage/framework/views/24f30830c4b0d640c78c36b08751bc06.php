@@ -14,9 +14,9 @@
             ->merge($extraAttributes, escape: false)); ?>
 
     >
-<?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+<?php endif; ?>
 
-<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(filled($key = $getLivewireKey())): ?>
+<?php if(filled($key = $getLivewireKey())): ?>
     <?php
 $__split = function ($name, $params = []) {
     return [$name, $params];
@@ -58,8 +58,8 @@ unset($__params);
 unset($__split);
 if (isset($__slots)) unset($__slots);
 ?>
-<?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(filled($id) || filled($extraAttributes)): ?>
+<?php endif; ?>
+<?php if(filled($id) || filled($extraAttributes)): ?>
     <?php echo '</div>'; ?>
 
     

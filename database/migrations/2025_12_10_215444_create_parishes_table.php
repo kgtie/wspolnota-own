@@ -13,37 +13,40 @@ return new class extends Migration
     {
         Schema::create('parishes', function (Blueprint $table) {
             $table->id();
-            
+
             // Podstawowe dane
             $table->string('name');                          // Pełna nazwa: "Parafia p.w. św. Stanisława..."
             $table->string('short_name');                    // Krótka: "Parafia Wiskitki"
             $table->string('slug')->unique();                // URL: "wiskitki"
-            
+
             // Dane kontaktowe
             $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('website')->nullable(); // Dotychczasowa strona www parafii
-            
+            $table->string('phone', 20)->nullable();
+            $table->string('website')->nullable();           // Dotychczasowa strona www parafii
+
             // Adres
             $table->string('street')->nullable();
             $table->string('postal_code', 10)->nullable();
             $table->string('city');
-            $table->string('diocese')->nullable();           // Diecezja
-            $table->string('decanate')->nullable();          // Dekanat
-            
-            // Media
-            $table->string('avatar')->nullable();            // Logo/zdjęcie parafii
-            $table->string('cover_image')->nullable();       // Zdjęcie w tle
-            
-            // Status
+            $table->string('diocese')->nullable();            // Diecezja
+            $table->string('decanate')->nullable();           // Dekanat
+
+            // Media (ścieżki na dysku profiles)
+            $table->string('avatar')->nullable();             // Logo/zdjęcie parafii
+            $table->string('cover_image')->nullable();        // Zdjęcie w tle
+
+            // Status i subskrypcja
             $table->boolean('is_active')->default(true);
-            $table->date('activated_at')->nullable()->comment('Data (ostatniej) aktywacji parafii w systemie'); // Data aktywacji
-            $table->date('expiration_date')->nullable()->comment('Data wygaśnięcia działalności parafii w systemie'); // Data wygaśnięcia
-            $table->decimal('subscription_fee', 8, 2)->default(0.00)->comment('Opłata subskrypcyjna parafii'); // Opłata subskrypcyjna
-            
-            // Ustawienia (JSON)
+            $table->date('activated_at')->nullable()
+                ->comment('Data (ostatniej) aktywacji parafii w systemie');
+            $table->date('expiration_date')->nullable()
+                ->comment('Data wygaśnięcia działalności parafii w systemie');
+            $table->decimal('subscription_fee', 8, 2)->default(0.00)
+                ->comment('Opłata subskrypcyjna parafii');
+
+            // Ustawienia (JSON) - kolory, preferencje powiadomień itp.
             $table->json('settings')->nullable();
-            
+
             $table->timestamps();
         });
     }

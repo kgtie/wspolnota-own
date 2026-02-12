@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasDefaultTenant;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -10,46 +11,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-/**
- * Model User - Użytkownicy systemu Wspólnota
- * 
- * Obsługuje:
- * - Zwykłych użytkowników (role = 0) - parafianie
- * - Administratorów (role = 1) - zarządzają przypisanymi parafiami
- * - Superadministratorów (role = 2) - pełny dostęp
- * 
- * @property int $id
- * @property string $name
- * @property string|null $full_name
- * @property string $email
- * @property \Carbon\Carbon|null $email_verified_at
- * @property string $password
- * @property string|null $avatar
- * @property int $role (0=user, 1=admin, 2=superadmin)
- * @property int|null $home_parish_id - Parafia domowa użytkownika
- * @property int|null $current_parish_id - Aktualnie przeglądana parafia
- * @property string|null $verification_code - 9-cyfrowy kod do weryfikacji przez proboszcza
- * @property bool $is_user_verified - Czy użytkownik jest zweryfikowany przez proboszcza
- * @property \Carbon\Carbon|null $user_verified_at
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- */
-class User extends Authenticatable implements FilamentUser, HasTenants, MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasTenants, HasDefaultTenant, HasMedia
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, InteractsWithMedia, LogsActivity;
 
-    public const ROLE_USER = 0;
-    public const ROLE_ADMIN = 1;
-    public const ROLE_SUPERADMIN = 2;
-
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'name',
         'full_name',
@@ -57,185 +32,228 @@ class User extends Authenticatable implements FilamentUser, HasTenants, MustVeri
         'password',
         'avatar',
         'role',
+        'status',
         'home_parish_id',
         'current_parish_id',
+        'last_managed_parish_id',
         'verification_code',
         'is_user_verified',
         'user_verified_at',
-        'email_verified_at',
+        'verified_by_user_id',
+        'last_login_at',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'user_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
             'is_user_verified' => 'boolean',
             'role' => 'integer',
         ];
     }
 
-    /**
-     * Boot the model - generuje kod weryfikacyjny przy tworzeniu
-     */
-    protected static function boot(): void
-    {
-        parent::boot();
+    // =========================================
+    // SPATIE MEDIA LIBRARY
+    // =========================================
 
-        static::creating(function (User $user) {
-            if (empty($user->verification_code)) {
-                $user->verification_code = str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
-            }
-        });
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(100)
+            ->height(100)
+            ->sharpen(10)
+            ->nonQueued();
+    }
+
+    // =========================================
+    // SPATIE ACTIVITY LOG
+    // =========================================
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'name', 'full_name', 'email', 'role', 'status',
+                'home_parish_id', 'is_user_verified',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->setDescriptionForEvent(fn (string $eventName) => "Użytkownik został {$eventName}");
     }
 
     // =========================================
     // RELACJE
     // =========================================
 
-    /**
-     * Parafia domowa użytkownika (jako parafianin)
-     */
     public function homeParish(): BelongsTo
     {
         return $this->belongsTo(Parish::class, 'home_parish_id');
     }
 
-    /**
-     * Aktualnie przeglądana parafia
-     */
     public function currentParish(): BelongsTo
     {
         return $this->belongsTo(Parish::class, 'current_parish_id');
     }
 
-    /**
-     * Parafie zarządzane przez użytkownika (dla adminów)
-     * Relacja many-to-many przez tabelę parish_user
-     */
-    public function parishes(): BelongsToMany
+    public function lastManagedParish(): BelongsTo
     {
-        return $this->belongsToMany(Parish::class, 'parish_user')
-            ->withTimestamps();
+        return $this->belongsTo(Parish::class, 'last_managed_parish_id');
     }
 
     public function managedParishes(): BelongsToMany
     {
-        return $this->belongsToMany(Parish::class,'parish_user')->withTimestamps();
+        return $this->belongsToMany(Parish::class, 'parish_user')
+            ->withPivot(['is_active', 'assigned_at', 'note'])
+            ->withTimestamps();
+    }
+
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by_user_id');
     }
 
     // =========================================
-    // FILAMENT INTERFACES
+    // FILAMENT: FilamentUser
     // =========================================
 
-    /**
-     * Czy użytkownik może uzyskać dostęp do panelu Filament
-     */
     public function canAccessPanel(Panel $panel): bool
     {
-        if ($panel->getId() === 'superadmin') {
-            return $this->role === 2;
-        }
-
-        if ($panel->getId() === 'admin') {
-            return $this->role >= 1 && $this->parishes()->exists();
-        }
-
-        return false;
+        return match ($panel->getId()) {
+            'admin' => $this->isAdmin() && $this->status === 'active',
+            'superadmin' => $this->isSuperAdmin() && $this->status === 'active',
+            default => false,
+        };
     }
 
+    // =========================================
+    // FILAMENT: HasTenants (multi-tenancy)
+    // =========================================
 
-    /**
-     * Zwraca tenanty (parafie) dostępne dla użytkownika
-     * Wymagane przez HasTenants interface
-     */
     public function getTenants(Panel $panel): Collection
     {
-        // Tenancy potrzebujemy tylko w panelu admina (proboszcz zarządza parafiami).
-        if ($panel->getId() === 'admin') {
-            return $this->parishes;
-        }
-
-        // Superadmin jest globalny – bez tenantów.
-        return collect();
+        return $this->managedParishes()
+            ->wherePivot('is_active', true)
+            ->get();
     }
 
-    /**
-     * Sprawdza czy użytkownik może uzyskać dostęp do danego tenanta
-     * Wymagane przez HasTenants interface
-     */
     public function canAccessTenant(Model $tenant): bool
     {
-        return $this->parishes()->whereKey($tenant)->exists();
+        return $this->managedParishes()
+            ->wherePivot('is_active', true)
+            ->whereKey($tenant)
+            ->exists();
     }
 
     // =========================================
-    // HELPERY
+    // FILAMENT: HasDefaultTenant
     // =========================================
 
-    /**
-     * Czy użytkownik jest superadminem
-     */
+    public function getDefaultTenant(Panel $panel): ?Model
+    {
+        if ($this->last_managed_parish_id) {
+            $lastManaged = $this->managedParishes()
+                ->wherePivot('is_active', true)
+                ->whereKey($this->last_managed_parish_id)
+                ->first();
+
+            if ($lastManaged) {
+                return $lastManaged;
+            }
+        }
+
+        return $this->managedParishes()
+            ->wherePivot('is_active', true)
+            ->first();
+    }
+
+    // =========================================
+    // HELPERY RÓL
+    // =========================================
+
     public function isSuperAdmin(): bool
     {
         return $this->role === 2;
     }
 
-    /**
-     * Czy użytkownik jest adminem (lub superadminem)
-     */
     public function isAdmin(): bool
     {
         return $this->role >= 1;
     }
 
-    /**
-     * Czy użytkownik jest zwykłym parafianinem
-     */
-    public function isParishioner(): bool
+    public function isRegularUser(): bool
     {
         return $this->role === 0;
     }
 
-    /**
-     * Czy użytkownik jest zweryfikowany jako parafianin
-     */
-    public function isVerified(): bool
-    {
-        return $this->is_user_verified;
-    }
+    // =========================================
+    // WERYFIKACJA (9-cyfrowy kod)
+    // =========================================
 
-    /**
-     * Generuje nowy kod weryfikacyjny
-     */
-    public function regenerateVerificationCode(): string
+    public function generateVerificationCode(): string
     {
-        $code = str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
-        $this->forceFill([
-            'verification_code' => $code,
-            'is_user_verified' => false,
-            'user_verified_at' => null,
-        ])->save();
+        do {
+            $code = str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
+        } while (static::where('verification_code', $code)->exists());
+
+        $this->update(['verification_code' => $code]);
+
         return $code;
     }
-    public static function roleOptions(): array
+
+    public function verify(?User $verifiedBy = null): void
     {
-        return [
-            self::ROLE_USER => 'Użytkownik',
-            self::ROLE_ADMIN => 'Admin (proboszcz)',
-            self::ROLE_SUPERADMIN => 'Superadmin',
-        ];
+        $this->update([
+            'is_user_verified' => true,
+            'user_verified_at' => now(),
+            'verified_by_user_id' => $verifiedBy?->id,
+        ]);
+    }
+
+    // =========================================
+    // SCOPE'Y
+    // =========================================
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeOfParish($query, int $parishId)
+    {
+        return $query->where('home_parish_id', $parishId);
+    }
+
+    public function scopePendingVerification($query)
+    {
+        return $query->where('is_user_verified', false)
+            ->whereNotNull('email_verified_at');
+    }
+
+    // =========================================
+    // HELPERY MEDIÓW
+    // =========================================
+
+    /**
+     * URL avatara (z Media Library lub fallback)
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        return $this->getFirstMediaUrl('avatar', 'thumb')
+            ?: asset('images/default-user-avatar.png');
     }
 }

@@ -14,6 +14,8 @@ use App\Http\Controllers\App\AnnouncementsController as AppAnnouncementsControll
 use App\Http\Controllers\App\MassCalendarController as AppMassCalendarController;
 use App\Http\Controllers\App\OfficeController as AppOfficeController;
 
+// Importowanie kontrolerów ADMIN
+// (brak na ten moment)
 
 /**
  * Routing dla LANDING
@@ -43,6 +45,11 @@ Route::name('app.')->prefix('app')->group(function () {
         Route::get('/office', [AppOfficeController::class, 'index'])->middleware(['auth', 'verified'])->name('office');
     });
 });
+
+/**
+ * Routing dla ADMIN
+ */
+//
 
 /**
  * Dodatkowy routing

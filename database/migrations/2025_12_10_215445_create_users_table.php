@@ -10,48 +10,65 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Login / Nazwa wyświetlana
-            $table->string('full_name')->nullable(); // Imię i nazwisko
-            $table->string('email')->unique(); // Email użytkownika
-            $table->timestamp('email_verified_at')->nullable(); // Weryfikacja email
-            $table->string('password'); // Hasło (zahashowane)
-            $table->enum('status', ['active', 'inactive', 'banned'])->default('active'); // Status konta
 
-            $table->unsignedTinyInteger('role')->default(0); // ROLA: 0: User, 1: Admin, 2: SuperAdmin
+            // Dane podstawowe
+            $table->string('name');                              // Login / Nazwa wyświetlana
+            $table->string('full_name')->nullable();             // Imię i nazwisko
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
 
-            // Użytkownik należy do jednej parafii "domowej"
+            // Rola i status
+            $table->unsignedTinyInteger('role')->default(0)
+                ->comment('0: User, 1: Admin, 2: SuperAdmin');
+            $table->string('status', 20)->default('active')
+                ->comment('active, inactive, banned');
+
+            // Parafia domowa (rejestracja)
             $table->foreignId('home_parish_id')
                 ->nullable()
                 ->constrained('parishes')
                 ->nullOnDelete();
 
-            $table->string('verification_code', 9)->nullable()->unique(); // Kod 9 cyfr do okazania proboszczowi
-            $table->boolean('is_user_verified')->default(false); // Czy proboszcz zatwierdził użytkownika?
-            $table->timestamp('user_verified_at')->nullable(); // Kiedy proboszcz zatwierdził użytkownika?
+            // Weryfikacja przez proboszcza (9-cyfrowy kod)
+            $table->string('verification_code', 9)->nullable()->unique();
+            $table->boolean('is_user_verified')->default(false);
+            $table->timestamp('user_verified_at')->nullable();
+            $table->foreignId('verified_by_user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete()
+                ->comment('Kto zatwierdził tego użytkownika');
 
-            // KONTEKST SESJI (Dla Admina i Usera)
-            // Jaką parafię aktualnie przegląda/zarządza (może być inna niż domowa)
+            // Kontekst sesji
             $table->foreignId('current_parish_id')
                 ->nullable()
                 ->constrained('parishes')
-                ->nullOnDelete();
+                ->nullOnDelete()
+                ->comment('Aktualnie przeglądana parafia (Aplikacja PWA)');
 
-            // Dodatki profilowe
+            $table->foreignId('last_managed_parish_id')
+                ->nullable()
+                ->constrained('parishes')
+                ->nullOnDelete()
+                ->comment('Ostatnio zarządzana parafia (Panel Admin)');
+
+            // Profil
             $table->string('avatar')->nullable();
-            
-            $table->softDeletes(); // Soft Delete
+            $table->timestamp('last_login_at')->nullable();
+
+            $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();
         });
 
-        // Tabela resetowania haseł (standard Laravel)
+        // Standard Laravel tables
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        // Tabela sesji (standard Laravel)
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -64,8 +81,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

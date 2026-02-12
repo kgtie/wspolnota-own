@@ -35,7 +35,7 @@ public function store(LoginRequest $request): RedirectResponse
 
     // 2. Admin
     if ($user->isAdmin()) {
-        return redirect()->intended(route('filament.admin.pages.dashboard', absolute: false));
+        return redirect()->intended(route('filament.admin.pages.dashboard', parameters: ['tenant' => $user->managedParishes->first()->slug], absolute: false));
     }
 
     // 3. Zwykły User -> /app/{slug}

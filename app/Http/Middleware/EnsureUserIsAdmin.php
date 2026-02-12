@@ -10,14 +10,15 @@ class EnsureUserIsAdmin
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !auth()->user()->isAdmin()) {
-            abort(403, 'Brak uprawnień administratora.');
+        // Sprawdzamy, czy użytkownik jest zalogowany i ma rolę >= 1 (Admin lub SuperAdmin)
+        // Metodę isAdmin() masz już w modelu User
+        if (! $request->user() || ! $request->user()->isAdmin()) {
+            abort(403, 'Brak uprawnień do panelu administratora.');
         }
+
         return $next($request);
     }
 }
