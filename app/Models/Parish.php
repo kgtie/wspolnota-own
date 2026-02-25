@@ -35,8 +35,6 @@ class Parish extends Model implements HasMedia
         'city',
         'diocese',
         'decanate',
-        'avatar',
-        'cover_image',
         'is_active',
         'activated_at',
         'expiration_date',
@@ -75,10 +73,12 @@ class Parish extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')
+            ->useDisk('profiles')
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
 
         $this->addMediaCollection('cover')
+            ->useDisk('profiles')
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
     }
@@ -155,13 +155,13 @@ class Parish extends Model implements HasMedia
     }
 
     /**
-     * Tylko aktywni administratorzy (role >= 1)
+     * Aktywni administratorzy przypisani do parafii przez pivot.
+     * Pivot jest źródłem prawdy dla przypisań administratorów parafii.
      */
     public function admins(): BelongsToMany
     {
         return $this->users()
-            ->wherePivot('is_active', true)
-            ->where('users.role', '>=', 1);
+            ->wherePivot('is_active', true);
     }
 
     /**
@@ -178,6 +178,14 @@ class Parish extends Model implements HasMedia
     public function verifiedParishioners(): HasMany
     {
         return $this->parishioners()->where('is_user_verified', true);
+    }
+
+    /**
+     * Msze swiete i intencje mszalne zarejestrowane dla parafii
+     */
+    public function masses(): HasMany
+    {
+        return $this->hasMany(Mass::class);
     }
 
     // =========================================

@@ -41,6 +41,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         'user_verified_at',
         'verified_by_user_id',
         'last_login_at',
+        'deleted_at',
     ];
 
     protected $hidden = [
@@ -89,7 +90,8 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         return LogOptions::defaults()
             ->logOnly([
                 'name', 'full_name', 'email', 'role', 'status',
-                'home_parish_id', 'is_user_verified',
+                'home_parish_id', 'is_user_verified', 'email_verified_at',
+                'user_verified_at', 'verified_by_user_id', 'verification_code',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
@@ -119,6 +121,13 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     {
         return $this->belongsToMany(Parish::class, 'parish_user')
             ->withPivot(['is_active', 'assigned_at', 'note'])
+            ->withTimestamps();
+    }
+
+    public function registeredMasses(): BelongsToMany
+    {
+        return $this->belongsToMany(Mass::class, 'mass_user')
+            ->withPivot(['registered_at'])
             ->withTimestamps();
     }
 

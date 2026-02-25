@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Pages\EditParishProfile;
 use App\Models\Parish;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -28,15 +29,14 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
 
-            // Auth: korzystamy z Breeze, więc wyłączamy login/register Filament
+            // Auth: korzystamy z Breeze, wyłączamy login/register Filament
             ->authGuard('web')
             ->login(false)
             ->registration(false)
 
-            // Multi-tenancy: Parish jest tenantem
-            // ownershipRelationship = relacja na modelu Parish prowadząca do users
-            // (Filament szuka jej na modelu tenanta, nie na User)
+            // Multi-tenancy: Parish jako tenant
             ->tenant(Parish::class, ownershipRelationship: 'users', slugAttribute: 'slug')
+            ->tenantProfile(EditParishProfile::class)
             ->tenantMenu()
 
             // Wygląd
@@ -44,7 +44,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->brandName('Wspólnota')
-            ->favicon(null) // TODO: dodaj favicon
+            ->favicon(null)
 
             // Auto-discovery zasobów, stron i widgetów
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')

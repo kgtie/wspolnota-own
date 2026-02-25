@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Mass;
 use App\Models\Parish;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -41,7 +44,7 @@ class DatabaseSeeder extends Seeder
             'full_name' => 'Super Administrator',
             'email' => 'konrad@wspolnota.app',
             'home_parish_id' => $parishes->first()->id,
-            'password' => bcrypt('Pwnaged1'),
+            'password' => Hash::make('Pwnaged1'),
         ]);
 
         // SuperAdmin ma dostęp do WSZYSTKICH parafii
@@ -107,9 +110,9 @@ class DatabaseSeeder extends Seeder
                 ]);
         }
 
-        // 5 niezatwierdzonych parafian (różne parafie)
+        // 9 niezatwierdzonych parafian (3 parafie po 3 osoby)
         foreach ($parishes->skip(2)->take(3) as $parish) {
-            User::factory(2)
+            User::factory(3)
                 ->create([
                     'home_parish_id' => $parish->id,
                 ]);
@@ -123,22 +126,75 @@ class DatabaseSeeder extends Seeder
             ]);
 
         // =============================================
+        // 5. MSZE SWIETE I INTENCJE
+        // =============================================
+
+        $this->call(MassSeeder::class);
+        $massesCount = Mass::query()->count();
+
+        $adminsCount = User::query()->where('role', 1)->count();
+        $verifiedParishionersCount = User::query()
+            ->where('role', 0)
+            ->where('is_user_verified', true)
+            ->count();
+        $pendingParishionersCount = User::query()
+            ->where('role', 0)
+            ->where('is_user_verified', false)
+            ->whereNotNull('email_verified_at')
+            ->count();
+        $withoutEmailVerificationCount = User::query()
+            ->where('role', 0)
+            ->whereNull('email_verified_at')
+            ->count();
+
+        $pastMassesCount = Mass::query()->where('celebration_at', '<', now())->count();
+        $futureMassesCount = Mass::query()->where('celebration_at', '>=', now())->count();
+        $completedMassesCount = Mass::query()->where('status', 'completed')->count();
+        $scheduledMassesCount = Mass::query()->where('status', 'scheduled')->count();
+        $cancelledMassesCount = Mass::query()->where('status', 'cancelled')->count();
+        $stipendiumCount = Mass::query()->whereNotNull('stipendium_amount')->count();
+        $outstandingStipendiumCount = Mass::query()
+            ->whereNotNull('stipendium_amount')
+            ->whereNull('stipendium_paid_at')
+            ->where('status', '!=', 'cancelled')
+            ->count();
+        $massesWithParticipantsCount = Mass::query()
+            ->has('participants')
+            ->count();
+        $massRegistrationsCount = (int) DB::table('mass_user')->count();
+
+        // =============================================
         // PODSUMOWANIE
         // =============================================
 
-        $this->command->info('');
-        $this->command->info('✅ Seeder zakończony pomyślnie!');
-        $this->command->info('');
-        $this->command->table(
+        $this->command?->info('');
+        $this->command?->info('✅ Seeder zakonczony pomyslnie!');
+        $this->command?->info('');
+        $this->command?->table(
             ['Typ', 'Ilość', 'Dane logowania'],
             [
                 ['Parafie', $parishes->count(), '—'],
-                ['SuperAdmin', '1', 'wspolnota@wspolnota.app / Pwnaged1'],
-                ['Admin 1', '1', 'jan@wspolnota.app / password'],
-                ['Admin 2', '1', 'piotr@wspolnota.app / password'],
-                ['Parafianie (zatwierdzeni)', '10', 'losowe / password'],
-                ['Parafianie (niezatwierdzeni)', '6', 'losowe / password'],
-                ['Parafianie (bez weryfikacji email)', '1', 'losowe / password'],
+                ['SuperAdmin', '1', $superAdmin->email.' / Pwnaged1'],
+                ['Administratorzy', (string) $adminsCount, 'jan@wspolnota.app / password; piotr@wspolnota.app / password'],
+                ['Parafianie (zatwierdzeni)', (string) $verifiedParishionersCount, 'losowe / password'],
+                ['Parafianie (oczekujacy)', (string) $pendingParishionersCount, 'losowe / password'],
+                ['Parafianie (bez weryfikacji email)', (string) $withoutEmailVerificationCount, 'losowe / password'],
+                ['Msze swiete + intencje', (string) $massesCount, 'historia + przyszle terminy'],
+            ]
+        );
+
+        $this->command?->table(
+            ['Metryka mszalna', 'Wartosc'],
+            [
+                ['Msze przeszle', (string) $pastMassesCount],
+                ['Msze przyszle', (string) $futureMassesCount],
+                ['Status: odprawione', (string) $completedMassesCount],
+                ['Status: zaplanowane', (string) $scheduledMassesCount],
+                ['Status: odwolane', (string) $cancelledMassesCount],
+                ['Msze ze stypendium', (string) $stipendiumCount],
+                ['Nierozliczone stypendia', (string) $outstandingStipendiumCount],
+                ['Msze z uczestnikami', (string) $massesWithParticipantsCount],
+                ['Liczba zapisow uczestnikow', (string) $massRegistrationsCount],
             ]
         );
     }
