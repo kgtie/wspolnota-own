@@ -188,6 +188,14 @@ class Parish extends Model implements HasMedia
         return $this->hasMany(Mass::class);
     }
 
+    /**
+     * Zestawy ogloszen parafialnych.
+     */
+    public function announcementSets(): HasMany
+    {
+        return $this->hasMany(AnnouncementSet::class);
+    }
+
     // =========================================
     // HELPERY
     // =========================================

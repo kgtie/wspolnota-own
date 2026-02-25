@@ -4,7 +4,7 @@ namespace App\Filament\Admin\Resources\Masses\Pages;
 
 use App\Filament\Admin\Resources\Masses\MassResource;
 use App\Models\Mass;
-use Barryvdh\DomPDF\Facade\Pdf as DomPdf;
+use App\Models\User;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -12,6 +12,8 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Spatie\LaravelPdf\Enums\Format;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class ListMasses extends ListRecords
 {
@@ -48,6 +50,7 @@ class ListMasses extends ListRecords
             ])
             ->action(function (array $data) {
                 $tenant = Filament::getTenant();
+                $admin = Filament::auth()->user();
 
                 if (! $tenant) {
                     Notification::make()
@@ -85,7 +88,13 @@ class ListMasses extends ListRecords
                     return null;
                 }
 
-                $pdf = DomPdf::loadView('pdf.masses.intentions-period', [
+                $fileName = sprintf(
+                    'intencje-mszalne-%s-%s.pdf',
+                    $start->format('Ymd'),
+                    $end->format('Ymd'),
+                );
+
+                $pdfBase64 = Pdf::view('pdf.masses.intentions-period', [
                     'parishName' => $tenant->name,
                     'dateFrom' => $start,
                     'dateTo' => $end,
@@ -94,17 +103,34 @@ class ListMasses extends ListRecords
                     'kinds' => Mass::getMassKindOptions(),
                     'types' => Mass::getMassTypeOptions(),
                     'statuses' => Mass::getStatusOptions(),
-                ])->setPaper('a4', 'portrait');
+                ])
+                    ->format(Format::A4)
+                    ->portrait()
+                    ->name($fileName)
+                    ->base64();
 
-                $fileName = sprintf(
-                    'intencje-mszalne-%s-%s.pdf',
-                    $start->format('Ymd'),
-                    $end->format('Ymd'),
-                );
+                if ($admin instanceof User) {
+                    activity('admin-mass-management')
+                        ->causedBy($admin)
+                        ->event('mass_intentions_pdf_exported')
+                        ->withProperties([
+                            'parish_id' => $tenant->getKey(),
+                            'date_from' => $start->toIso8601String(),
+                            'date_to' => $end->toIso8601String(),
+                            'masses_count' => $masses->count(),
+                            'file_name' => $fileName,
+                        ])
+                        ->log('Proboszcz wygenerowal PDF z intencjami mszalnymi.');
+                }
 
                 return response()->streamDownload(
-                    static fn (): string => print($pdf->output()),
+                    static function () use ($pdfBase64): void {
+                        echo base64_decode($pdfBase64);
+                    },
                     $fileName,
+                    [
+                        'Content-Type' => 'application/pdf',
+                    ],
                 );
             });
     }

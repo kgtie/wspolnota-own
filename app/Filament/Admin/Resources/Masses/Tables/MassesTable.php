@@ -217,6 +217,19 @@ class MassesTable
                 $clone->updated_by_user_id = null;
                 $clone->save();
 
+                if ($admin instanceof User) {
+                    activity('admin-mass-management')
+                        ->causedBy($admin)
+                        ->performedOn($clone)
+                        ->event('mass_duplicated')
+                        ->withProperties([
+                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'source_mass_id' => $record->getKey(),
+                            'new_mass_id' => $clone->getKey(),
+                        ])
+                        ->log('Proboszcz zduplikowal wpis mszy.');
+                }
+
                 Notification::make()
                     ->success()
                     ->title('Utworzono kopie mszy.')
@@ -235,6 +248,8 @@ class MassesTable
             ->action(function ($records) use ($status): void {
                 $admin = Filament::auth()->user();
                 $updated = 0;
+                $updatedIds = [];
+                $selectedCount = is_countable($records) ? count($records) : 0;
 
                 foreach ($records as $record) {
                     if (! $record instanceof Mass || $record->status === $status) {
@@ -246,6 +261,21 @@ class MassesTable
                         'updated_by_user_id' => $admin instanceof User ? $admin->id : $record->updated_by_user_id,
                     ]);
                     $updated++;
+                    $updatedIds[] = $record->getKey();
+                }
+
+                if ($admin instanceof User && $updated > 0) {
+                    activity('admin-mass-management')
+                        ->causedBy($admin)
+                        ->event('masses_bulk_status_updated')
+                        ->withProperties([
+                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'target_status' => $status,
+                            'selected_count' => $selectedCount,
+                            'updated_count' => $updated,
+                            'updated_mass_ids' => $updatedIds,
+                        ])
+                        ->log('Proboszcz masowo zaktualizowal statusy mszy.');
                 }
 
                 Notification::make()

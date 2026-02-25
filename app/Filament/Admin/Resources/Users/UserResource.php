@@ -123,12 +123,26 @@ class UserResource extends Resource
 
     public static function verifyRecord(User $record, ?User $verifiedBy = null): void
     {
+        $hadVerificationCode = filled($record->verification_code);
+        $verificationCode = $record->verification_code ?: static::generateUniqueVerificationCode();
+
         $record->update([
             'is_user_verified' => true,
             'user_verified_at' => $record->user_verified_at ?? now(),
             'verified_by_user_id' => $verifiedBy?->id,
-            'verification_code' => $record->verification_code ?: static::generateUniqueVerificationCode(),
+            'verification_code' => $verificationCode,
         ]);
+
+        static::logAdminUserManagementEvent(
+            event: 'user_verified_by_code',
+            record: $record,
+            actor: $verifiedBy,
+            description: 'Proboszcz zatwierdził parafianina kodem weryfikacyjnym.',
+            properties: [
+                'verification_method' => '9_digit_code',
+                'verification_code_was_already_set' => $hadVerificationCode,
+            ],
+        );
     }
 
     public static function verifyRecordWithCode(User $record, string $providedCode, ?User $verifiedBy = null): bool
@@ -137,6 +151,17 @@ class UserResource extends Resource
         $normalizedCode = preg_replace('/\D+/', '', $providedCode) ?? '';
 
         if ($normalizedCode !== $expectedCode) {
+            static::logAdminUserManagementEvent(
+                event: 'user_verification_failed_invalid_code',
+                record: $record,
+                actor: $verifiedBy,
+                description: 'Proboszcz podał nieprawidłowy kod podczas zatwierdzania parafianina.',
+                properties: [
+                    'provided_code_length' => strlen($normalizedCode),
+                    'expected_code_exists' => $expectedCode !== '',
+                ],
+            );
+
             return false;
         }
 
@@ -145,23 +170,80 @@ class UserResource extends Resource
         return true;
     }
 
-    public static function unverifyRecord(User $record): void
+    public static function unverifyRecord(User $record, ?User $performedBy = null): void
     {
         $record->update([
             'is_user_verified' => false,
             'user_verified_at' => null,
             'verified_by_user_id' => null,
         ]);
+
+        static::logAdminUserManagementEvent(
+            event: 'user_verification_revoked',
+            record: $record,
+            actor: $performedBy,
+            description: 'Proboszcz cofnął zatwierdzenie parafianina.',
+            properties: [
+                'verification_method' => '9_digit_code',
+            ],
+        );
     }
 
-    public static function regenerateVerificationCode(User $record): string
+    public static function regenerateVerificationCode(User $record, ?User $performedBy = null): string
     {
         $code = static::generateUniqueVerificationCode();
+        $hadPreviousCode = filled($record->verification_code);
 
         $record->update([
             'verification_code' => $code,
         ]);
 
+        static::logAdminUserManagementEvent(
+            event: 'user_verification_code_regenerated',
+            record: $record,
+            actor: $performedBy,
+            description: 'Proboszcz wygenerował nowy kod weryfikacyjny parafianina.',
+            properties: [
+                'had_previous_code' => $hadPreviousCode,
+            ],
+        );
+
         return $code;
+    }
+
+    private static function resolveActor(?User $actor = null): ?User
+    {
+        if ($actor instanceof User) {
+            return $actor;
+        }
+
+        $authUser = Filament::auth()->user();
+
+        return $authUser instanceof User ? $authUser : null;
+    }
+
+    private static function logAdminUserManagementEvent(
+        string $event,
+        User $record,
+        string $description,
+        ?User $actor = null,
+        array $properties = [],
+    ): void {
+        $resolvedActor = static::resolveActor($actor);
+
+        if (! $resolvedActor) {
+            return;
+        }
+
+        activity('admin-user-management')
+            ->causedBy($resolvedActor)
+            ->performedOn($record)
+            ->event($event)
+            ->withProperties(array_merge([
+                'parish_id' => Filament::getTenant()?->getKey(),
+                'target_user_id' => $record->getKey(),
+                'target_user_email' => $record->email,
+            ], $properties))
+            ->log($description);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AnnouncementSet;
 use App\Models\Mass;
 use App\Models\Parish;
 use App\Models\User;
@@ -126,11 +127,15 @@ class DatabaseSeeder extends Seeder
             ]);
 
         // =============================================
-        // 5. MSZE SWIETE I INTENCJE
+        // 5. MSZE SWIETE, INTENCJE I OGLOSZENIA
         // =============================================
 
         $this->call(MassSeeder::class);
+        $this->call(AnnouncementSeeder::class);
+
         $massesCount = Mass::query()->count();
+        $announcementSetsCount = AnnouncementSet::query()->count();
+        $announcementItemsCount = (int) DB::table('announcement_items')->count();
 
         $adminsCount = User::query()->where('role', 1)->count();
         $verifiedParishionersCount = User::query()
@@ -162,6 +167,12 @@ class DatabaseSeeder extends Seeder
             ->has('participants')
             ->count();
         $massRegistrationsCount = (int) DB::table('mass_user')->count();
+        $publishedAnnouncementSetsCount = AnnouncementSet::query()->where('status', 'published')->count();
+        $draftAnnouncementSetsCount = AnnouncementSet::query()->where('status', 'draft')->count();
+        $archivedAnnouncementSetsCount = AnnouncementSet::query()->where('status', 'archived')->count();
+        $importantAnnouncementItemsCount = (int) DB::table('announcement_items')
+            ->where('is_important', true)
+            ->count();
 
         // =============================================
         // PODSUMOWANIE
@@ -180,11 +191,13 @@ class DatabaseSeeder extends Seeder
                 ['Parafianie (oczekujacy)', (string) $pendingParishionersCount, 'losowe / password'],
                 ['Parafianie (bez weryfikacji email)', (string) $withoutEmailVerificationCount, 'losowe / password'],
                 ['Msze swiete + intencje', (string) $massesCount, 'historia + przyszle terminy'],
+                ['Zestawy ogloszen', (string) $announcementSetsCount, 'przeszle + przyszle tygodnie'],
+                ['Pojedyncze ogloszenia', (string) $announcementItemsCount, 'z pozycjonowaniem i waznoscia'],
             ]
         );
 
         $this->command?->table(
-            ['Metryka mszalna', 'Wartosc'],
+            ['Metryki liturgiczne', 'Wartosc'],
             [
                 ['Msze przeszle', (string) $pastMassesCount],
                 ['Msze przyszle', (string) $futureMassesCount],
@@ -195,6 +208,10 @@ class DatabaseSeeder extends Seeder
                 ['Nierozliczone stypendia', (string) $outstandingStipendiumCount],
                 ['Msze z uczestnikami', (string) $massesWithParticipantsCount],
                 ['Liczba zapisow uczestnikow', (string) $massRegistrationsCount],
+                ['Zestawy ogloszen: opublikowane', (string) $publishedAnnouncementSetsCount],
+                ['Zestawy ogloszen: szkice', (string) $draftAnnouncementSetsCount],
+                ['Zestawy ogloszen: archiwalne', (string) $archivedAnnouncementSetsCount],
+                ['Ogloszenia oznaczone jako wazne', (string) $importantAnnouncementItemsCount],
             ]
         );
     }

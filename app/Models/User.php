@@ -131,6 +131,14 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
             ->withTimestamps();
     }
 
+    /**
+     * Alias relacji wymagany przez domyslne mechanizmy Filament w relation manager.
+     */
+    public function masses(): BelongsToMany
+    {
+        return $this->registeredMasses();
+    }
+
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by_user_id');

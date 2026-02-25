@@ -70,6 +70,18 @@ class ViewMass extends ViewRecord
                         ->get();
 
                     if ($participants->isEmpty()) {
+                        if ($admin instanceof User) {
+                            activity('admin-mass-management')
+                                ->causedBy($admin)
+                                ->performedOn($record)
+                                ->event('mass_participants_email_skipped')
+                                ->withProperties([
+                                    'parish_id' => Filament::getTenant()?->getKey(),
+                                    'reason' => 'no_recipients',
+                                ])
+                                ->log('Pominieto wysylke email do uczestnikow mszy: brak odbiorcow.');
+                        }
+
                         Notification::make()
                             ->warning()
                             ->title('Brak uczestnikow do powiadomienia.')
@@ -107,6 +119,22 @@ class ViewMass extends ViewRecord
                         $notification->warning();
                     } else {
                         $notification->success();
+                    }
+
+                    if ($admin instanceof User) {
+                        activity('admin-mass-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('mass_participants_email_sent')
+                            ->withProperties([
+                                'parish_id' => Filament::getTenant()?->getKey(),
+                                'participants_count' => $participants->count(),
+                                'sent_count' => $sent,
+                                'failed_count' => $failed,
+                                'subject' => (string) $data['subject'],
+                                'message_length' => mb_strlen((string) $data['message']),
+                            ])
+                            ->log('Proboszcz wyslal wiadomosc email do uczestnikow mszy.');
                     }
 
                     $notification->send();

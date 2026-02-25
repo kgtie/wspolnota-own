@@ -76,7 +76,12 @@ class ViewUser extends ViewRecord
                         return;
                     }
 
-                    UserResource::unverifyRecord($record);
+                    $admin = Filament::auth()->user();
+
+                    UserResource::unverifyRecord(
+                        $record,
+                        $admin instanceof User ? $admin : null,
+                    );
                     $record->refresh();
                 })
                 ->successNotificationTitle('Zatwierdzenie zostało cofnięte.'),
@@ -92,7 +97,12 @@ class ViewUser extends ViewRecord
                         return;
                     }
 
-                    UserResource::regenerateVerificationCode($record);
+                    $admin = Filament::auth()->user();
+
+                    UserResource::regenerateVerificationCode(
+                        $record,
+                        $admin instanceof User ? $admin : null,
+                    );
                 })
                 ->successNotificationTitle('Wygenerowano nowy kod dla parafianina.'),
             Action::make('send_password_reset_link')
@@ -110,6 +120,21 @@ class ViewUser extends ViewRecord
                     $status = Password::sendResetLink(['email' => $record->email]);
 
                     if ($status !== Password::RESET_LINK_SENT) {
+                        $admin = Filament::auth()->user();
+
+                        if ($admin instanceof User) {
+                            activity('admin-user-management')
+                                ->causedBy($admin)
+                                ->performedOn($record)
+                                ->event('password_reset_link_send_failed')
+                                ->withProperties([
+                                    'recipient_email' => $record->email,
+                                    'parish_id' => Filament::getTenant()?->getKey(),
+                                    'status' => $status,
+                                ])
+                                ->log('Próba wysłania linku resetu hasła zakończona niepowodzeniem.');
+                        }
+
                         Notification::make()
                             ->danger()
                             ->title('Nie udało się wysłać linku resetu hasła.')
@@ -173,6 +198,19 @@ class ViewUser extends ViewRecord
                             ),
                         );
                     } catch (Throwable $exception) {
+                        activity('admin-user-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('parish_priest_message_send_failed')
+                            ->withProperties([
+                                'recipient_email' => $record->email,
+                                'subject' => (string) $data['subject'],
+                                'message_length' => mb_strlen((string) $data['message']),
+                                'parish_id' => Filament::getTenant()?->getKey(),
+                                'exception' => $exception::class,
+                            ])
+                            ->log('Nie udało się wysłać wiadomości email do parafianina.');
+
                         Notification::make()
                             ->danger()
                             ->title('Nie udało się wysłać wiadomości.')

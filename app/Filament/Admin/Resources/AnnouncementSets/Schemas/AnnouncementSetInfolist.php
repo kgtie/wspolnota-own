@@ -1,0 +1,123 @@
+<?php
+
+namespace App\Filament\Admin\Resources\AnnouncementSets\Schemas;
+
+use App\Models\AnnouncementSet;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+
+class AnnouncementSetInfolist
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make('Zestaw ogloszen')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('title')
+                            ->label('Nazwa zestawu')
+                            ->columnSpanFull(),
+
+                        TextEntry::make('week_label')
+                            ->label('Opis tygodnia')
+                            ->placeholder('Brak'),
+
+                        TextEntry::make('status')
+                            ->label('Status')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'published' => 'success',
+                                'archived' => 'gray',
+                                default => 'warning',
+                            })
+                            ->formatStateUsing(fn (string $state): string => AnnouncementSet::getStatusOptions()[$state] ?? $state),
+
+                        TextEntry::make('published_at')
+                            ->label('Data publikacji')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('Nie opublikowano'),
+
+                        TextEntry::make('effective_from')
+                            ->label('Obowiazuje od')
+                            ->date('d.m.Y'),
+
+                        TextEntry::make('effective_to')
+                            ->label('Obowiazuje do')
+                            ->date('d.m.Y')
+                            ->placeholder('Bez daty koncowej'),
+
+                        TextEntry::make('items_count')
+                            ->label('Liczba ogloszen')
+                            ->state(fn (AnnouncementSet $record): string => (string) ($record->items_count ?? $record->items()->count()))
+                            ->badge()
+                            ->color('info'),
+
+                        TextEntry::make('important_items_count')
+                            ->label('Ogloszenia wazne')
+                            ->state(fn (AnnouncementSet $record): string => (string) ($record->important_items_count ?? $record->items()->where('is_important', true)->count()))
+                            ->badge()
+                            ->color('danger'),
+
+                        TextEntry::make('lead')
+                            ->label('Wstep')
+                            ->placeholder('Brak')
+                            ->columnSpanFull(),
+
+                        TextEntry::make('footer_notes')
+                            ->label('Notatki koncowe')
+                            ->placeholder('Brak')
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('AI i powiadomienia')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('summary_ai')
+                            ->label('Streszczenie AI')
+                            ->placeholder('Brak streszczenia')
+                            ->columnSpanFull(),
+
+                        TextEntry::make('summary_generated_at')
+                            ->label('Data streszczenia')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('Nie wygenerowano'),
+
+                        TextEntry::make('summary_model')
+                            ->label('Model AI')
+                            ->placeholder('Brak'),
+
+                        TextEntry::make('notifications_sent_at')
+                            ->label('Wysylka email')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('Nie wyslano'),
+
+                        TextEntry::make('notifications_recipients_count')
+                            ->label('Liczba odbiorcow')
+                            ->placeholder('0'),
+                    ]),
+
+                Section::make('Historia wpisu')
+                    ->columns(2)
+                    ->collapsible()
+                    ->schema([
+                        TextEntry::make('createdBy.full_name')
+                            ->label('Utworzyl')
+                            ->placeholder('System'),
+
+                        TextEntry::make('updatedBy.full_name')
+                            ->label('Ostatnio edytowal')
+                            ->placeholder('Brak danych'),
+
+                        TextEntry::make('created_at')
+                            ->label('Utworzono')
+                            ->dateTime('d.m.Y H:i'),
+
+                        TextEntry::make('updated_at')
+                            ->label('Ostatnia zmiana')
+                            ->since(),
+                    ]),
+            ]);
+    }
+}
