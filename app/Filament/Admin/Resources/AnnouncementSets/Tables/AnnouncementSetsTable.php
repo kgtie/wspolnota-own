@@ -201,6 +201,19 @@ class AnnouncementSetsTable
                 }
 
                 $record->update($payload);
+
+                if ($admin instanceof User) {
+                    activity('admin-announcement-management')
+                        ->causedBy($admin)
+                        ->performedOn($record)
+                        ->event('announcement_set_status_updated')
+                        ->withProperties([
+                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'announcement_set_id' => $record->getKey(),
+                            'target_status' => $status,
+                        ])
+                        ->log('Proboszcz zaktualizowal status zestawu ogloszen.');
+                }
             })
             ->successNotificationTitle('Status zestawu zostal zaktualizowany.');
     }
@@ -212,6 +225,7 @@ class AnnouncementSetsTable
             ->icon('heroicon-o-printer')
             ->color('gray')
             ->action(function (AnnouncementSet $record) {
+                $admin = Filament::auth()->user();
                 $exporter = app(AnnouncementSetPdfExporter::class);
 
                 if (! $exporter->hasPrintableItems($record)) {
@@ -221,6 +235,19 @@ class AnnouncementSetsTable
                         ->send();
 
                     return null;
+                }
+
+                if ($admin instanceof User) {
+                    activity('admin-announcement-management')
+                        ->causedBy($admin)
+                        ->performedOn($record)
+                        ->event('announcement_set_pdf_exported')
+                        ->withProperties([
+                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'announcement_set_id' => $record->getKey(),
+                            'active_items_count' => $record->items()->where('is_active', true)->count(),
+                        ])
+                        ->log('Proboszcz wygenerowal PDF z ogloszeniami parafialnymi.');
                 }
 
                 return $exporter->download($record);
@@ -236,6 +263,7 @@ class AnnouncementSetsTable
             ->visible(fn (AnnouncementSet $record): bool => $record->status === 'published')
             ->requiresConfirmation()
             ->action(function (AnnouncementSet $record): void {
+                $admin = Filament::auth()->user();
                 $summarizer = app(AnnouncementSetSummarizer::class);
 
                 if (! $summarizer->canGenerateForSet($record)) {
@@ -257,12 +285,39 @@ class AnnouncementSetsTable
                         'summary_model' => (string) config('gemini.model'),
                     ]);
 
+                    if ($admin instanceof User) {
+                        activity('admin-announcement-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('announcement_set_ai_summary_generated')
+                            ->withProperties([
+                                'parish_id' => Filament::getTenant()?->getKey(),
+                                'announcement_set_id' => $record->getKey(),
+                                'summary_length' => mb_strlen($summary),
+                                'model' => (string) config('gemini.model'),
+                            ])
+                            ->log('Proboszcz recznie wygenerowal streszczenie AI dla zestawu ogloszen.');
+                    }
+
                     Notification::make()
                         ->success()
                         ->title('Wygenerowano streszczenie AI.')
                         ->send();
                 } catch (Throwable $exception) {
                     report($exception);
+
+                    if ($admin instanceof User) {
+                        activity('admin-announcement-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('announcement_set_ai_summary_generation_failed')
+                            ->withProperties([
+                                'parish_id' => Filament::getTenant()?->getKey(),
+                                'announcement_set_id' => $record->getKey(),
+                                'error' => $exception->getMessage(),
+                            ])
+                            ->log('Reczne generowanie streszczenia AI dla zestawu ogloszen zakonczone bledem.');
+                    }
 
                     Notification::make()
                         ->danger()
@@ -306,6 +361,20 @@ class AnnouncementSetsTable
                     ]);
                 }
 
+                if ($admin instanceof User) {
+                    activity('admin-announcement-management')
+                        ->causedBy($admin)
+                        ->performedOn($clone)
+                        ->event('announcement_set_duplicated')
+                        ->withProperties([
+                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'source_set_id' => $record->getKey(),
+                            'new_set_id' => $clone->getKey(),
+                            'copied_items_count' => $items->count(),
+                        ])
+                        ->log('Proboszcz zduplikowal zestaw ogloszen.');
+                }
+
                 Notification::make()
                     ->success()
                     ->title('Utworzono kopie zestawu ogloszen.')
@@ -324,6 +393,8 @@ class AnnouncementSetsTable
             ->action(function ($records) use ($status): void {
                 $admin = Filament::auth()->user();
                 $updated = 0;
+                $updatedIds = [];
+                $selectedCount = is_countable($records) ? count($records) : 0;
 
                 foreach ($records as $record) {
                     if (! $record instanceof AnnouncementSet || $record->status === $status) {
@@ -345,6 +416,21 @@ class AnnouncementSetsTable
 
                     $record->update($payload);
                     $updated++;
+                    $updatedIds[] = $record->getKey();
+                }
+
+                if ($admin instanceof User && $updated > 0) {
+                    activity('admin-announcement-management')
+                        ->causedBy($admin)
+                        ->event('announcement_sets_bulk_status_updated')
+                        ->withProperties([
+                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'target_status' => $status,
+                            'selected_count' => $selectedCount,
+                            'updated_count' => $updated,
+                            'updated_set_ids' => $updatedIds,
+                        ])
+                        ->log('Proboszcz masowo zaktualizowal statusy zestawow ogloszen.');
                 }
 
                 Notification::make()

@@ -1,28 +1,24 @@
 <?php
 
-
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\NewsPostInlineMediaController;
 // Importowanie kontrolerów LANDING
-use App\Http\Controllers\Landing\HomeController;
-use App\Http\Controllers\Landing\MailingWaitlistController;
-
-// Importowanie kontrolerów APP
-use App\Http\Controllers\App\AppController;
-use App\Http\Controllers\App\HomeController as AppHomeController;
 use App\Http\Controllers\App\AnnouncementsController as AppAnnouncementsController;
+use App\Http\Controllers\App\AppController;
+// Importowanie kontrolerów APP
+use App\Http\Controllers\App\HomeController as AppHomeController;
 use App\Http\Controllers\App\MassCalendarController as AppMassCalendarController;
 use App\Http\Controllers\App\OfficeController as AppOfficeController;
-
+use App\Http\Controllers\Landing\HomeController;
+use App\Http\Controllers\Landing\MailingWaitlistController;
 // Importowanie kontrolerów ADMIN
-// (brak na ten moment)
+use Illuminate\Support\Facades\Route;
 
 /**
  * Routing dla LANDING
  */
-Route::name("landing.")->group(function () {
+Route::name('landing.')->group(function () {
     // Strona główna
-    Route::get("/", [HomeController::class, "index"])->name("home");
+    Route::get('/', [HomeController::class, 'index'])->name('home');
     // Potwierdzenie dopisania do listy mailingowej osób oczekujących na uruchomienie usługi
     Route::get('/mailing/confirm/{token}', [MailingWaitlistController::class, 'confirm'])->name('mailing.confirm');
     Route::get('/mailing/unsubscribe/{token}', [MailingWaitlistController::class, 'unsubscribe'])->name('mailing.unsubscribe');
@@ -49,7 +45,10 @@ Route::name('app.')->prefix('app')->group(function () {
 /**
  * Routing dla ADMIN
  */
-//
+Route::name('admin.')->prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::post('/news-posts/{newsPost}/inline-image', NewsPostInlineMediaController::class)
+        ->name('news-posts.inline-image');
+});
 
 /**
  * Dodatkowy routing

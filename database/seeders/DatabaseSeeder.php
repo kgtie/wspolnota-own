@@ -4,11 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\AnnouncementSet;
 use App\Models\Mass;
+use App\Models\NewsPost;
 use App\Models\Parish;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -132,10 +133,12 @@ class DatabaseSeeder extends Seeder
 
         $this->call(MassSeeder::class);
         $this->call(AnnouncementSeeder::class);
+        $this->call(NewsPostSeeder::class);
 
         $massesCount = Mass::query()->count();
         $announcementSetsCount = AnnouncementSet::query()->count();
         $announcementItemsCount = (int) DB::table('announcement_items')->count();
+        $newsPostsCount = NewsPost::query()->count();
 
         $adminsCount = User::query()->where('role', 1)->count();
         $verifiedParishionersCount = User::query()
@@ -173,6 +176,11 @@ class DatabaseSeeder extends Seeder
         $importantAnnouncementItemsCount = (int) DB::table('announcement_items')
             ->where('is_important', true)
             ->count();
+        $publishedNewsPostsCount = NewsPost::query()->where('status', 'published')->count();
+        $draftNewsPostsCount = NewsPost::query()->where('status', 'draft')->count();
+        $scheduledNewsPostsCount = NewsPost::query()->where('status', 'scheduled')->count();
+        $archivedNewsPostsCount = NewsPost::query()->where('status', 'archived')->count();
+        $pinnedNewsPostsCount = NewsPost::query()->where('is_pinned', true)->count();
 
         // =============================================
         // PODSUMOWANIE
@@ -193,6 +201,7 @@ class DatabaseSeeder extends Seeder
                 ['Msze swiete + intencje', (string) $massesCount, 'historia + przyszle terminy'],
                 ['Zestawy ogloszen', (string) $announcementSetsCount, 'przeszle + przyszle tygodnie'],
                 ['Pojedyncze ogloszenia', (string) $announcementItemsCount, 'z pozycjonowaniem i waznoscia'],
+                ['Aktualnosci parafialne', (string) $newsPostsCount, 'blog parafialny: szkice, publikacje, harmonogram'],
             ]
         );
 
@@ -212,6 +221,11 @@ class DatabaseSeeder extends Seeder
                 ['Zestawy ogloszen: szkice', (string) $draftAnnouncementSetsCount],
                 ['Zestawy ogloszen: archiwalne', (string) $archivedAnnouncementSetsCount],
                 ['Ogloszenia oznaczone jako wazne', (string) $importantAnnouncementItemsCount],
+                ['Aktualnosci: opublikowane', (string) $publishedNewsPostsCount],
+                ['Aktualnosci: szkice', (string) $draftNewsPostsCount],
+                ['Aktualnosci: zaplanowane', (string) $scheduledNewsPostsCount],
+                ['Aktualnosci: archiwalne', (string) $archivedNewsPostsCount],
+                ['Aktualnosci przypiete', (string) $pinnedNewsPostsCount],
             ]
         );
     }

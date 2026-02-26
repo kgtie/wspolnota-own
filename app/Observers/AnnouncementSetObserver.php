@@ -23,9 +23,29 @@ class AnnouncementSetObserver
         }
 
         try {
-            app(AnnouncementPublicationNotifier::class)->notify($set);
+            activity('announcements-notifications')
+                ->performedOn($set)
+                ->event('announcement_set_notification_observer_triggered')
+                ->withProperties([
+                    'parish_id' => $set->parish_id,
+                    'announcement_set_id' => $set->getKey(),
+                    'reason' => 'saved_event_current_published_set',
+                ])
+                ->log('Observer uruchomil natychmiastowa wysylke emaila o aktualnych ogloszeniach.');
+
+            app(AnnouncementPublicationNotifier::class)->notify($set, 'observer');
         } catch (Throwable $exception) {
             report($exception);
+
+            activity('announcements-notifications')
+                ->performedOn($set)
+                ->event('announcement_set_notification_observer_failed')
+                ->withProperties([
+                    'parish_id' => $set->parish_id,
+                    'announcement_set_id' => $set->getKey(),
+                    'error' => $exception->getMessage(),
+                ])
+                ->log('Observer nie wyslal emaila o aktualnych ogloszeniach z powodu bledu.');
         }
     }
 }

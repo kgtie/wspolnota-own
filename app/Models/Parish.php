@@ -196,6 +196,14 @@ class Parish extends Model implements HasMedia
         return $this->hasMany(AnnouncementSet::class);
     }
 
+    /**
+     * Aktualnosci (blog parafialny).
+     */
+    public function newsPosts(): HasMany
+    {
+        return $this->hasMany(NewsPost::class);
+    }
+
     // =========================================
     // HELPERY
     // =========================================

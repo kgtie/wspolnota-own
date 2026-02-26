@@ -67,6 +67,20 @@ class ViewAnnouncementSet extends ViewRecord
 
                 $record->update($payload);
                 $record->refresh();
+
+                if ($admin instanceof User) {
+                    activity('admin-announcement-management')
+                        ->causedBy($admin)
+                        ->performedOn($record)
+                        ->event('announcement_set_status_updated')
+                        ->withProperties([
+                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'announcement_set_id' => $record->getKey(),
+                            'target_status' => $status,
+                            'context' => 'view_page',
+                        ])
+                        ->log('Proboszcz zaktualizowal status zestawu ogloszen z poziomu podgladu.');
+                }
             })
             ->successNotificationTitle('Status zestawu zostal zaktualizowany.');
     }
@@ -79,6 +93,7 @@ class ViewAnnouncementSet extends ViewRecord
             ->color('gray')
             ->action(function () {
                 $record = $this->getRecord();
+                $admin = Filament::auth()->user();
 
                 if (! $record instanceof AnnouncementSet) {
                     return null;
@@ -95,6 +110,20 @@ class ViewAnnouncementSet extends ViewRecord
                     return null;
                 }
 
+                if ($admin instanceof User) {
+                    activity('admin-announcement-management')
+                        ->causedBy($admin)
+                        ->performedOn($record)
+                        ->event('announcement_set_pdf_exported')
+                        ->withProperties([
+                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'announcement_set_id' => $record->getKey(),
+                            'active_items_count' => $record->items()->where('is_active', true)->count(),
+                            'context' => 'view_page',
+                        ])
+                        ->log('Proboszcz wygenerowal PDF z ogloszeniami parafialnymi.');
+                }
+
                 return $exporter->download($record);
             });
     }
@@ -109,6 +138,7 @@ class ViewAnnouncementSet extends ViewRecord
             ->requiresConfirmation()
             ->action(function (): void {
                 $record = $this->getRecord();
+                $admin = Filament::auth()->user();
 
                 if (! $record instanceof AnnouncementSet) {
                     return;
@@ -137,12 +167,41 @@ class ViewAnnouncementSet extends ViewRecord
 
                     $record->refresh();
 
+                    if ($admin instanceof User) {
+                        activity('admin-announcement-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('announcement_set_ai_summary_generated')
+                            ->withProperties([
+                                'parish_id' => Filament::getTenant()?->getKey(),
+                                'announcement_set_id' => $record->getKey(),
+                                'summary_length' => mb_strlen($summary),
+                                'model' => (string) config('gemini.model'),
+                                'context' => 'view_page',
+                            ])
+                            ->log('Proboszcz recznie wygenerowal streszczenie AI dla zestawu ogloszen.');
+                    }
+
                     Notification::make()
                         ->success()
                         ->title('Wygenerowano streszczenie AI.')
                         ->send();
                 } catch (Throwable $exception) {
                     report($exception);
+
+                    if ($admin instanceof User) {
+                        activity('admin-announcement-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('announcement_set_ai_summary_generation_failed')
+                            ->withProperties([
+                                'parish_id' => Filament::getTenant()?->getKey(),
+                                'announcement_set_id' => $record->getKey(),
+                                'error' => $exception->getMessage(),
+                                'context' => 'view_page',
+                            ])
+                            ->log('Reczne generowanie streszczenia AI dla zestawu ogloszen zakonczone bledem.');
+                    }
 
                     Notification::make()
                         ->danger()

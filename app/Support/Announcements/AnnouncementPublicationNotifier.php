@@ -22,7 +22,7 @@ class AnnouncementPublicationNotifier
             && $set->parish?->getSetting('announcements_push_on_publish', true);
     }
 
-    public function notify(AnnouncementSet $set): int
+    public function notify(AnnouncementSet $set, string $source = 'manual'): int
     {
         $set->loadMissing('parish');
 
@@ -41,6 +41,17 @@ class AnnouncementPublicationNotifier
                 'notifications_sent_at' => now(),
                 'notifications_recipients_count' => 0,
             ])->saveQuietly();
+
+            activity('announcements-notifications')
+                ->performedOn($set)
+                ->event('announcement_set_notification_marked_without_recipients')
+                ->withProperties([
+                    'parish_id' => $set->parish_id,
+                    'announcement_set_id' => $set->getKey(),
+                    'source' => $source,
+                    'recipients_count' => 0,
+                ])
+                ->log('Zestaw ogloszen oznaczono jako obsluzony bez wysylki (brak odbiorcow email).');
 
             return 0;
         }
@@ -64,6 +75,17 @@ class AnnouncementPublicationNotifier
             'notifications_sent_at' => now(),
             'notifications_recipients_count' => $count,
         ])->saveQuietly();
+
+        activity('announcements-notifications')
+            ->performedOn($set)
+            ->event('announcement_set_notification_sent')
+            ->withProperties([
+                'parish_id' => $set->parish_id,
+                'announcement_set_id' => $set->getKey(),
+                'source' => $source,
+                'recipients_count' => $count,
+            ])
+            ->log('Wyslano email do parafian o aktualnych ogloszeniach.');
 
         return $count;
     }

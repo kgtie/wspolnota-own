@@ -17,6 +17,13 @@ class GenerateAnnouncementsAiSummariesCommand extends Command
     {
         $limit = max(1, (int) $this->option('limit'));
 
+        activity('announcements-ai')
+            ->event('announcements_ai_summary_job_started')
+            ->withProperties([
+                'limit' => $limit,
+            ])
+            ->log('Uruchomiono dzienny proces generowania streszczen AI dla ogloszen.');
+
         $sets = AnnouncementSet::query()
             ->with(['parish'])
             ->where('status', 'published')
@@ -27,6 +34,13 @@ class GenerateAnnouncementsAiSummariesCommand extends Command
 
         if ($sets->isEmpty()) {
             $this->info('Brak opublikowanych zestawow wymagajacych streszczenia AI.');
+
+            activity('announcements-ai')
+                ->event('announcements_ai_summary_job_noop')
+                ->withProperties([
+                    'limit' => $limit,
+                ])
+                ->log('Proces streszczen AI zakonczyl sie bez zmian.');
 
             return self::SUCCESS;
         }
@@ -59,11 +73,33 @@ class GenerateAnnouncementsAiSummariesCommand extends Command
                     'summary_model' => (string) config('gemini.model'),
                 ]);
 
+                activity('announcements-ai')
+                    ->performedOn($set)
+                    ->event('announcement_set_ai_summary_generated_auto')
+                    ->withProperties([
+                        'parish_id' => $set->parish_id,
+                        'announcement_set_id' => $set->getKey(),
+                        'summary_length' => mb_strlen($summary),
+                        'model' => (string) config('gemini.model'),
+                    ])
+                    ->log('Automatycznie wygenerowano streszczenie AI dla zestawu ogloszen.');
+
                 $generated++;
                 $this->info("Wygenerowano streszczenie dla zestawu #{$set->id}.");
             } catch (Throwable $exception) {
                 $failed++;
                 report($exception);
+
+                activity('announcements-ai')
+                    ->performedOn($set)
+                    ->event('announcement_set_ai_summary_generation_failed_auto')
+                    ->withProperties([
+                        'parish_id' => $set->parish_id,
+                        'announcement_set_id' => $set->getKey(),
+                        'error' => $exception->getMessage(),
+                    ])
+                    ->log('Automatyczne generowanie streszczenia AI dla zestawu ogloszen zakonczone bledem.');
+
                 $this->error("Blad podczas streszczania zestawu #{$set->id}: {$exception->getMessage()}");
             }
         }
@@ -78,6 +114,17 @@ class GenerateAnnouncementsAiSummariesCommand extends Command
                 ['Bledy', (string) $failed],
             ],
         );
+
+        activity('announcements-ai')
+            ->event('announcements_ai_summary_job_finished')
+            ->withProperties([
+                'limit' => $limit,
+                'analyzed' => $sets->count(),
+                'generated' => $generated,
+                'skipped' => $skipped,
+                'failed' => $failed,
+            ])
+            ->log('Zakonczono dzienny proces generowania streszczen AI dla ogloszen.');
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }

@@ -18,6 +18,14 @@ class NotifyCurrentAnnouncementSetsCommand extends Command
         $limit = max(1, (int) $this->option('limit'));
         $today = now()->toDateString();
 
+        activity('announcements-notifications')
+            ->event('announcements_notification_job_started')
+            ->withProperties([
+                'limit' => $limit,
+                'date' => $today,
+            ])
+            ->log('Uruchomiono proces wysylki emaili o aktualnych ogloszeniach.');
+
         $sets = AnnouncementSet::query()
             ->with(['parish'])
             ->where('status', 'published')
@@ -29,6 +37,14 @@ class NotifyCurrentAnnouncementSetsCommand extends Command
 
         if ($sets->isEmpty()) {
             $this->info('Brak opublikowanych zestawow oczekujacych na wysylke emaila.');
+
+            activity('announcements-notifications')
+                ->event('announcements_notification_job_noop')
+                ->withProperties([
+                    'limit' => $limit,
+                    'date' => $today,
+                ])
+                ->log('Proces wysylki emaili o ogloszeniach zakonczyl sie bez zmian.');
 
             return self::SUCCESS;
         }
@@ -47,7 +63,7 @@ class NotifyCurrentAnnouncementSetsCommand extends Command
             }
 
             try {
-                $recipientsCount = $notifier->notify($set);
+                $recipientsCount = $notifier->notify($set, 'scheduler');
                 $sentSets++;
                 $sentRecipients += $recipientsCount;
 
@@ -55,6 +71,18 @@ class NotifyCurrentAnnouncementSetsCommand extends Command
             } catch (Throwable $exception) {
                 $failed++;
                 report($exception);
+
+                activity('announcements-notifications')
+                    ->performedOn($set)
+                    ->event('announcement_set_notification_failed')
+                    ->withProperties([
+                        'parish_id' => $set->parish_id,
+                        'announcement_set_id' => $set->getKey(),
+                        'date' => $today,
+                        'error' => $exception->getMessage(),
+                    ])
+                    ->log('Wysylka emaila o aktualnych ogloszeniach zakonczona bledem.');
+
                 $this->error("Blad podczas wysylki dla zestawu #{$set->id}: {$exception->getMessage()}");
             }
         }
@@ -70,6 +98,19 @@ class NotifyCurrentAnnouncementSetsCommand extends Command
                 ['Bledy', (string) $failed],
             ],
         );
+
+        activity('announcements-notifications')
+            ->event('announcements_notification_job_finished')
+            ->withProperties([
+                'limit' => $limit,
+                'date' => $today,
+                'analyzed' => $sets->count(),
+                'sent_sets' => $sentSets,
+                'sent_recipients' => $sentRecipients,
+                'skipped' => $skipped,
+                'failed' => $failed,
+            ])
+            ->log('Zakonczono proces wysylki emaili o aktualnych ogloszeniach.');
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }
