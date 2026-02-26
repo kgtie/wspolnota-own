@@ -11,6 +11,7 @@ use Filament\Actions\DetachBulkAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,7 +35,13 @@ class ParticipantsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('full_name')
             ->defaultSort('full_name')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('media'))
             ->columns([
+                ImageColumn::make('avatar_url')
+                    ->label('Avatar')
+                    ->circular()
+                    ->imageSize(36),
+
                 TextColumn::make('full_name')
                     ->label('Uczestnik')
                     ->searchable(['full_name', 'name', 'email'])

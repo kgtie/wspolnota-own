@@ -142,12 +142,11 @@ class EditParishProfile extends EditTenantProfile
 
                         TextInput::make('slug')
                             ->label('Adres URL (slug)')
-                            ->prefix('/app/')
                             ->required()
                             ->maxLength(100)
                             ->unique(Parish::class, 'slug', ignoreRecord: true)
                             ->alphaDash()
-                            ->helperText('Zmiana slugu zmieni adres URL parafii w aplikacji.')
+                            ->helperText('Slug parafii wykorzystywany jest jako publiczny identyfikator parafii.')
                             ->dehydrateStateUsing(fn (string $state): string => Str::lower($state)),
                     ]),
 

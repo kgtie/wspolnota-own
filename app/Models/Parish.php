@@ -204,6 +204,11 @@ class Parish extends Model implements HasMedia
         return $this->hasMany(NewsPost::class);
     }
 
+    public function officeConversations(): HasMany
+    {
+        return $this->hasMany(OfficeConversation::class);
+    }
+
     // =========================================
     // HELPERY
     // =========================================

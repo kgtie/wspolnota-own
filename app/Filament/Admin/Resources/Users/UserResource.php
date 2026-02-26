@@ -56,7 +56,7 @@ class UserResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where('role', 0)
-            ->with(['homeParish', 'verifiedBy']);
+            ->with(['homeParish', 'verifiedBy', 'media']);
     }
 
     public static function getRelations(): array

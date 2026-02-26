@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\AnnouncementSet;
 use App\Models\Mass;
 use App\Models\NewsPost;
+use App\Models\OfficeConversation;
+use App\Models\OfficeMessage;
 use App\Models\Parish;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -134,11 +136,18 @@ class DatabaseSeeder extends Seeder
         $this->call(MassSeeder::class);
         $this->call(AnnouncementSeeder::class);
         $this->call(NewsPostSeeder::class);
+        $this->call(OfficeConversationSeeder::class);
 
         $massesCount = Mass::query()->count();
         $announcementSetsCount = AnnouncementSet::query()->count();
         $announcementItemsCount = (int) DB::table('announcement_items')->count();
         $newsPostsCount = NewsPost::query()->count();
+        $officeConversationsCount = OfficeConversation::query()->count();
+        $officeMessagesCount = OfficeMessage::query()->count();
+        $officeAttachmentsCount = (int) DB::table('media')
+            ->where('model_type', OfficeMessage::class)
+            ->where('collection_name', 'attachments')
+            ->count();
 
         $adminsCount = User::query()->where('role', 1)->count();
         $verifiedParishionersCount = User::query()
@@ -202,6 +211,9 @@ class DatabaseSeeder extends Seeder
                 ['Zestawy ogloszen', (string) $announcementSetsCount, 'przeszle + przyszle tygodnie'],
                 ['Pojedyncze ogloszenia', (string) $announcementItemsCount, 'z pozycjonowaniem i waznoscia'],
                 ['Aktualnosci parafialne', (string) $newsPostsCount, 'blog parafialny: szkice, publikacje, harmonogram'],
+                ['Kancelaria: konwersacje', (string) $officeConversationsCount, 'watki user-proboszcz'],
+                ['Kancelaria: wiadomosci', (string) $officeMessagesCount, 'tresc szyfrowana (encrypted cast)'],
+                ['Kancelaria: zalaczniki', (string) $officeAttachmentsCount, 'prywatny dysk office + Spatie Media Library'],
             ]
         );
 

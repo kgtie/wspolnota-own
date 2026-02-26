@@ -9,11 +9,7 @@ W parafii **{{ $parishName }}** opublikowano nowy zestaw ogloszen, ktory obowiaz
 **Krotkie streszczenie:** {{ $announcementSet->summary_ai }}
 @endif
 
-<x-mail::button :url="$announcementsUrl">
-Zobacz ogloszenia
-</x-mail::button>
-
-Ogloszenia sa dostepne w aplikacji mobilnej i webowej Wspolnota.
+Ogloszenia sa dostepne w aplikacji mobilnej Wspolnota.
 
 Z Bogiem,  
 Wspolnota

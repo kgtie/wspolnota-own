@@ -14,7 +14,7 @@ class ForceEmailVerification
         $user = Auth::user();
 
         // 1. Sprawdzamy, czy użytkownik jest w ogóle zalogowany.
-        // Jeśli jest GOŚCIEM -> przepuszczamy go (return $next), niech sobie ogląda publiczne /app
+        // Jeśli jest GOŚCIEM -> przepuszczamy go dalej.
         if (!$user) {
             return $next($request);
         }

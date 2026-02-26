@@ -11,10 +11,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -144,6 +146,21 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         return $this->belongsTo(User::class, 'verified_by_user_id');
     }
 
+    public function officeConversationsAsParishioner(): HasMany
+    {
+        return $this->hasMany(OfficeConversation::class, 'parishioner_user_id');
+    }
+
+    public function officeConversationsAsPriest(): HasMany
+    {
+        return $this->hasMany(OfficeConversation::class, 'priest_user_id');
+    }
+
+    public function officeMessages(): HasMany
+    {
+        return $this->hasMany(OfficeMessage::class, 'sender_user_id');
+    }
+
     // =========================================
     // FILAMENT: FilamentUser
     // =========================================
@@ -270,7 +287,87 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
      */
     public function getAvatarUrlAttribute(): string
     {
-        return $this->getFirstMediaUrl('avatar', 'thumb')
-            ?: asset('images/default-user-avatar.png');
+        $mediaUrl = $this->getFirstMediaUrl('avatar', 'thumb');
+
+        if (filled($mediaUrl)) {
+            return $mediaUrl;
+        }
+
+        return $this->avatar_placeholder_url;
+    }
+
+    /**
+     * Placeholder avatara jako data URI SVG z inicjalami.
+     */
+    public function getAvatarPlaceholderUrlAttribute(): string
+    {
+        $initials = $this->resolveAvatarInitials();
+        $displayName = $this->full_name ?: $this->name ?: $this->email ?: 'Uzytkownik';
+        $seed = (string) ($this->email ?: $this->name ?: $this->getKey() ?: $displayName);
+
+        $hash = abs(crc32($seed));
+        $hue = $hash % 360;
+        $saturation = 58 + ($hash % 10);
+        $lightness = 42 + (($hash >> 6) % 10);
+
+        $escapedInitials = htmlspecialchars($initials, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $escapedLabel = htmlspecialchars($displayName, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $background = "hsl({$hue}, {$saturation}%, {$lightness}%)";
+
+        $svg = <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="{$escapedLabel}">
+    <rect width="256" height="256" fill="{$background}" />
+    <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="92" font-weight="700">{$escapedInitials}</text>
+</svg>
+SVG;
+
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
+    }
+
+    private function resolveAvatarInitials(): string
+    {
+        $source = trim((string) ($this->full_name ?: $this->name ?: $this->email ?: 'U'));
+
+        if ($source === '') {
+            return 'U';
+        }
+
+        $rawParts = preg_split('/\s+/u', $source) ?: [];
+        $parts = array_values(array_filter(array_map(
+            static fn (string $part): string => trim($part),
+            $rawParts,
+        )));
+
+        if (count($parts) >= 2) {
+            $first = $this->extractAvatarInitial($parts[0]);
+            $last = $this->extractAvatarInitial($parts[count($parts) - 1]);
+            $initials = $first.$last;
+        } else {
+            $singlePart = $parts[0] ?? $source;
+            $normalized = $this->normalizeAvatarToken($singlePart);
+            $initials = mb_substr($normalized, 0, 2);
+        }
+
+        $initials = Str::upper(trim($initials));
+
+        return $initials !== '' ? $initials : 'U';
+    }
+
+    private function extractAvatarInitial(string $value): string
+    {
+        $normalized = $this->normalizeAvatarToken($value);
+
+        return $normalized !== '' ? mb_substr($normalized, 0, 1) : '';
+    }
+
+    private function normalizeAvatarToken(string $value): string
+    {
+        $value = trim($value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        return preg_replace('/[^\pL\pN]+/u', '', $value) ?? '';
     }
 }

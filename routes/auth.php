@@ -7,16 +7,12 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
-
-    Route::post('register', [RegisteredUserController::class, 'store']);
-
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
@@ -56,7 +52,38 @@ Route::middleware('auth')->group(function () {
 
     Route::any('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
-    Route::get('after-login', function () {
-        return redirect('/app');
+
+    Route::get('dashboard', function (Request $request) {
+        $user = $request->user();
+
+        if (! $user) {
+            return redirect('/');
+        }
+
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('filament.superadmin.pages.dashboard');
+        }
+
+        if ($user->isAdmin()) {
+            $tenant = $user->managedParishes()
+                ->wherePivot('is_active', true)
+                ->first();
+
+            if ($tenant) {
+                return redirect()->route('filament.admin.pages.dashboard', ['tenant' => $tenant->slug]);
+            }
+
+            return redirect('/')
+                ->with('status', 'Brak aktywnej parafii przypisanej do konta administratora.');
+        }
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')
+            ->with('status', 'Panel webowy jest dostepny wylacznie dla administratorow.');
     })->name('dashboard');
+
+    Route::get('after-login', fn () => redirect()->route('dashboard'));
 });

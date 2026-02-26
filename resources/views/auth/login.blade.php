@@ -44,11 +44,5 @@
                 Zaloguj się
             </button>
         </div>
-
-        <div class="text-center mt-3">
-            <a href="{{ route('register') }}" class="text-decoration-none small text-muted">
-                Nie masz konta? Zarejestruj się
-            </a>
-        </div>
     </form>
 </x-guest-layout>

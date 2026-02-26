@@ -16,7 +16,6 @@ class AnnouncementSetPublishedMessage extends Mailable
     public function __construct(
         public AnnouncementSet $announcementSet,
         public string $parishName,
-        public string $announcementsUrl,
     ) {}
 
     public function envelope(): Envelope

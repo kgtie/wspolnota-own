@@ -57,14 +57,12 @@ class AnnouncementPublicationNotifier
         }
 
         $parishName = $set->parish?->name ?? 'Parafia';
-        $announcementsUrl = route('app.announcements', ['parish' => $set->parish?->slug ?? $set->parish_id]);
 
         foreach ($recipients as $email) {
             Mail::to((string) $email)->send(
                 new AnnouncementSetPublishedMessage(
                     announcementSet: $set,
                     parishName: $parishName,
-                    announcementsUrl: $announcementsUrl,
                 ),
             );
         }

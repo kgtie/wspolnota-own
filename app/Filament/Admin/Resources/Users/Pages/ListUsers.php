@@ -253,7 +253,7 @@ class ListUsers extends ListRecords
 
     protected function getTableQuery(): Builder
     {
-        $query = User::query()->with(['homeParish', 'verifiedBy']);
+        $query = User::query()->with(['homeParish', 'verifiedBy', 'media']);
 
         if ($tenancyScope = Filament::getCurrentPanel()?->getTenancyScopeName()) {
             $query->withoutGlobalScope($tenancyScope);

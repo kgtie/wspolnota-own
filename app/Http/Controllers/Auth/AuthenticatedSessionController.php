@@ -22,34 +22,25 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
-    $request->session()->regenerate();
-    $user = $request->user();
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $request->authenticate();
+        $request->session()->regenerate();
 
-    // 1. SuperAdmin
-    if ($user->isSuperAdmin()) {
-        return redirect()->intended(route('filament.superadmin.pages.dashboard' , absolute: false));
+        $user = $request->user();
+
+        if ($user && $user->isRegularUser()) {
+            Auth::guard('web')->logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect('/')
+                ->with('status', 'Panel webowy jest dostepny wylacznie dla administratorow.');
+        }
+
+        return redirect()->route('dashboard');
     }
-
-    // 2. Admin
-    if ($user->isAdmin()) {
-        return redirect()->intended(route('filament.admin.pages.dashboard', parameters: ['tenant' => $user->managedParishes->first()->slug], absolute: false));
-    }
-
-    // 3. Zwykły User -> /app/{slug}
-    // Pobieramy slug aktualnej parafii (zapisanej przy rejestracji)
-    // Używamy currentParish, jeśli jest zdefiniowana
-    if ($user->currentParish) {
-        $slug = $user->currentParish->slug;
-        // UWAGA: Musisz zdefiniować trasę dla userów, np. Route::get('/app/{slug}', ...)
-        return redirect()->intended('/app/' . $slug);
-    }
-
-    // Fallback, gdyby user nie miał parafii (błąd danych)
-    return redirect()->intended(route('dashboard', absolute: false));
-}
 
     /**
      * Destroy an authenticated session.
