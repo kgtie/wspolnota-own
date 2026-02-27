@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Support\Api;
+
+final class ErrorCode
+{
+    public const VALIDATION_ERROR = 'VALIDATION_ERROR';
+
+    public const AUTH_UNAUTHENTICATED = 'AUTH_UNAUTHENTICATED';
+
+    public const AUTH_INVALID_CREDENTIALS = 'AUTH_INVALID_CREDENTIALS';
+
+    public const AUTH_TOKEN_INVALID = 'AUTH_TOKEN_INVALID';
+
+    public const AUTH_TOKEN_EXPIRED = 'AUTH_TOKEN_EXPIRED';
+
+    public const AUTH_REFRESH_INVALID = 'AUTH_REFRESH_INVALID';
+
+    public const AUTH_REFRESH_EXPIRED = 'AUTH_REFRESH_EXPIRED';
+
+    public const AUTH_REFRESH_REVOKED = 'AUTH_REFRESH_REVOKED';
+
+    public const AUTH_REFRESH_REUSED = 'AUTH_REFRESH_REUSED';
+
+    public const AUTH_TOO_MANY_ATTEMPTS = 'AUTH_TOO_MANY_ATTEMPTS';
+
+    public const AUTH_ACCOUNT_LOCKED = 'AUTH_ACCOUNT_LOCKED';
+
+    public const AUTH_EMAIL_NOT_VERIFIED = 'AUTH_EMAIL_NOT_VERIFIED';
+
+    public const AUTH_PASSWORD_INVALID = 'AUTH_PASSWORD_INVALID';
+
+    public const AUTH_RESET_TOKEN_INVALID = 'AUTH_RESET_TOKEN_INVALID';
+
+    public const AUTH_RESET_TOKEN_EXPIRED = 'AUTH_RESET_TOKEN_EXPIRED';
+
+    public const PARISH_APPROVAL_REQUIRED = 'PARISH_APPROVAL_REQUIRED';
+
+    public const FORBIDDEN = 'FORBIDDEN';
+
+    public const NOT_FOUND = 'NOT_FOUND';
+
+    public const CONFLICT = 'CONFLICT';
+
+    public const RATE_LIMITED = 'RATE_LIMITED';
+
+    public const INTERNAL_ERROR = 'INTERNAL_ERROR';
+
+    public const DEVICE_NOT_FOUND = 'DEVICE_NOT_FOUND';
+}

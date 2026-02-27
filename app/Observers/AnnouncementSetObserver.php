@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Events\AnnouncementPackagePublished;
 use App\Models\AnnouncementSet;
 use App\Support\Announcements\AnnouncementPublicationNotifier;
 use Throwable;
@@ -10,6 +11,10 @@ class AnnouncementSetObserver
 {
     public function saved(AnnouncementSet $set): void
     {
+        if ($this->becamePublished($set)) {
+            event(new AnnouncementPackagePublished($set->fresh()));
+        }
+
         if (! $set->wasRecentlyCreated && ! $set->wasChanged(['status', 'effective_from', 'effective_to', 'parish_id'])) {
             return;
         }
@@ -47,5 +52,18 @@ class AnnouncementSetObserver
                 ])
                 ->log('Observer nie wyslal emaila o aktualnych ogloszeniach z powodu bledu.');
         }
+    }
+
+    private function becamePublished(AnnouncementSet $set): bool
+    {
+        if ($set->status !== 'published') {
+            return false;
+        }
+
+        if ($set->wasRecentlyCreated) {
+            return true;
+        }
+
+        return $set->wasChanged('status');
     }
 }

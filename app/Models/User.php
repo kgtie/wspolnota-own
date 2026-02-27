@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\ParishApprovalStatusChanged;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasDefaultTenant;
 use Filament\Models\Contracts\HasTenants;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -23,9 +25,9 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasTenants, HasDefaultTenant, HasMedia
+class User extends Authenticatable implements FilamentUser, HasDefaultTenant, HasMedia, HasTenants, MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes, InteractsWithMedia, LogsActivity;
+    use HasFactory, InteractsWithMedia, LogsActivity, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -61,6 +63,15 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
             'is_user_verified' => 'boolean',
             'role' => 'integer',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::updated(function (self $user): void {
+            if ($user->wasChanged('is_user_verified')) {
+                event(new ParishApprovalStatusChanged($user->fresh(), (bool) $user->is_user_verified));
+            }
+        });
     }
 
     // =========================================
@@ -159,6 +170,31 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     public function officeMessages(): HasMany
     {
         return $this->hasMany(OfficeMessage::class, 'sender_user_id');
+    }
+
+    public function apiAccessTokens(): HasMany
+    {
+        return $this->hasMany(ApiAccessToken::class);
+    }
+
+    public function apiRefreshTokens(): HasMany
+    {
+        return $this->hasMany(ApiRefreshToken::class);
+    }
+
+    public function devices(): HasMany
+    {
+        return $this->hasMany(UserDevice::class);
+    }
+
+    public function notificationPreference(): HasOne
+    {
+        return $this->hasOne(UserNotificationPreference::class);
+    }
+
+    public function newsComments(): HasMany
+    {
+        return $this->hasMany(NewsComment::class);
     }
 
     // =========================================

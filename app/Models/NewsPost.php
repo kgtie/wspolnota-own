@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Events\NewsPublished;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
@@ -51,6 +53,18 @@ class NewsPost extends Model implements HasMedia
         static::saving(function (self $post): void {
             if (blank($post->slug)) {
                 $post->slug = $post->generateUniqueSlug();
+            }
+        });
+
+        static::saved(function (self $post): void {
+            if ($post->status !== 'published') {
+                return;
+            }
+
+            $becamePublished = $post->wasRecentlyCreated || $post->wasChanged('status');
+
+            if ($becamePublished) {
+                event(new NewsPublished($post->fresh()));
             }
         });
     }
@@ -131,6 +145,11 @@ class NewsPost extends Model implements HasMedia
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by_user_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(NewsComment::class)->latest('id');
     }
 
     public function scopePublished($query)

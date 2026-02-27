@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\OfficeMessageReceived;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,13 @@ class OfficeMessage extends Model implements HasMedia
             'read_by_parishioner_at' => 'datetime',
             'read_by_priest_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (self $message): void {
+            event(new OfficeMessageReceived($message->fresh(['conversation'])));
+        });
     }
 
     public function registerMediaCollections(): void
