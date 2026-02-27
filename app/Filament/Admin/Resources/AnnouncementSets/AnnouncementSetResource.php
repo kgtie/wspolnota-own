@@ -91,11 +91,14 @@ class AnnouncementSetResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        if (! Filament::getTenant()) {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
             return null;
         }
 
-        $draftCount = static::getEloquentQuery()
+        $draftCount = AnnouncementSet::query()
+            ->where('parish_id', $tenantId)
             ->where('status', 'draft')
             ->count();
 
@@ -104,11 +107,16 @@ class AnnouncementSetResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        if (! Filament::getTenant()) {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
             return null;
         }
 
-        return static::getEloquentQuery()->where('status', 'draft')->exists()
+        return AnnouncementSet::query()
+            ->where('parish_id', $tenantId)
+            ->where('status', 'draft')
+            ->exists()
             ? 'warning'
             : 'success';
     }

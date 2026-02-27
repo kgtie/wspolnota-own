@@ -16,7 +16,10 @@ class CurrentAnnouncementsGuardWidget extends StatsOverviewWidget
 
     protected static ?int $sort = 5;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = [
+        'md' => 6,
+        'xl' => 6,
+    ];
 
     protected ?string $pollingInterval = '120s';
 

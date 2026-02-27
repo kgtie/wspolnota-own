@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Mass;
+use App\Filament\Admin\Resources\Masses\MassResource;
 use Filament\Facades\Filament;
 use Filament\Widgets\Widget;
 
@@ -10,7 +11,10 @@ class MassesWeekCoverageWidget extends Widget
 {
     protected static ?int $sort = 4;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = [
+        'md' => 6,
+        'xl' => 6,
+    ];
 
     protected string $view = 'filament.admin.widgets.masses-week-coverage-widget';
 
@@ -24,6 +28,9 @@ class MassesWeekCoverageWidget extends Widget
                 'coveredDays' => 0,
                 'daysTotal' => 7,
                 'missingDays' => [],
+                'severity' => 'warning',
+                'massesIndexUrl' => null,
+                'massesCreateUrl' => null,
             ];
         }
 
@@ -58,12 +65,16 @@ class MassesWeekCoverageWidget extends Widget
         }
 
         $coveredDays = 7 - count($missingDays);
+        $severity = count($missingDays) >= 3 ? 'danger' : 'warning';
 
         return [
             'isComplete' => count($missingDays) === 0,
             'coveredDays' => $coveredDays,
             'daysTotal' => 7,
             'missingDays' => $missingDays,
+            'severity' => $severity,
+            'massesIndexUrl' => MassResource::getUrl('index'),
+            'massesCreateUrl' => MassResource::getUrl('create'),
         ];
     }
 }

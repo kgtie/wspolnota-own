@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Resources\Masses\MassResource;
 use App\Models\Mass;
 use Filament\Facades\Filament;
 use Filament\Widgets\StatsOverviewWidget;
@@ -70,37 +71,45 @@ class MassesStatsWidget extends StatsOverviewWidget
             ->whereNotNull('stipendium_paid_at')
             ->whereBetween('stipendium_paid_at', [$thirtyDaysAgo, now()])
             ->sum('stipendium_amount') ?? 0);
+        $massesUrl = MassResource::getUrl('index');
 
         return [
             Stat::make('Msze dzisiaj', number_format($todayCount, 0, ',', ' '))
                 ->description("Zaplanowane: {$todayScheduled} | Odprawione: {$todayCompleted}")
                 ->descriptionIcon('heroicon-o-calendar-days')
-                ->color('primary')
+                ->color('info')
                 ->chart($this->buildPastDailyTrend(
                     (clone $baseQuery),
                     'celebration_at',
                     7,
-                )),
+                ))
+                ->url($massesUrl),
 
             Stat::make('Nadchodzace 7 dni', number_format($upcomingWeekCount, 0, ',', ' '))
                 ->description("Jutro: {$tomorrowCount}")
                 ->descriptionIcon('heroicon-o-clock')
-                ->color('warning')
+                ->color('info')
                 ->chart($this->buildFutureDailyTrend(
                     (clone $baseQuery)->where('status', 'scheduled'),
                     'celebration_at',
                     7,
-                )),
+                ))
+                ->url($massesUrl),
 
             Stat::make('Nierozliczone stypendia', number_format($outstandingStipendiumsCount, 0, ',', ' '))
                 ->description('Kwota: '.$this->formatCurrency($outstandingStipendiumsValue))
                 ->descriptionIcon('heroicon-o-banknotes')
-                ->color($outstandingStipendiumsCount > 0 ? 'danger' : 'success')
+                ->color(match (true) {
+                    $outstandingStipendiumsCount >= 20 => 'danger',
+                    $outstandingStipendiumsCount > 0 => 'warning',
+                    default => 'success',
+                })
                 ->chart($this->buildPastDailyTrend(
                     (clone $outstandingStipendiumsQuery),
                     'celebration_at',
                     14,
-                )),
+                ))
+                ->url($massesUrl),
 
             Stat::make('Odprawione (30 dni)', number_format($completedLast30DaysCount, 0, ',', ' '))
                 ->description('Przyjete stypendia: '.$this->formatCurrency($paidStipendiumsLast30Days))
@@ -110,7 +119,16 @@ class MassesStatsWidget extends StatsOverviewWidget
                     (clone $baseQuery)->where('status', 'completed'),
                     'celebration_at',
                     30,
-                )),
+                ))
+                ->url($massesUrl),
+        ];
+    }
+
+    protected function getColumns(): int | array
+    {
+        return [
+            'md' => 2,
+            'xl' => 4,
         ];
     }
 

@@ -90,11 +90,15 @@ class UserResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        if (! Filament::getTenant()) {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
             return null;
         }
 
-        $pendingCount = static::getEloquentQuery()
+        $pendingCount = User::query()
+            ->where('role', 0)
+            ->where('home_parish_id', $tenantId)
             ->where('is_user_verified', false)
             ->count();
 
@@ -103,11 +107,17 @@ class UserResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        if (! Filament::getTenant()) {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
             return null;
         }
 
-        return static::getEloquentQuery()->where('is_user_verified', false)->exists()
+        return User::query()
+            ->where('role', 0)
+            ->where('home_parish_id', $tenantId)
+            ->where('is_user_verified', false)
+            ->exists()
             ? 'warning'
             : 'success';
     }

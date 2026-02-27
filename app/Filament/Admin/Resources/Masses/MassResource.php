@@ -87,11 +87,14 @@ class MassResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        if (! Filament::getTenant()) {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
             return null;
         }
 
-        $upcomingCount = static::getEloquentQuery()
+        $upcomingCount = Mass::query()
+            ->where('parish_id', $tenantId)
             ->where('status', 'scheduled')
             ->where('celebration_at', '>=', now()->startOfDay())
             ->count();
@@ -101,15 +104,18 @@ class MassResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        if (! Filament::getTenant()) {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
             return null;
         }
 
-        return static::getEloquentQuery()
+        return Mass::query()
+            ->where('parish_id', $tenantId)
             ->where('status', 'scheduled')
             ->whereBetween('celebration_at', [now(), now()->addDays(7)])
             ->exists()
-            ? 'warning'
+            ? 'info'
             : 'success';
     }
 }

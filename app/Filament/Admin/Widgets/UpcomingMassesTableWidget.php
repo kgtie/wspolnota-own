@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Filament\Admin\Resources\Masses\MassResource;
 use App\Models\Mass;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -23,6 +24,17 @@ class UpcomingMassesTableWidget extends TableWidget
         return $table
             ->heading('Najblizsze msze swiete')
             ->description('Podglad najblizszych terminow i intencji bez wychodzenia z dashboardu.')
+            ->headerActions([
+                Action::make('all_masses')
+                    ->label('Pelna lista')
+                    ->icon('heroicon-o-list-bullet')
+                    ->url(MassResource::getUrl('index')),
+                Action::make('create_mass')
+                    ->label('Dodaj msze')
+                    ->icon('heroicon-o-plus')
+                    ->color('primary')
+                    ->url(MassResource::getUrl('create')),
+            ])
             ->query(
                 fn (): Builder => Mass::query()
                     ->where('parish_id', $tenantId ?? 0)

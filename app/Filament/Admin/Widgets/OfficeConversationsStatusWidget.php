@@ -16,7 +16,10 @@ class OfficeConversationsStatusWidget extends StatsOverviewWidget
 
     protected static ?int $sort = 7;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = [
+        'md' => 6,
+        'xl' => 6,
+    ];
 
     protected ?string $pollingInterval = '60s';
 
@@ -58,7 +61,7 @@ class OfficeConversationsStatusWidget extends StatsOverviewWidget
                 Stat::make('Otwarte konwersacje', number_format($openCount, 0, ',', ' '))
                     ->description('Warto domknac sprawy petentow i zamknac konwersacje. Nieprzeczytane watki: '.$unreadCount)
                     ->descriptionIcon('heroicon-o-exclamation-circle')
-                    ->color($openCount >= 10 ? 'danger' : 'warning')
+                    ->color($openCount >= 15 ? 'danger' : 'warning')
                     ->url(OfficeInbox::getUrl()),
             ];
         }

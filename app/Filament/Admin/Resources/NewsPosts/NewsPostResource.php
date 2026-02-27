@@ -85,11 +85,14 @@ class NewsPostResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        if (! Filament::getTenant()) {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
             return null;
         }
 
-        $openCount = static::getEloquentQuery()
+        $openCount = NewsPost::query()
+            ->where('parish_id', $tenantId)
             ->whereIn('status', ['draft', 'scheduled'])
             ->count();
 
@@ -98,12 +101,17 @@ class NewsPostResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        if (! Filament::getTenant()) {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
             return null;
         }
 
-        return static::getEloquentQuery()->where('status', 'scheduled')->exists()
-            ? 'warning'
+        return NewsPost::query()
+            ->where('parish_id', $tenantId)
+            ->where('status', 'scheduled')
+            ->exists()
+            ? 'info'
             : 'success';
     }
 }
