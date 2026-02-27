@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Filament\Admin\Resources\AnnouncementSets\Tables;
+namespace App\Filament\SuperAdmin\Resources\AnnouncementSets\Tables;
 
 use App\Models\AnnouncementSet;
+use App\Models\Parish;
 use App\Models\User;
 use App\Support\Announcements\AnnouncementSetPdfExporter;
+use App\Support\Announcements\AnnouncementSetSummarizer;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -26,6 +28,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Throwable;
 
 class AnnouncementSetsTable
 {
@@ -39,6 +42,11 @@ class AnnouncementSetsTable
                 TextColumn::make('effective_from')
                     ->label('Od')
                     ->date('d.m.Y')
+                    ->sortable(),
+
+                TextColumn::make('parish.name')
+                    ->label('Parafia')
+                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('effective_to')
@@ -138,6 +146,13 @@ class AnnouncementSetsTable
                     ->label('Status')
                     ->options(AnnouncementSet::getStatusOptions()),
 
+                SelectFilter::make('parish_id')
+                    ->label('Parafia')
+                    ->options(fn (): array => Parish::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->all()),
+
                 TrashedFilter::make(),
             ])
             ->recordActions([
@@ -147,6 +162,7 @@ class AnnouncementSetsTable
                     self::setStatusAction('published', 'Opublikuj', 'heroicon-o-check-circle', 'success'),
                     self::setStatusAction('draft', 'Ustaw jako szkic', 'heroicon-o-document-text', 'warning'),
                     self::setStatusAction('archived', 'Archiwizuj', 'heroicon-o-archive-box', 'gray'),
+                    self::generateSummaryAction(),
                     self::printAction(),
                     self::duplicateAction(),
                     DeleteAction::make(),
@@ -205,7 +221,7 @@ class AnnouncementSetsTable
                         ->performedOn($record)
                         ->event('announcement_set_status_updated')
                         ->withProperties([
-                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'parish_id' => $record->parish_id,
                             'announcement_set_id' => $record->getKey(),
                             'target_status' => $status,
                         ])
@@ -240,7 +256,7 @@ class AnnouncementSetsTable
                         ->performedOn($record)
                         ->event('announcement_set_pdf_exported')
                         ->withProperties([
-                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'parish_id' => $record->parish_id,
                             'announcement_set_id' => $record->getKey(),
                             'active_items_count' => $record->items()->where('is_active', true)->count(),
                         ])
@@ -248,6 +264,80 @@ class AnnouncementSetsTable
                 }
 
                 return $exporter->download($record);
+            });
+    }
+
+    protected static function generateSummaryAction(): Action
+    {
+        return Action::make('generate_ai_summary')
+            ->label(fn (AnnouncementSet $record): string => filled($record->summary_ai) ? 'Generuj ponownie AI' : 'Generuj streszczenie AI')
+            ->icon('heroicon-o-sparkles')
+            ->color('info')
+            ->visible(fn (AnnouncementSet $record): bool => $record->status === 'published')
+            ->requiresConfirmation()
+            ->action(function (AnnouncementSet $record): void {
+                $admin = Filament::auth()->user();
+                $summarizer = app(AnnouncementSetSummarizer::class);
+
+                if (! $summarizer->canGenerateForSet($record)) {
+                    Notification::make()
+                        ->warning()
+                        ->title('Nie mozna wygenerowac streszczenia.')
+                        ->body('Zestaw musi byc opublikowany i zawierac co najmniej jedno aktywne ogloszenie.')
+                        ->send();
+
+                    return;
+                }
+
+                try {
+                    $summary = $summarizer->summarize($record);
+
+                    $record->update([
+                        'summary_ai' => $summary,
+                        'summary_generated_at' => now(),
+                        'summary_model' => (string) config('gemini.model'),
+                    ]);
+
+                    if ($admin instanceof User) {
+                        activity('admin-announcement-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('announcement_set_ai_summary_generated')
+                            ->withProperties([
+                                'parish_id' => $record->parish_id,
+                                'announcement_set_id' => $record->getKey(),
+                                'summary_length' => mb_strlen($summary),
+                                'model' => (string) config('gemini.model'),
+                            ])
+                            ->log('Proboszcz recznie wygenerowal streszczenie AI dla zestawu ogloszen.');
+                    }
+
+                    Notification::make()
+                        ->success()
+                        ->title('Wygenerowano streszczenie AI.')
+                        ->send();
+                } catch (Throwable $exception) {
+                    report($exception);
+
+                    if ($admin instanceof User) {
+                        activity('admin-announcement-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('announcement_set_ai_summary_generation_failed')
+                            ->withProperties([
+                                'parish_id' => $record->parish_id,
+                                'announcement_set_id' => $record->getKey(),
+                                'error' => $exception->getMessage(),
+                            ])
+                            ->log('Reczne generowanie streszczenia AI dla zestawu ogloszen zakonczone bledem.');
+                    }
+
+                    Notification::make()
+                        ->danger()
+                        ->title('Nie udalo sie wygenerowac streszczenia AI.')
+                        ->body($exception->getMessage())
+                        ->send();
+                }
             });
     }
 
@@ -290,7 +380,7 @@ class AnnouncementSetsTable
                         ->performedOn($clone)
                         ->event('announcement_set_duplicated')
                         ->withProperties([
-                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'parish_id' => $clone->parish_id,
                             'source_set_id' => $record->getKey(),
                             'new_set_id' => $clone->getKey(),
                             'copied_items_count' => $items->count(),
@@ -343,11 +433,14 @@ class AnnouncementSetsTable
                 }
 
                 if ($admin instanceof User && $updated > 0) {
+                    $firstUpdatedSet = $records
+                        ->first(fn ($record): bool => $record instanceof AnnouncementSet && in_array($record->getKey(), $updatedIds, true));
+
                     activity('admin-announcement-management')
                         ->causedBy($admin)
                         ->event('announcement_sets_bulk_status_updated')
                         ->withProperties([
-                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'parish_id' => $firstUpdatedSet instanceof AnnouncementSet ? $firstUpdatedSet->parish_id : null,
                             'target_status' => $status,
                             'selected_count' => $selectedCount,
                             'updated_count' => $updated,

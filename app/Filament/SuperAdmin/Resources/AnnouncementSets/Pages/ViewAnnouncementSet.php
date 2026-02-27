@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Filament\Admin\Resources\AnnouncementSets\Pages;
+namespace App\Filament\SuperAdmin\Resources\AnnouncementSets\Pages;
 
-use App\Filament\Admin\Resources\AnnouncementSets\AnnouncementSetResource;
+use App\Filament\SuperAdmin\Resources\AnnouncementSets\AnnouncementSetResource;
 use App\Models\AnnouncementSet;
 use App\Models\User;
 use App\Support\Announcements\AnnouncementSetPdfExporter;
+use App\Support\Announcements\AnnouncementSetSummarizer;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -14,6 +15,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Throwable;
 
 class ViewAnnouncementSet extends ViewRecord
 {
@@ -26,6 +28,7 @@ class ViewAnnouncementSet extends ViewRecord
             $this->statusAction('published', 'Opublikuj', 'heroicon-o-check-circle', 'success'),
             $this->statusAction('draft', 'Ustaw jako szkic', 'heroicon-o-document-text', 'warning'),
             $this->statusAction('archived', 'Archiwizuj', 'heroicon-o-archive-box', 'gray'),
+            $this->generateSummaryAction(),
             $this->printAction(),
             DeleteAction::make(),
             ForceDeleteAction::make(),
@@ -71,7 +74,7 @@ class ViewAnnouncementSet extends ViewRecord
                         ->performedOn($record)
                         ->event('announcement_set_status_updated')
                         ->withProperties([
-                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'parish_id' => $record->parish_id,
                             'announcement_set_id' => $record->getKey(),
                             'target_status' => $status,
                             'context' => 'view_page',
@@ -113,7 +116,7 @@ class ViewAnnouncementSet extends ViewRecord
                         ->performedOn($record)
                         ->event('announcement_set_pdf_exported')
                         ->withProperties([
-                            'parish_id' => Filament::getTenant()?->getKey(),
+                            'parish_id' => $record->parish_id,
                             'announcement_set_id' => $record->getKey(),
                             'active_items_count' => $record->items()->where('is_active', true)->count(),
                             'context' => 'view_page',
@@ -122,6 +125,90 @@ class ViewAnnouncementSet extends ViewRecord
                 }
 
                 return $exporter->download($record);
+            });
+    }
+
+    protected function generateSummaryAction(): Action
+    {
+        return Action::make('generate_ai_summary')
+            ->label(fn (): string => filled($this->getRecord()?->summary_ai) ? 'Generuj ponownie AI' : 'Generuj streszczenie AI')
+            ->icon('heroicon-o-sparkles')
+            ->color('info')
+            ->visible(fn (): bool => $this->getRecord() instanceof AnnouncementSet && $this->getRecord()->status === 'published')
+            ->requiresConfirmation()
+            ->action(function (): void {
+                $record = $this->getRecord();
+                $admin = Filament::auth()->user();
+
+                if (! $record instanceof AnnouncementSet) {
+                    return;
+                }
+
+                $summarizer = app(AnnouncementSetSummarizer::class);
+
+                if (! $summarizer->canGenerateForSet($record)) {
+                    Notification::make()
+                        ->warning()
+                        ->title('Nie mozna wygenerowac streszczenia.')
+                        ->body('Zestaw musi byc opublikowany i zawierac co najmniej jedno aktywne ogloszenie.')
+                        ->send();
+
+                    return;
+                }
+
+                try {
+                    $summary = $summarizer->summarize($record);
+
+                    $record->update([
+                        'summary_ai' => $summary,
+                        'summary_generated_at' => now(),
+                        'summary_model' => (string) config('gemini.model'),
+                    ]);
+
+                    $record->refresh();
+
+                    if ($admin instanceof User) {
+                        activity('admin-announcement-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('announcement_set_ai_summary_generated')
+                            ->withProperties([
+                                'parish_id' => $record->parish_id,
+                                'announcement_set_id' => $record->getKey(),
+                                'summary_length' => mb_strlen($summary),
+                                'model' => (string) config('gemini.model'),
+                                'context' => 'view_page',
+                            ])
+                            ->log('Proboszcz recznie wygenerowal streszczenie AI dla zestawu ogloszen.');
+                    }
+
+                    Notification::make()
+                        ->success()
+                        ->title('Wygenerowano streszczenie AI.')
+                        ->send();
+                } catch (Throwable $exception) {
+                    report($exception);
+
+                    if ($admin instanceof User) {
+                        activity('admin-announcement-management')
+                            ->causedBy($admin)
+                            ->performedOn($record)
+                            ->event('announcement_set_ai_summary_generation_failed')
+                            ->withProperties([
+                                'parish_id' => $record->parish_id,
+                                'announcement_set_id' => $record->getKey(),
+                                'error' => $exception->getMessage(),
+                                'context' => 'view_page',
+                            ])
+                            ->log('Reczne generowanie streszczenia AI dla zestawu ogloszen zakonczone bledem.');
+                    }
+
+                    Notification::make()
+                        ->danger()
+                        ->title('Nie udalo sie wygenerowac streszczenia AI.')
+                        ->body($exception->getMessage())
+                        ->send();
+                }
             });
     }
 

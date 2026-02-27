@@ -32,10 +32,11 @@ class OfficeAttachmentDownloadController extends Controller
 
         $conversation = $message->conversation;
 
+        $isSuperAdmin = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
         $isParticipant = (int) $conversation->priest_user_id === (int) $user->getKey()
             || (int) $conversation->parishioner_user_id === (int) $user->getKey();
 
-        if (! $isParticipant) {
+        if (! $isParticipant && ! $isSuperAdmin) {
             abort(403);
         }
 
@@ -55,6 +56,7 @@ class OfficeAttachmentDownloadController extends Controller
                 'office_message_id' => $message->getKey(),
                 'media_id' => $media->getKey(),
                 'media_file_name' => $media->file_name,
+                'downloaded_by_superadmin' => $isSuperAdmin,
             ])
             ->log('Pobrano zalacznik z konwersacji kancelarii online.');
 
