@@ -17,6 +17,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -93,6 +95,26 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
 
+            if ($e instanceof NotFoundHttpException) {
+                return response()->json([
+                    'error' => [
+                        'code' => ErrorCode::NOT_FOUND,
+                        'message' => 'Nie znaleziono zasobu.',
+                        'details' => (object) [],
+                    ],
+                ], 404);
+            }
+
+            if ($e instanceof MethodNotAllowedHttpException) {
+                return response()->json([
+                    'error' => [
+                        'code' => ErrorCode::FORBIDDEN,
+                        'message' => 'Metoda HTTP nie jest obsługiwana dla tego zasobu.',
+                        'details' => (object) [],
+                    ],
+                ], 405);
+            }
+
             if ($e instanceof HttpExceptionInterface && $e->getStatusCode() === 429) {
                 return response()->json([
                     'error' => [
@@ -101,6 +123,16 @@ return Application::configure(basePath: dirname(__DIR__))
                         'details' => (object) [],
                     ],
                 ], 429);
+            }
+
+            if ($e instanceof HttpExceptionInterface) {
+                return response()->json([
+                    'error' => [
+                        'code' => $e->getStatusCode() === 404 ? ErrorCode::NOT_FOUND : ErrorCode::FORBIDDEN,
+                        'message' => $e->getStatusCode() === 404 ? 'Nie znaleziono zasobu.' : 'Żądanie nie może zostać obsłużone.',
+                        'details' => (object) [],
+                    ],
+                ], $e->getStatusCode());
             }
 
             return response()->json([

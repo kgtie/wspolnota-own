@@ -16,7 +16,8 @@ class EngagementController extends ApiController
 {
     public function attendMass(Request $request, int $parishId, int $massId): JsonResponse
     {
-        $mass = Mass::query()->where('parish_id', $parishId)->findOrFail($massId);
+        $parish = $this->activeParishOrFail($parishId);
+        $mass = Mass::query()->where('parish_id', $parish->getKey())->findOrFail($massId);
 
         $mass->participants()->syncWithoutDetaching([
             $request->user()->getKey() => ['registered_at' => now()],
@@ -30,7 +31,8 @@ class EngagementController extends ApiController
 
     public function cancelMassAttendance(Request $request, int $parishId, int $massId): JsonResponse
     {
-        $mass = Mass::query()->where('parish_id', $parishId)->findOrFail($massId);
+        $parish = $this->activeParishOrFail($parishId);
+        $mass = Mass::query()->where('parish_id', $parish->getKey())->findOrFail($massId);
 
         $mass->participants()->detach($request->user()->getKey());
 
@@ -39,8 +41,10 @@ class EngagementController extends ApiController
 
     public function addComment(StoreNewsCommentRequest $request, int $parishId, int $newsId): JsonResponse
     {
+        $parish = $this->activeParishOrFail($parishId);
+
         $post = NewsPost::query()
-            ->where('parish_id', $parishId)
+            ->where('parish_id', $parish->getKey())
             ->published()
             ->findOrFail($newsId);
 
@@ -61,8 +65,10 @@ class EngagementController extends ApiController
 
     public function deleteComment(Request $request, int $parishId, int $newsId, int $commentId): JsonResponse
     {
+        $parish = $this->activeParishOrFail($parishId);
+
         $post = NewsPost::query()
-            ->where('parish_id', $parishId)
+            ->where('parish_id', $parish->getKey())
             ->published()
             ->findOrFail($newsId);
 

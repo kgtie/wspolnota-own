@@ -5,11 +5,14 @@ namespace App\Support\Announcements;
 use App\Mail\AnnouncementSetPublishedMessage;
 use App\Models\AnnouncementSet;
 use App\Models\User;
+use App\Support\Notifications\NotificationPreferenceResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 class AnnouncementPublicationNotifier
 {
+    public function __construct(private readonly NotificationPreferenceResolver $preferences) {}
+
     public function shouldNotify(AnnouncementSet $set, \DateTimeInterface|string|null $date = null): bool
     {
         $currentDate = $date instanceof \DateTimeInterface
@@ -27,10 +30,13 @@ class AnnouncementPublicationNotifier
         $set->loadMissing('parish');
 
         $recipients = User::query()
+            ->with('notificationPreference')
             ->where('role', 0)
             ->where('home_parish_id', $set->parish_id)
             ->where('status', 'active')
             ->whereNotNull('email')
+            ->get()
+            ->filter(fn (User $user) => $this->preferences->wantsEmail($user, 'announcements'))
             ->pluck('email')
             ->filter()
             ->unique()

@@ -35,7 +35,7 @@ class ParishController extends ApiController
 
     public function show(int $parishId): JsonResponse
     {
-        $parish = Parish::query()->where('is_active', true)->findOrFail($parishId);
+        $parish = $this->activeParishOrFail($parishId);
 
         return $this->success([
             'parish' => $this->parishPayload($parish, true),
@@ -44,7 +44,7 @@ class ParishController extends ApiController
 
     public function homeFeed(int $parishId): JsonResponse
     {
-        $parish = Parish::query()->where('is_active', true)->findOrFail($parishId);
+        $parish = $this->activeParishOrFail($parishId);
 
         $nextMasses = Mass::query()
             ->where('parish_id', $parish->getKey())

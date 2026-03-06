@@ -3,7 +3,6 @@
 namespace App\Support\Api;
 
 use Illuminate\Http\JsonResponse;
-
 trait ApiResponder
 {
     protected function success(array $payload = [], int $status = 200): JsonResponse
@@ -26,7 +25,7 @@ trait ApiResponder
 
     protected function noContent(): JsonResponse
     {
-        return response()->json([], 204);
+        return response()->json(null, 204);
     }
 
     protected function error(string $code, string $message, int $status, array $details = []): JsonResponse

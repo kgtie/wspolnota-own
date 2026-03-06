@@ -15,8 +15,10 @@ class AnnouncementController extends ApiController
 
     public function current(int $parishId): JsonResponse
     {
+        $parish = $this->activeParishOrFail($parishId);
+
         $set = AnnouncementSet::query()
-            ->where('parish_id', $parishId)
+            ->where('parish_id', $parish->getKey())
             ->published()
             ->current()
             ->latest('effective_from')
@@ -30,10 +32,11 @@ class AnnouncementController extends ApiController
 
     public function index(Request $request, int $parishId): JsonResponse
     {
+        $parish = $this->activeParishOrFail($parishId);
         $period = (string) $request->query('period', 'future');
 
         $query = AnnouncementSet::query()
-            ->where('parish_id', $parishId)
+            ->where('parish_id', $parish->getKey())
             ->published();
 
         if ($period === 'past') {
@@ -59,8 +62,10 @@ class AnnouncementController extends ApiController
 
     public function pdf(int $parishId, int $packageId)
     {
+        $parish = $this->activeParishOrFail($parishId);
+
         $set = AnnouncementSet::query()
-            ->where('parish_id', $parishId)
+            ->where('parish_id', $parish->getKey())
             ->published()
             ->findOrFail($packageId);
 

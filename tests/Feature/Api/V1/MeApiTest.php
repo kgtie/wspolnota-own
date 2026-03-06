@@ -124,3 +124,9 @@ it('updates notification preferences and marks notification as read', function (
         ->assertJsonPath('data.id', $id)
         ->assertJsonPath('data.read_at', fn ($value) => is_string($value) && $value !== '');
 });
+
+it('returns api not found payload for missing routes', function (): void {
+    $this->getJson('/api/v1/not-existing-endpoint')
+        ->assertStatus(404)
+        ->assertJsonPath('error.code', 'NOT_FOUND');
+});

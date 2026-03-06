@@ -46,11 +46,13 @@ class AuthController extends ApiController
 
         $tokens = $this->tokenService->issuePair($user, $request);
 
+        $freshUser = $user->fresh();
+
         return $this->success([
-            'user' => UserPayload::make($user->fresh()),
+            'user' => UserPayload::make($freshUser),
             'tokens' => $this->tokensPayload($tokens),
-            'access_level' => $this->resolveAccessLevel($user),
-            'requires_email_verification' => ! $user->hasVerifiedEmail(),
+            'access_level' => $this->resolveAccessLevel($freshUser),
+            'requires_email_verification' => ! $freshUser->hasVerifiedEmail(),
         ], 201);
     }
 
@@ -96,10 +98,10 @@ class AuthController extends ApiController
 
     public function logout(Request $request): JsonResponse
     {
-        $accessRaw = (string) $request->attributes->get('api_access_token_raw', '');
+        $accessTokenId = $request->attributes->get('api_access_token_id');
 
-        if ($accessRaw !== '') {
-            $this->tokenService->revokeAccessTokenByRaw($accessRaw);
+        if (is_int($accessTokenId) || ctype_digit((string) $accessTokenId)) {
+            $this->tokenService->revokeSessionByAccessTokenId((int) $accessTokenId);
         }
 
         $refreshToken = (string) $request->input('refresh_token', '');
@@ -150,6 +152,7 @@ class AuthController extends ApiController
                     'remember_token' => Str::random(60),
                 ])->save();
 
+                $this->tokenService->revokeAllForUser($user);
                 event(new PasswordReset($user));
             }
         );

@@ -8,7 +8,6 @@ use App\Http\Requests\Api\Office\CreateChatRequest;
 use App\Http\Requests\Api\Office\StoreMessageRequest;
 use App\Models\OfficeConversation;
 use App\Models\OfficeMessage;
-use App\Models\Parish;
 use App\Models\User;
 use App\Support\Api\CursorPaginator;
 use App\Support\Api\ErrorCode;
@@ -48,7 +47,11 @@ class OfficeChatController extends ApiController
     public function store(CreateChatRequest $request): JsonResponse
     {
         $user = $request->user();
-        $parish = Parish::query()->findOrFail((int) $request->input('parish_id'));
+        $parish = $this->activeParishOrFail((int) $request->input('parish_id'));
+
+        if ((int) $user->home_parish_id !== (int) $parish->getKey()) {
+            throw new ApiException(ErrorCode::FORBIDDEN, 'Możesz rozpocząć czat wyłącznie z własną parafią.', 403);
+        }
 
         $priest = $this->resolvePriestForParish($parish->getKey());
 

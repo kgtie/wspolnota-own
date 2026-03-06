@@ -26,13 +26,18 @@ class ApiAuthenticate
             ], 401);
         }
 
-        $token = $this->tokenService->findAccessToken($bearer);
+        $resolution = $this->tokenService->resolveAccessToken($bearer);
+        $token = $resolution['token'];
 
-        if (! $token || ! $token->user) {
+        if ($resolution['status'] !== 'active' || ! $token || ! $token->user) {
             return response()->json([
                 'error' => [
-                    'code' => ErrorCode::AUTH_TOKEN_INVALID,
-                    'message' => 'Nieprawidłowy lub wygasły token dostępu.',
+                    'code' => $resolution['status'] === 'expired'
+                        ? ErrorCode::AUTH_TOKEN_EXPIRED
+                        : ErrorCode::AUTH_TOKEN_INVALID,
+                    'message' => $resolution['status'] === 'expired'
+                        ? 'Token dostępu wygasł.'
+                        : 'Nieprawidłowy token dostępu.',
                     'details' => (object) [],
                 ],
             ], 401);

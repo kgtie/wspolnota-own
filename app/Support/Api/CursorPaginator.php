@@ -47,9 +47,14 @@ class CursorPaginator
             return null;
         }
 
+        $padding = strlen($cursor) % 4;
+        if ($padding > 0) {
+            $cursor .= str_repeat('=', 4 - $padding);
+        }
+
         $decoded = base64_decode(strtr($cursor, '-_', '+/'), true);
 
-        if (! $decoded) {
+        if (! is_string($decoded) || $decoded === '') {
             return null;
         }
 

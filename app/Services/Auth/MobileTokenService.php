@@ -34,6 +34,11 @@ class MobileTokenService
                     'used_at' => now(),
                     'replaced_by_id' => $refresh->getKey(),
                 ])->save();
+
+                ApiAccessToken::query()
+                    ->where('refresh_token_id', $rotateFrom->getKey())
+                    ->whereNull('revoked_at')
+                    ->update(['revoked_at' => now()]);
             }
 
             ApiAccessToken::query()->create([
@@ -78,7 +83,12 @@ class MobileTokenService
         }
 
         if ($token->used_at) {
-            $this->revokeRefreshFamily((string) $token->family_id);
+            if ($token->user) {
+                $this->revokeAllForUser($token->user);
+            } else {
+                $this->revokeRefreshFamily((string) $token->family_id);
+            }
+
             throw new ApiException(ErrorCode::AUTH_REFRESH_REUSED, 'Wykryto ponowne użycie refresh tokenu.', 401);
         }
 
@@ -96,24 +106,33 @@ class MobileTokenService
 
     public function findAccessToken(string $rawToken): ?ApiAccessToken
     {
-        $hash = hash('sha256', $rawToken);
+        $resolution = $this->resolveAccessToken($rawToken);
 
+        return $resolution['status'] === 'active' ? $resolution['token'] : null;
+    }
+
+    public function resolveAccessToken(string $rawToken): array
+    {
         $token = ApiAccessToken::query()
             ->with('user')
-            ->where('token_hash', $hash)
+            ->where('token_hash', hash('sha256', $rawToken))
             ->first();
 
         if (! $token) {
-            return null;
+            return ['status' => 'invalid', 'token' => null];
         }
 
-        if ($token->revoked_at || $token->expires_at->isPast()) {
-            return null;
+        if ($token->revoked_at) {
+            return ['status' => 'revoked', 'token' => $token];
+        }
+
+        if ($token->expires_at->isPast()) {
+            return ['status' => 'expired', 'token' => $token];
         }
 
         $token->forceFill(['last_used_at' => now()])->save();
 
-        return $token;
+        return ['status' => 'active', 'token' => $token];
     }
 
     public function revokeAccessTokenByRaw(string $rawToken): void
@@ -152,6 +171,29 @@ class MobileTokenService
             ->where('family_id', $familyId)
             ->whereNull('revoked_at')
             ->update(['revoked_at' => now()]);
+
+        ApiAccessToken::query()
+            ->whereIn('refresh_token_id', ApiRefreshToken::query()->select('id')->where('family_id', $familyId))
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => now()]);
+    }
+
+    public function revokeSessionByAccessTokenId(int $accessTokenId): void
+    {
+        $token = ApiAccessToken::query()->find($accessTokenId);
+
+        if (! $token) {
+            return;
+        }
+
+        $token->forceFill(['revoked_at' => now()])->save();
+
+        if ($token->refresh_token_id) {
+            ApiRefreshToken::query()
+                ->whereKey($token->refresh_token_id)
+                ->whereNull('revoked_at')
+                ->update(['revoked_at' => now()]);
+        }
     }
 
     private function generateToken(): string

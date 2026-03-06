@@ -12,7 +12,8 @@ class MassController extends ApiController
 {
     public function index(Request $request, int $parishId): JsonResponse
     {
-        $query = Mass::query()->where('parish_id', $parishId);
+        $parish = $this->activeParishOrFail($parishId);
+        $query = Mass::query()->where('parish_id', $parish->getKey());
 
         if ($request->filled('from')) {
             $query->where('celebration_at', '>=', (string) $request->string('from'));
@@ -39,8 +40,10 @@ class MassController extends ApiController
 
     public function show(int $parishId, int $massId): JsonResponse
     {
+        $parish = $this->activeParishOrFail($parishId);
+
         $mass = Mass::query()
-            ->where('parish_id', $parishId)
+            ->where('parish_id', $parish->getKey())
             ->findOrFail($massId);
 
         return $this->success([

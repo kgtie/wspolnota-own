@@ -91,12 +91,19 @@ it('rotates refresh token and rejects reused refresh token', function (): void {
         'refresh_token' => $firstRefresh,
     ])->assertOk();
 
+    $rotatedAccess = $rotated->json('data.tokens.access_token');
+
     expect($rotated->json('data.tokens.refresh_token'))->not->toBe($firstRefresh);
 
     $this->postJson('/api/v1/auth/refresh', [
         'refresh_token' => $firstRefresh,
     ])->assertStatus(401)
         ->assertJsonPath('error.code', 'AUTH_REFRESH_REUSED');
+
+    $this->withHeader('Authorization', "Bearer {$rotatedAccess}")
+        ->getJson('/api/v1/me')
+        ->assertStatus(401)
+        ->assertJsonPath('error.code', 'AUTH_TOKEN_INVALID');
 });
 
 it('logs out all sessions only with valid password', function (): void {
@@ -132,4 +139,50 @@ it('logs out all sessions only with valid password', function (): void {
         ])
         ->assertOk()
         ->assertJsonPath('data.status', 'LOGGED_OUT_ALL');
+});
+
+it('revokes current refresh token on logout without requiring it in payload', function (): void {
+    $user = User::factory()->create([
+        'email' => 'logout@example.com',
+        'password' => Hash::make('Secret#2026'),
+        'status' => 'active',
+    ]);
+
+    $loginResponse = $this->postJson('/api/v1/auth/login', [
+        'login' => 'logout@example.com',
+        'password' => 'Secret#2026',
+        'device' => [
+            'platform' => 'ios',
+            'device_id' => 'device-logout-one',
+            'device_name' => 'iPhone',
+            'app_version' => '1.0.0',
+        ],
+    ])->assertOk();
+
+    $accessToken = $loginResponse->json('data.tokens.access_token');
+    $refreshToken = $loginResponse->json('data.tokens.refresh_token');
+
+    $this->withHeader('Authorization', "Bearer {$accessToken}")
+        ->postJson('/api/v1/auth/logout')
+        ->assertOk()
+        ->assertJsonPath('data.status', 'LOGGED_OUT');
+
+    $this->postJson('/api/v1/auth/refresh', [
+        'refresh_token' => $refreshToken,
+    ])->assertStatus(401)
+        ->assertJsonPath('error.code', 'AUTH_REFRESH_REVOKED');
+});
+
+it('rejects inactive parishes during registration', function (): void {
+    $parish = Parish::factory()->inactive()->create();
+
+    $this->postJson('/api/v1/auth/register', [
+        'first_name' => 'Jan',
+        'last_name' => 'Kowalski',
+        'email' => 'inactive-parish@example.com',
+        'password' => 'StrongPass#2026',
+        'password_confirmation' => 'StrongPass#2026',
+        'default_parish_id' => $parish->getKey(),
+    ])->assertStatus(422)
+        ->assertJsonPath('error.code', 'VALIDATION_ERROR');
 });
