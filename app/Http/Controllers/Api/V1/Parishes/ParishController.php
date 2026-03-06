@@ -38,7 +38,7 @@ class ParishController extends ApiController
         $parish = $this->activeParishOrFail($parishId);
 
         return $this->success([
-            'parish' => $this->parishPayload($parish, true),
+            'parish' => $this->parishPayload($parish),
         ]);
     }
 
@@ -79,29 +79,25 @@ class ParishController extends ApiController
         ]);
     }
 
-    private function parishPayload(Parish $parish, bool $includeContact = false): array
+    private function parishPayload(Parish $parish): array
     {
-        $payload = [
+        return [
             'id' => (string) $parish->getKey(),
             'name' => $parish->name,
             'short_name' => $parish->short_name,
             'slug' => $parish->slug,
+            'email' => $parish->email,
+            'phone' => $parish->phone,
+            'website' => $parish->website,
+            'street' => $parish->street,
+            'postal_code' => $parish->postal_code,
             'city' => $parish->city,
             'diocese' => $parish->diocese,
             'decanate' => $parish->decanate,
+            'is_active' => (bool) $parish->is_active,
             'avatar_url' => $parish->avatar_url,
             'cover_url' => $parish->cover_url,
         ];
-
-        if ($includeContact) {
-            $payload['email'] = $parish->email;
-            $payload['phone'] = $parish->phone;
-            $payload['website'] = $parish->website;
-            $payload['street'] = $parish->street;
-            $payload['postal_code'] = $parish->postal_code;
-        }
-
-        return $payload;
     }
 
     private function massPayload(Mass $mass): array
@@ -129,9 +125,15 @@ class ParishController extends ApiController
             'parish_id' => (string) $set->parish_id,
             'title' => $set->title,
             'week_label' => $set->week_label,
+            'lead' => $set->lead,
+            'summary_ai' => $set->summary_ai,
             'effective_from' => optional($set->effective_from)?->toDateString(),
             'effective_to' => optional($set->effective_to)?->toDateString(),
             'published_at' => optional($set->published_at)?->toISOString(),
+            'pdf_url' => route('api.v1.announcements.pdf', [
+                'parishId' => $set->parish_id,
+                'packageId' => $set->getKey(),
+            ]),
         ];
     }
 
@@ -143,6 +145,7 @@ class ParishController extends ApiController
             'title' => $post->title,
             'slug' => $post->slug,
             'is_pinned' => (bool) $post->is_pinned,
+            'featured_image_url' => $post->getFirstMediaUrl('featured_image', 'preview') ?: null,
             'published_at' => optional($post->published_at)?->toISOString(),
             'created_at' => optional($post->created_at)?->toISOString(),
             'updated_at' => optional($post->updated_at)?->toISOString(),

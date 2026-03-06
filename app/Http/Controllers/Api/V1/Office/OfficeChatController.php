@@ -218,7 +218,10 @@ class OfficeChatController extends ApiController
                 'file_name' => $media->file_name,
                 'mime_type' => $media->mime_type,
                 'size' => $media->size,
-                'download_url' => route('office.attachments.download', ['media' => $media->getKey()]),
+                'download_url' => route('api.v1.office.attachments.show', [
+                    'chatId' => $message->office_conversation_id,
+                    'attachmentId' => $media->getKey(),
+                ]),
             ])->values();
         }
 

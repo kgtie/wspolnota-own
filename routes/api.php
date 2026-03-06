@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\Office\OfficeAttachmentController;
 use App\Http\Controllers\Api\V1\Office\OfficeChatController;
 use App\Http\Controllers\Api\V1\Parishes\AnnouncementController;
 use App\Http\Controllers\Api\V1\Parishes\EngagementController;
@@ -25,10 +26,15 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/refresh', [AuthController::class, 'refresh']);
         Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+        Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+            ->middleware('signed')
+            ->whereNumber('id')
+            ->name('api.v1.auth.verify-email');
 
         Route::middleware('api.auth')->group(function (): void {
             Route::post('/logout', [AuthController::class, 'logout']);
             Route::post('/logout-all', [AuthController::class, 'logoutAll']);
+            Route::post('/email/verification-notification', [AuthController::class, 'sendVerificationNotification']);
         });
     });
 
@@ -43,7 +49,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/parishes/{parishId}/announcements', [AnnouncementController::class, 'index'])->whereNumber('parishId');
     Route::get('/parishes/{parishId}/announcements/{packageId}/pdf', [AnnouncementController::class, 'pdf'])
         ->whereNumber('parishId')
-        ->whereNumber('packageId');
+        ->whereNumber('packageId')
+        ->name('api.v1.announcements.pdf');
 
     Route::get('/parishes/{parishId}/news', [NewsController::class, 'index'])->whereNumber('parishId');
     Route::get('/parishes/{parishId}/news/{newsId}', [NewsController::class, 'show'])->whereNumber('parishId')->whereNumber('newsId');
@@ -52,6 +59,8 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['api.auth'])->group(function (): void {
         Route::get('/me', [MeController::class, 'show']);
         Route::patch('/me', [MeController::class, 'update']);
+        Route::patch('/me/email', [MeController::class, 'updateEmail']);
+        Route::patch('/me/password', [MeController::class, 'updatePassword']);
         Route::post('/me/avatar', [MeController::class, 'uploadAvatar']);
         Route::delete('/me/avatar', [MeController::class, 'deleteAvatar']);
         Route::post('/me/parish-approval-code/regenerate', [MeController::class, 'regenerateParishApprovalCode']);
@@ -89,5 +98,9 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/chats/{chatId}/messages', [OfficeChatController::class, 'messages'])->whereNumber('chatId');
         Route::post('/chats/{chatId}/messages', [OfficeChatController::class, 'storeMessage'])->whereNumber('chatId');
         Route::post('/chats/{chatId}/attachments', [OfficeChatController::class, 'storeAttachments'])->whereNumber('chatId');
+        Route::get('/chats/{chatId}/attachments/{attachmentId}', [OfficeAttachmentController::class, 'show'])
+            ->whereNumber('chatId')
+            ->whereNumber('attachmentId')
+            ->name('api.v1.office.attachments.show');
     });
 });

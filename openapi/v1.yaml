@@ -3,13 +3,15 @@ info:
   title: Wspolnota Mobile API
   version: 1.0.0
   description: |
-    API v1 dla aplikacji mobilnej parafian (Flutter).
+    API v1 dla aplikacji mobilnej parafian.
     Format czasu: ISO-8601 UTC.
+    Paginacja: cursor-based. `next_cursor` jest wartością techniczną i klient nie powinien jej interpretować.
 servers:
   - url: /api/v1
     description: Lokalny serwer aplikacji
 
 tags:
+  - name: Meta
   - name: Auth
   - name: Parishes
   - name: Masses
@@ -19,7 +21,6 @@ tags:
   - name: Devices
   - name: Notifications
   - name: Office
-  - name: Meta
 
 components:
   securitySchemes:
@@ -52,6 +53,7 @@ components:
       required: [next_cursor, has_more]
       properties:
         next_cursor:
+          description: Opaque cursor token. Klient przekazuje go dalej bez dekodowania.
           type: [string, 'null']
         has_more:
           type: boolean
@@ -60,16 +62,21 @@ components:
       type: object
       required:
         - id
+        - login
         - first_name
         - last_name
         - email
         - is_email_verified
         - is_parish_approved
+        - can_access_office
         - created_at
         - updated_at
       properties:
         id:
           type: string
+        login:
+          type: string
+          description: Techniczny login użytkownika. Widoczny, ale niemodyfikowalny przez użytkownika.
         first_name:
           type: string
         last_name:
@@ -81,10 +88,14 @@ components:
           type: [string, 'null']
         default_parish_id:
           type: [string, 'null']
+          description: Parafia domyślna przechowywana na serwerze.
         is_email_verified:
           type: boolean
         is_parish_approved:
           type: boolean
+        can_access_office:
+          type: boolean
+          description: Wartość pochodna. `true` tylko gdy użytkownik ma zweryfikowany email i status parafialny.
         parish_approval_code:
           type: [string, 'null']
         created_at:
@@ -117,126 +128,13 @@ components:
           type: integer
           description: TTL refresh tokenu w sekundach
 
-    Parish:
+    DeviceContext:
       type: object
+      required: [platform, device_id, app_version]
       properties:
-        id: { type: string }
-        name: { type: string }
-        short_name: { type: string }
-        slug: { type: string }
-        city: { type: string }
-        diocese: { type: [string, 'null'] }
-        decanate: { type: [string, 'null'] }
-        avatar_url: { type: [string, 'null'] }
-        cover_url: { type: [string, 'null'] }
-
-    Mass:
-      type: object
-      properties:
-        id: { type: string }
-        parish_id: { type: string }
-        intention_title: { type: string }
-        intention_details: { type: [string, 'null'] }
-        celebration_at: { type: string, format: date-time }
-        mass_kind: { type: string }
-        mass_type: { type: string }
-        status: { type: string }
-        celebrant_name: { type: [string, 'null'] }
-        location: { type: [string, 'null'] }
-        created_at: { type: string, format: date-time }
-        updated_at: { type: string, format: date-time }
-
-    Announcement:
-      type: object
-      properties:
-        id: { type: string }
-        parish_id: { type: string }
-        title: { type: string }
-        week_label: { type: [string, 'null'] }
-        lead: { type: [string, 'null'] }
-        footer_notes: { type: [string, 'null'] }
-        effective_from: { type: [string, 'null'], format: date }
-        effective_to: { type: [string, 'null'], format: date }
-        published_at: { type: [string, 'null'], format: date-time }
-        created_at: { type: [string, 'null'], format: date-time }
-        updated_at: { type: [string, 'null'], format: date-time }
-
-    News:
-      type: object
-      properties:
-        id: { type: string }
-        parish_id: { type: string }
-        title: { type: string }
-        slug: { type: string }
-        is_pinned: { type: boolean }
-        featured_image_url: { type: [string, 'null'] }
-        content: { type: [string, 'null'] }
-        comments_count: { type: integer }
-        published_at: { type: [string, 'null'], format: date-time }
-        created_at: { type: [string, 'null'], format: date-time }
-        updated_at: { type: [string, 'null'], format: date-time }
-
-    NewsComment:
-      type: object
-      properties:
-        id: { type: string }
-        body: { type: string }
-        user:
-          type: object
-          properties:
-            id: { type: [string, 'null'] }
-            name: { type: [string, 'null'] }
-            avatar_url: { type: [string, 'null'] }
-        created_at: { type: [string, 'null'], format: date-time }
-        updated_at: { type: [string, 'null'], format: date-time }
-
-    OfficeMessage:
-      type: object
-      properties:
-        id: { type: string }
-        chat_id: { type: string }
-        sender_user_id: { type: string }
-        body: { type: [string, 'null'] }
-        has_attachments: { type: boolean }
-        attachments:
-          type: array
-          items:
-            type: object
-            properties:
-              id: { type: string }
-              file_name: { type: string }
-              mime_type: { type: [string, 'null'] }
-              size: { type: integer }
-              download_url: { type: string }
-        created_at: { type: [string, 'null'], format: date-time }
-        updated_at: { type: [string, 'null'], format: date-time }
-
-    NotificationItem:
-      type: object
-      properties:
-        id: { type: string }
-        type: { type: string }
-        title: { type: string }
-        body: { type: string }
-        data:
-          type: object
-          additionalProperties: true
-        read_at: { type: [string, 'null'], format: date-time }
-        created_at: { type: [string, 'null'], format: date-time }
-
-    DeviceInput:
-      type: object
-      required: [provider, platform, push_token, device_id, app_version]
-      properties:
-        provider:
-          type: string
-          enum: [fcm, apns]
         platform:
           type: string
-          enum: [android, ios]
-        push_token:
-          type: string
-          maxLength: 4096
+          enum: [ios, android]
         device_id:
           type: string
           minLength: 8
@@ -247,12 +145,391 @@ components:
         app_version:
           type: string
           maxLength: 30
-        locale:
+
+    AuthSessionResponse:
+      type: object
+      required: [user, tokens, access_level, requires_email_verification]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        tokens:
+          $ref: '#/components/schemas/Tokens'
+        access_level:
+          type: string
+          enum: [AUTHENTICATED_LIMITED, AUTHENTICATED, PARISH_APPROVED]
+        requires_email_verification:
+          type: boolean
+
+    Parish:
+      type: object
+      required:
+        - id
+        - name
+        - short_name
+        - slug
+        - city
+        - is_active
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        short_name:
+          type: string
+        slug:
+          type: string
+        email:
           type: [string, 'null']
-          maxLength: 16
-        timezone:
+          format: email
+        phone:
           type: [string, 'null']
-          maxLength: 64
+        website:
+          type: [string, 'null']
+        street:
+          type: [string, 'null']
+        postal_code:
+          type: [string, 'null']
+        city:
+          type: string
+        diocese:
+          type: [string, 'null']
+        decanate:
+          type: [string, 'null']
+        is_active:
+          type: boolean
+        avatar_url:
+          type: [string, 'null']
+        cover_url:
+          type: [string, 'null']
+
+    Mass:
+      type: object
+      required:
+        - id
+        - parish_id
+        - intention_title
+        - celebration_at
+        - mass_kind
+        - mass_type
+        - status
+      properties:
+        id:
+          type: string
+        parish_id:
+          type: string
+        intention_title:
+          type: string
+        intention_details:
+          type: [string, 'null']
+        celebration_at:
+          type: string
+          format: date-time
+        mass_kind:
+          type: string
+        mass_type:
+          type: string
+        status:
+          type: string
+        celebrant_name:
+          type: [string, 'null']
+        location:
+          type: [string, 'null']
+        attendance_count:
+          type: integer
+        created_at:
+          type: [string, 'null']
+          format: date-time
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+
+    AnnouncementItem:
+      type: object
+      required: [id, position, title, content, is_important]
+      properties:
+        id:
+          type: string
+        position:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        is_important:
+          type: boolean
+
+    Announcement:
+      type: object
+      required:
+        - id
+        - parish_id
+        - title
+      properties:
+        id:
+          type: string
+        parish_id:
+          type: string
+        title:
+          type: string
+        week_label:
+          type: [string, 'null']
+        lead:
+          type: [string, 'null']
+        footer_notes:
+          type: [string, 'null']
+        summary_ai:
+          type: [string, 'null']
+          description: AI-streszczenie bieżących ogłoszeń, jeżeli zostało wygenerowane.
+        effective_from:
+          type: [string, 'null']
+          format: date
+        effective_to:
+          type: [string, 'null']
+          format: date
+        published_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: [string, 'null']
+          format: date-time
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+        pdf_url:
+          type: string
+          description: Publiczny URL PDF zestawu ogłoszeń.
+
+    CurrentAnnouncement:
+      allOf:
+        - $ref: '#/components/schemas/Announcement'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/AnnouncementItem'
+
+    News:
+      type: object
+      required:
+        - id
+        - parish_id
+        - title
+        - slug
+        - is_pinned
+        - comments_count
+      properties:
+        id:
+          type: string
+        parish_id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        is_pinned:
+          type: boolean
+        featured_image_url:
+          type: [string, 'null']
+        content:
+          type: [string, 'null']
+        comments_count:
+          type: integer
+        published_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: [string, 'null']
+          format: date-time
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+
+    NewsCommentUser:
+      type: object
+      properties:
+        id:
+          type: [string, 'null']
+        name:
+          type: [string, 'null']
+        avatar_url:
+          type: [string, 'null']
+
+    NewsComment:
+      type: object
+      required: [id, body, user]
+      properties:
+        id:
+          type: string
+        body:
+          type: string
+        user:
+          $ref: '#/components/schemas/NewsCommentUser'
+        created_at:
+          type: [string, 'null']
+          format: date-time
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+
+    HomeFeed:
+      type: object
+      required: [parish, next_masses, latest_news]
+      properties:
+        parish:
+          $ref: '#/components/schemas/Parish'
+        next_masses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Mass'
+        current_announcements:
+          oneOf:
+            - $ref: '#/components/schemas/Announcement'
+            - type: 'null'
+        latest_news:
+          type: array
+          items:
+            $ref: '#/components/schemas/News'
+
+    Device:
+      type: object
+      required: [id, provider, platform, app_version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+          enum: [fcm, apns]
+        platform:
+          type: string
+          enum: [android, ios]
+        app_version:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    NotificationPreferencesInput:
+      type: object
+      required: [news, announcements, office_messages, parish_approval_status, auth_security]
+      properties:
+        news:
+          $ref: '#/components/schemas/PreferenceToggle'
+        announcements:
+          $ref: '#/components/schemas/PreferenceToggle'
+        office_messages:
+          $ref: '#/components/schemas/PreferenceToggle'
+        parish_approval_status:
+          $ref: '#/components/schemas/PreferenceToggle'
+        auth_security:
+          $ref: '#/components/schemas/PreferenceToggle'
+
+    PreferenceToggle:
+      type: object
+      required: [push, email]
+      properties:
+        push:
+          type: boolean
+        email:
+          type: boolean
+
+    NotificationItem:
+      type: object
+      required: [id, type, title, body, data]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - NEWS_CREATED
+            - ANNOUNCEMENTS_PACKAGE_PUBLISHED
+            - OFFICE_MESSAGE_RECEIVED
+            - PARISH_APPROVAL_STATUS_CHANGED
+        title:
+          type: string
+        body:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        read_at:
+          type: [string, 'null']
+          format: date-time
+        created_at:
+          type: [string, 'null']
+          format: date-time
+
+    OfficeChat:
+      type: object
+      required: [id, uuid, parish_id, status, created_at]
+      properties:
+        id:
+          type: string
+        uuid:
+          type: string
+        parish_id:
+          type: string
+        parish_name:
+          type: [string, 'null']
+        status:
+          type: string
+          enum: [open, closed]
+        last_message_at:
+          type: [string, 'null']
+          format: date-time
+        last_message_preview:
+          type: [string, 'null']
+        created_at:
+          type: [string, 'null']
+          format: date-time
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+
+    OfficeAttachment:
+      type: object
+      required: [id, file_name, size, download_url]
+      properties:
+        id:
+          type: string
+        file_name:
+          type: string
+        mime_type:
+          type: [string, 'null']
+        size:
+          type: integer
+        download_url:
+          type: string
+          description: Chroniony URL API dostępny wyłącznie dla strony danej rozmowy.
+
+    OfficeMessage:
+      type: object
+      required: [id, chat_id, sender_user_id, has_attachments]
+      properties:
+        id:
+          type: string
+        chat_id:
+          type: string
+        sender_user_id:
+          type: string
+        body:
+          type: [string, 'null']
+        has_attachments:
+          type: boolean
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfficeAttachment'
+        created_at:
+          type: [string, 'null']
+          format: date-time
+        updated_at:
+          type: [string, 'null']
+          format: date-time
 
   responses:
     ValidationError:
@@ -301,40 +578,44 @@ paths:
               type: object
               required: [first_name, last_name, email, password, password_confirmation]
               properties:
-                first_name: { type: string, minLength: 2, maxLength: 80 }
-                last_name: { type: string, minLength: 2, maxLength: 80 }
-                email: { type: string, format: email }
-                password: { type: string, minLength: 10, maxLength: 72 }
-                password_confirmation: { type: string }
-                default_parish_id: { type: [integer, 'null'] }
+                first_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 80
+                last_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 80
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 10
+                  maxLength: 72
+                password_confirmation:
+                  type: string
+                default_parish_id:
+                  type: [integer, 'null']
                 device:
-                  type: object
-                  properties:
-                    platform: { type: string, enum: [ios, android] }
-                    device_id: { type: string }
-                    device_name: { type: [string, 'null'] }
-                    app_version: { type: string }
+                  $ref: '#/components/schemas/DeviceContext'
       responses:
         '201':
-          description: Registered
+          description: Użytkownik zarejestrowany
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   data:
-                    type: object
-                    properties:
-                      user: { $ref: '#/components/schemas/User' }
-                      tokens: { $ref: '#/components/schemas/Tokens' }
-                      access_level: { type: string }
-                      requires_email_verification: { type: boolean }
-        '422': { $ref: '#/components/responses/ValidationError' }
+                    $ref: '#/components/schemas/AuthSessionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /auth/login:
     post:
       tags: [Auth]
-      summary: Logowanie (email lub login)
+      summary: Logowanie przez email lub login techniczny
       requestBody:
         required: true
         content:
@@ -343,37 +624,32 @@ paths:
               type: object
               required: [login, password, device]
               properties:
-                login: { type: string }
-                password: { type: string }
+                login:
+                  type: string
+                  description: Email albo techniczny login użytkownika.
+                password:
+                  type: string
                 device:
-                  type: object
-                  required: [platform, device_id, app_version]
-                  properties:
-                    platform: { type: string, enum: [ios, android] }
-                    device_id: { type: string }
-                    device_name: { type: [string, 'null'] }
-                    app_version: { type: string }
+                  $ref: '#/components/schemas/DeviceContext'
       responses:
         '200':
-          description: Logged in
+          description: Zalogowano
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   data:
-                    type: object
-                    properties:
-                      user: { $ref: '#/components/schemas/User' }
-                      tokens: { $ref: '#/components/schemas/Tokens' }
-                      access_level: { type: string }
-                      requires_email_verification: { type: boolean }
-        '401': { $ref: '#/components/responses/Unauthorized' }
+                    $ref: '#/components/schemas/AuthSessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /auth/refresh:
     post:
       tags: [Auth]
-      summary: Odświeżenie tokenów (rotating refresh)
+      summary: Rotacja refresh tokenu
       requestBody:
         required: true
         content:
@@ -382,29 +658,29 @@ paths:
               type: object
               required: [refresh_token]
               properties:
-                refresh_token: { type: string }
+                refresh_token:
+                  type: string
       responses:
         '200':
-          description: Rotated
+          description: Odświeżono sesję
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   data:
-                    type: object
-                    properties:
-                      user: { $ref: '#/components/schemas/User' }
-                      tokens: { $ref: '#/components/schemas/Tokens' }
-                      access_level: { type: string }
-                      requires_email_verification: { type: boolean }
-        '401': { $ref: '#/components/responses/Unauthorized' }
+                    $ref: '#/components/schemas/AuthSessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /auth/logout:
     post:
       tags: [Auth]
-      security: [{ BearerAuth: [] }]
       summary: Wylogowanie bieżącej sesji
+      security:
+        - BearerAuth: []
       requestBody:
         required: false
         content:
@@ -412,10 +688,11 @@ paths:
             schema:
               type: object
               properties:
-                refresh_token: { type: string }
+                refresh_token:
+                  type: string
       responses:
         '200':
-          description: Logged out
+          description: Wylogowano
           content:
             application/json:
               schema:
@@ -424,14 +701,18 @@ paths:
                   data:
                     type: object
                     properties:
-                      status: { type: string, enum: [LOGGED_OUT] }
-        '401': { $ref: '#/components/responses/Unauthorized' }
+                      status:
+                        type: string
+                        enum: [LOGGED_OUT]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /auth/logout-all:
     post:
       tags: [Auth]
-      security: [{ BearerAuth: [] }]
-      summary: Wylogowanie wszystkich sesji
+      summary: Wylogowanie ze wszystkich urządzeń
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -440,10 +721,11 @@ paths:
               type: object
               required: [password]
               properties:
-                password: { type: string }
+                password:
+                  type: string
       responses:
         '200':
-          description: Logged out all
+          description: Wylogowano wszystkie sesje
           content:
             application/json:
               schema:
@@ -452,13 +734,16 @@ paths:
                   data:
                     type: object
                     properties:
-                      status: { type: string, enum: [LOGGED_OUT_ALL] }
-        '401': { $ref: '#/components/responses/Unauthorized' }
+                      status:
+                        type: string
+                        enum: [LOGGED_OUT_ALL]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /auth/forgot-password:
     post:
       tags: [Auth]
-      summary: Wyślij mail resetu hasła
+      summary: Wyślij link resetu hasła
       requestBody:
         required: true
         content:
@@ -467,10 +752,12 @@ paths:
               type: object
               required: [email]
               properties:
-                email: { type: string, format: email }
+                email:
+                  type: string
+                  format: email
       responses:
         '200':
-          description: Accepted
+          description: Zwraca zawsze odpowiedź generyczną
           content:
             application/json:
               schema:
@@ -482,11 +769,13 @@ paths:
                       status:
                         type: string
                         enum: [PASSWORD_RESET_EMAIL_SENT_IF_EXISTS]
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /auth/reset-password:
     post:
       tags: [Auth]
-      summary: Zresetuj hasło
+      summary: Ustaw nowe hasło na podstawie tokenu resetu
       requestBody:
         required: true
         content:
@@ -495,13 +784,20 @@ paths:
               type: object
               required: [email, token, password, password_confirmation]
               properties:
-                email: { type: string, format: email }
-                token: { type: string }
-                password: { type: string, minLength: 10, maxLength: 72 }
-                password_confirmation: { type: string }
+                email:
+                  type: string
+                  format: email
+                token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 10
+                  maxLength: 72
+                password_confirmation:
+                  type: string
       responses:
         '200':
-          description: Password reset
+          description: Hasło zmienione
           content:
             application/json:
               schema:
@@ -510,25 +806,115 @@ paths:
                   data:
                     type: object
                     properties:
-                      status: { type: string, enum: [PASSWORD_RESET] }
+                      status:
+                        type: string
+                        enum: [PASSWORD_RESET]
         '400':
-          description: Invalid reset token
+          description: Nieprawidłowy lub wygasły token resetu
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/email/verification-notification:
+    post:
+      tags: [Auth]
+      summary: Wyślij ponownie email weryfikacyjny
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Email weryfikacyjny obsłużony
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [EMAIL_VERIFICATION_SENT, EMAIL_ALREADY_VERIFIED]
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/verify-email/{id}/{hash}:
+    get:
+      tags: [Auth]
+      summary: Potwierdź email podpisanym linkiem
+      description: |
+        Endpoint używany po kliknięciu w link z emaila lub przez deep link w aplikacji mobilnej.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: hash
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: expires
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: signature
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email zweryfikowany lub już wcześniej zweryfikowany
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [EMAIL_VERIFIED, EMAIL_ALREADY_VERIFIED]
+                      user:
+                        $ref: '#/components/schemas/User'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes:
     get:
       tags: [Parishes]
-      summary: Lista parafii
+      summary: Lista aktywnych parafii
       parameters:
         - in: query
           name: query
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
-          description: Parish list
+          description: Lista parafii
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Parish'
 
   /parishes/{parishId}:
     get:
@@ -538,44 +924,76 @@ paths:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200': { description: Parish details }
-        '404': { $ref: '#/components/responses/NotFound' }
+        '200':
+          description: Szczegóły parafii
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      parish:
+                        $ref: '#/components/schemas/Parish'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/home-feed:
     get:
       tags: [Parishes]
-      summary: Home feed parafii
+      summary: Dane głównego ekranu aplikacji dla parafii
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200': { description: Home feed }
+        '200':
+          description: Pełny payload ekranu startowego
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/HomeFeed'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/masses:
     get:
       tags: [Masses]
-      summary: Lista mszy
+      summary: Lista mszy w zadanym zakresie dat
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: query
           name: from
-          schema: { type: string, format: date-time }
+          required: true
+          schema:
+            type: string
+            format: date-time
         - in: query
           name: to
-          schema: { type: string, format: date-time }
+          required: true
+          schema:
+            type: string
+            format: date-time
         - in: query
           name: cursor
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
-          description: Cursor list
+          description: Lista mszy
           content:
             application/json:
               schema:
@@ -583,8 +1001,14 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: '#/components/schemas/Mass' }
-                  meta: { $ref: '#/components/schemas/CursorMeta' }
+                    items:
+                      $ref: '#/components/schemas/Mass'
+                  meta:
+                    $ref: '#/components/schemas/CursorMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /parishes/{parishId}/masses/{massId}:
     get:
@@ -594,46 +1018,94 @@ paths:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: massId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200': { description: Mass details }
+        '200':
+          description: Szczegóły mszy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      mass:
+                        $ref: '#/components/schemas/Mass'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/masses/{massId}/attendance:
     post:
       tags: [Masses]
-      security: [{ BearerAuth: [] }]
-      summary: Zapisz obecność
+      summary: Zapisz attendance użytkownika na mszę
+      description: Wymaga zalogowania i zweryfikowanego emaila.
+      security:
+        - BearerAuth: []
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: massId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '201': { description: Attendance registered }
-        '403': { $ref: '#/components/responses/Forbidden' }
+        '201':
+          description: Attendance zapisany
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      attending:
+                        type: boolean
+                      mass_id:
+                        type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
       tags: [Masses]
-      security: [{ BearerAuth: [] }]
-      summary: Usuń obecność
+      summary: Usuń attendance użytkownika z mszy
+      description: Wymaga zalogowania i zweryfikowanego emaila.
+      security:
+        - BearerAuth: []
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: massId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '204': { description: Removed }
+        '204':
+          description: Attendance usunięty
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/announcements/current:
     get:
@@ -643,9 +1115,25 @@ paths:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200': { description: Current announcement set }
+        '200':
+          description: Bieżące ogłoszenia
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      announcement:
+                        oneOf:
+                          - $ref: '#/components/schemas/CurrentAnnouncement'
+                          - type: 'null'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/announcements:
     get:
@@ -655,7 +1143,8 @@ paths:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: query
           name: period
           schema:
@@ -663,10 +1152,11 @@ paths:
             enum: [past, future]
         - in: query
           name: cursor
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
-          description: Cursor list
+          description: Lista pakietów ogłoszeń
           content:
             application/json:
               schema:
@@ -674,46 +1164,57 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: '#/components/schemas/Announcement' }
-                  meta: { $ref: '#/components/schemas/CursorMeta' }
+                    items:
+                      $ref: '#/components/schemas/Announcement'
+                  meta:
+                    $ref: '#/components/schemas/CursorMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/announcements/{packageId}/pdf:
     get:
       tags: [Announcements]
-      summary: PDF pakietu ogłoszeń
+      summary: Pobierz PDF pakietu ogłoszeń
+      description: Endpoint publiczny.
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: packageId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
         '200':
-          description: PDF file
+          description: PDF
           content:
             application/pdf:
               schema:
                 type: string
                 format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/news:
     get:
       tags: [News]
-      summary: Lista aktualności
+      summary: Lista aktualności parafii
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: query
           name: cursor
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
-          description: Cursor list
+          description: Lista newsów
           content:
             application/json:
               schema:
@@ -721,8 +1222,12 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: '#/components/schemas/News' }
-                  meta: { $ref: '#/components/schemas/CursorMeta' }
+                    items:
+                      $ref: '#/components/schemas/News'
+                  meta:
+                    $ref: '#/components/schemas/CursorMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/news/{newsId}:
     get:
@@ -732,33 +1237,51 @@ paths:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: newsId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200': { description: News details }
+        '200':
+          description: Szczegóły newsa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      news:
+                        $ref: '#/components/schemas/News'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parishes/{parishId}/news/{newsId}/comments:
     get:
       tags: [News]
-      summary: Lista komentarzy
+      summary: Lista komentarzy pod aktualnością
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: newsId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: query
           name: cursor
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
-          description: Cursor list
+          description: Lista komentarzy
           content:
             application/json:
               schema:
@@ -766,22 +1289,29 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: '#/components/schemas/NewsComment' }
-                  meta: { $ref: '#/components/schemas/CursorMeta' }
-
+                    items:
+                      $ref: '#/components/schemas/NewsComment'
+                  meta:
+                    $ref: '#/components/schemas/CursorMeta'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
       tags: [News]
-      security: [{ BearerAuth: [] }]
-      summary: Dodaj komentarz
+      summary: Dodaj komentarz do aktualności
+      description: Wymaga zalogowania i zweryfikowanego emaila.
+      security:
+        - BearerAuth: []
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: newsId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -790,42 +1320,102 @@ paths:
               type: object
               required: [body]
               properties:
-                body: { type: string, minLength: 1, maxLength: 2000 }
+                body:
+                  type: string
+                  minLength: 2
+                  maxLength: 2000
       responses:
-        '201': { description: Comment created }
+        '201':
+          description: Komentarz dodany
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      comment:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          body:
+                            type: string
+                          created_at:
+                            type: string
+                            format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /parishes/{parishId}/news/{newsId}/comments/{commentId}:
     delete:
       tags: [News]
-      security: [{ BearerAuth: [] }]
-      summary: Usuń komentarz
+      summary: Usuń własny komentarz
+      description: Wymaga zalogowania i zweryfikowanego emaila.
+      security:
+        - BearerAuth: []
       parameters:
         - in: path
           name: parishId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: newsId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: path
           name: commentId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '204': { description: Deleted }
+        '204':
+          description: Komentarz usunięty
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /me:
     get:
       tags: [Me]
-      security: [{ BearerAuth: [] }]
-      summary: Profil bieżącego użytkownika
+      summary: Pobierz profil zalogowanego użytkownika
+      security:
+        - BearerAuth: []
       responses:
-        '200': { description: Current user }
+        '200':
+          description: Profil użytkownika
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     patch:
       tags: [Me]
-      security: [{ BearerAuth: [] }]
-      summary: Aktualizacja profilu
+      summary: Zmień podstawowe dane profilu
+      description: |
+        Możliwa zmiana: imię, nazwisko, parafia domyślna.
+        Zmiana `default_parish_id` resetuje `is_parish_approved` i generuje nowy 9-cyfrowy kod weryfikacyjny.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -833,17 +1423,125 @@ paths:
             schema:
               type: object
               properties:
-                first_name: { type: string }
-                last_name: { type: string }
-                default_parish_id: { type: [integer, 'null'] }
+                first_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 80
+                last_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 80
+                default_parish_id:
+                  type: [integer, 'null']
       responses:
-        '200': { description: Updated }
+        '200':
+          description: Profil zaktualizowany
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /me/email:
+    patch:
+      tags: [Me]
+      summary: Zmień email użytkownika
+      description: Zmiana email resetuje `is_email_verified` i wysyła nowy link weryfikacyjny.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, current_password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                current_password:
+                  type: string
+      responses:
+        '200':
+          description: Email zaktualizowany
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [EMAIL_UPDATED_VERIFICATION_REQUIRED, EMAIL_UNCHANGED]
+                      user:
+                        $ref: '#/components/schemas/User'
+                      requires_email_verification:
+                        type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /me/password:
+    patch:
+      tags: [Me]
+      summary: Zmień hasło zalogowanego użytkownika
+      description: Wymaga bieżącego hasła i wylogowuje wszystkie sesje API po zmianie.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password:
+                  type: string
+                password:
+                  type: string
+                  minLength: 10
+                  maxLength: 72
+                password_confirmation:
+                  type: string
+      responses:
+        '200':
+          description: Hasło zmienione
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [PASSWORD_CHANGED]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /me/avatar:
     post:
       tags: [Me]
-      security: [{ BearerAuth: [] }]
-      summary: Upload avatara
+      summary: Wgraj avatar użytkownika
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -856,108 +1554,174 @@ paths:
                   type: string
                   format: binary
       responses:
-        '201': { description: Uploaded }
+        '201':
+          description: Avatar zapisany
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      avatar_url:
+                        type: [string, 'null']
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
     delete:
       tags: [Me]
-      security: [{ BearerAuth: [] }]
-      summary: Usuń avatar
+      summary: Usuń avatar użytkownika
+      security:
+        - BearerAuth: []
       responses:
-        '204': { description: Deleted }
+        '204':
+          description: Avatar usunięty
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /me/parish-approval-code/regenerate:
     post:
       tags: [Me]
-      security: [{ BearerAuth: [] }]
-      summary: Regeneruj kod zatwierdzenia parafialnego
+      summary: Wygeneruj nowy 9-cyfrowy kod zatwierdzenia parafialnego
+      security:
+        - BearerAuth: []
       responses:
-        '200': { description: Code regenerated }
+        '200':
+          description: Nowy kod wygenerowany
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      parish_approval_code:
+                        type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /me/devices:
     post:
       tags: [Devices]
-      security: [{ BearerAuth: [] }]
-      summary: Rejestracja tokenu push
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeviceInput'
-      responses:
-        '200': { description: Device upserted }
-
-  /me/devices/{deviceId}:
-    delete:
-      tags: [Devices]
-      security: [{ BearerAuth: [] }]
-      summary: Usuń urządzenie
-      parameters:
-        - in: path
-          name: deviceId
-          required: true
-          schema: { type: integer }
-      responses:
-        '204': { description: Deleted }
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /me/notification-preferences:
-    patch:
-      tags: [Notifications]
-      security: [{ BearerAuth: [] }]
-      summary: Aktualizacja preferencji notyfikacji
+      summary: Rejestracja tokenu push dla urządzenia
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [news, announcements, office_messages, parish_approval_status, auth_security]
+              required: [provider, platform, push_token, device_id, app_version]
               properties:
-                news:
-                  type: object
-                  required: [push, email]
-                  properties:
-                    push: { type: boolean }
-                    email: { type: boolean }
-                announcements:
-                  type: object
-                  required: [push, email]
-                  properties:
-                    push: { type: boolean }
-                    email: { type: boolean }
-                office_messages:
-                  type: object
-                  required: [push, email]
-                  properties:
-                    push: { type: boolean }
-                    email: { type: boolean }
-                parish_approval_status:
-                  type: object
-                  required: [push, email]
-                  properties:
-                    push: { type: boolean }
-                    email: { type: boolean }
-                auth_security:
-                  type: object
-                  required: [push, email]
-                  properties:
-                    push: { type: boolean }
-                    email: { type: boolean }
+                provider:
+                  type: string
+                  enum: [fcm, apns]
+                platform:
+                  type: string
+                  enum: [android, ios]
+                push_token:
+                  type: string
+                  maxLength: 4096
+                device_id:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                device_name:
+                  type: [string, 'null']
+                app_version:
+                  type: string
+                locale:
+                  type: [string, 'null']
+                timezone:
+                  type: [string, 'null']
       responses:
-        '200': { description: Updated }
+        '200':
+          description: Urządzenie zapisane
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Device'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /me/devices/{deviceId}:
+    delete:
+      tags: [Devices]
+      summary: Usuń urządzenie z listy push
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Urządzenie usunięte
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /me/notification-preferences:
+    patch:
+      tags: [Notifications]
+      summary: Zmień preferencje powiadomień użytkownika
+      description: |
+        In-app pozostaje aktywne dla zdarzeń produktowych.
+        Użytkownik może samodzielnie kontrolować kanały `push` i `email` dla każdego typu.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferencesInput'
+      responses:
+        '200':
+          description: Preferencje zapisane
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      updated:
+                        type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /me/notifications:
     get:
       tags: [Notifications]
-      security: [{ BearerAuth: [] }]
-      summary: Lista notyfikacji użytkownika
+      summary: Lista notyfikacji in-app użytkownika
+      security:
+        - BearerAuth: []
       parameters:
         - in: query
           name: cursor
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
-          description: Cursor list
+          description: Lista notyfikacji
           content:
             application/json:
               schema:
@@ -965,33 +1729,78 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: '#/components/schemas/NotificationItem' }
-                  meta: { $ref: '#/components/schemas/CursorMeta' }
+                    items:
+                      $ref: '#/components/schemas/NotificationItem'
+                  meta:
+                    $ref: '#/components/schemas/CursorMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /me/notifications/{id}/read:
     post:
       tags: [Notifications]
-      security: [{ BearerAuth: [] }]
       summary: Oznacz notyfikację jako przeczytaną
+      security:
+        - BearerAuth: []
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       responses:
-        '200': { description: Marked as read }
+        '200':
+          description: Notyfikacja oznaczona jako przeczytana
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      read_at:
+                        type: [string, 'null']
+                        format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /office/chats:
     get:
       tags: [Office]
-      security: [{ BearerAuth: [] }]
-      summary: Lista konwersacji kancelarii (wymaga zatwierdzenia parafialnego)
+      summary: Lista czatów kancelarii użytkownika
+      description: Wymaga `email_verified` oraz `parish_approved`.
+      security:
+        - BearerAuth: []
       responses:
-        '200': { description: Chat list }
+        '200':
+          description: Lista czatów
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OfficeChat'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     post:
       tags: [Office]
-      security: [{ BearerAuth: [] }]
-      summary: Inicjacja konwersacji przez użytkownika
+      summary: Rozpocznij nową rozmowę z kancelarią własnej parafii
+      description: Wymaga `email_verified` oraz `parish_approved`.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -1000,27 +1809,54 @@ paths:
               type: object
               required: [parish_id, message]
               properties:
-                parish_id: { type: integer }
-                message: { type: string, minLength: 1, maxLength: 5000 }
+                parish_id:
+                  type: integer
+                message:
+                  type: string
+                  minLength: 2
+                  maxLength: 5000
       responses:
-        '201': { description: Chat created }
+        '201':
+          description: Czat utworzony
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      chat:
+                        $ref: '#/components/schemas/OfficeChat'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /office/chats/{chatId}/messages:
     get:
       tags: [Office]
-      security: [{ BearerAuth: [] }]
-      summary: Lista wiadomości konwersacji
+      summary: Lista wiadomości w czacie kancelarii
+      description: Wymaga `email_verified` oraz `parish_approved`.
+      security:
+        - BearerAuth: []
       parameters:
         - in: path
           name: chatId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
         - in: query
           name: cursor
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
-          description: Cursor list
+          description: Lista wiadomości
           content:
             application/json:
               schema:
@@ -1028,39 +1864,75 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: '#/components/schemas/OfficeMessage' }
-                  meta: { $ref: '#/components/schemas/CursorMeta' }
-
+                    items:
+                      $ref: '#/components/schemas/OfficeMessage'
+                  meta:
+                    $ref: '#/components/schemas/CursorMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
       tags: [Office]
-      security: [{ BearerAuth: [] }]
-      summary: Wyślij wiadomość tekstową
+      summary: Wyślij wiadomość tekstową do kancelarii
+      description: Wymaga `email_verified` oraz `parish_approved`.
+      security:
+        - BearerAuth: []
       parameters:
         - in: path
           name: chatId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required: [body]
               properties:
-                body: { type: string, maxLength: 5000 }
+                body:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
       responses:
-        '201': { description: Message created }
+        '201':
+          description: Wiadomość wysłana
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        $ref: '#/components/schemas/OfficeMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
   /office/chats/{chatId}/attachments:
     post:
       tags: [Office]
-      security: [{ BearerAuth: [] }]
-      summary: Wyślij wiadomość z załącznikami
+      summary: Wyślij wiadomość z załącznikami do kancelarii
+      description: Wymaga `email_verified` oraz `parish_approved`.
+      security:
+        - BearerAuth: []
       parameters:
         - in: path
           name: chatId
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -1069,7 +1941,8 @@ paths:
               type: object
               required: [files]
               properties:
-                body: { type: [string, 'null'] }
+                body:
+                  type: [string, 'null']
                 files:
                   type: array
                   minItems: 1
@@ -1078,4 +1951,58 @@ paths:
                     type: string
                     format: binary
       responses:
-        '201': { description: Message with attachments created }
+        '201':
+          description: Wiadomość z załącznikami wysłana
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        $ref: '#/components/schemas/OfficeMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /office/chats/{chatId}/attachments/{attachmentId}:
+    get:
+      tags: [Office]
+      summary: Pobierz załącznik kancelarii
+      description: |
+        Endpoint chroniony. Załącznik może pobrać wyłącznie strona danej rozmowy.
+        W API mobilnym nie przewiduje się dostępu superadmina.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: attachmentId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Plik binarny
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'

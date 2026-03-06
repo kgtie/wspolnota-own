@@ -11,10 +11,13 @@ use App\Http\Requests\Api\Auth\RefreshRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Http\Requests\Api\Auth\ResetPasswordRequest;
 use App\Models\User;
+use App\Notifications\ApiResetPasswordNotification;
+use App\Notifications\ApiVerifyEmailNotification;
 use App\Services\Auth\MobileTokenService;
 use App\Support\Api\ErrorCode;
 use App\Support\Api\UserPayload;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -36,13 +39,15 @@ class AuthController extends ApiController
             'email' => (string) $request->string('email'),
             'password' => (string) $request->string('password'),
             'home_parish_id' => $request->input('default_parish_id'),
-            'current_parish_id' => $request->input('default_parish_id'),
             'role' => 0,
             'status' => 'active',
         ]);
 
-        $user->generateVerificationCode();
-        $user->sendEmailVerificationNotification();
+        if ($user->home_parish_id) {
+            $user->generateVerificationCode();
+        }
+
+        $user->notify(new ApiVerifyEmailNotification);
 
         $tokens = $this->tokenService->issuePair($user, $request);
 
@@ -78,6 +83,55 @@ class AuthController extends ApiController
             'tokens' => $this->tokensPayload($tokens),
             'access_level' => $this->resolveAccessLevel($user),
             'requires_email_verification' => ! $user->hasVerifiedEmail(),
+        ]);
+    }
+
+    public function sendVerificationNotification(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->success([
+                'status' => 'EMAIL_ALREADY_VERIFIED',
+                'user' => UserPayload::make($user->fresh()),
+            ]);
+        }
+
+        $user->notify(new ApiVerifyEmailNotification);
+
+        return $this->success([
+            'status' => 'EMAIL_VERIFICATION_SENT',
+            'user' => UserPayload::make($user->fresh()),
+        ]);
+    }
+
+    public function verifyEmail(Request $request, int $id, string $hash): JsonResponse
+    {
+        $user = User::query()->findOrFail($id);
+
+        if (! $request->hasValidSignature()) {
+            throw new ApiException(ErrorCode::FORBIDDEN, 'Link weryfikacyjny jest nieprawidłowy lub wygasł.', 403);
+        }
+
+        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            throw new ApiException(ErrorCode::FORBIDDEN, 'Link weryfikacyjny jest nieprawidłowy.', 403);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->success([
+                'status' => 'EMAIL_ALREADY_VERIFIED',
+                'user' => UserPayload::make($user->fresh()),
+            ]);
+        }
+
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        return $this->success([
+            'status' => 'EMAIL_VERIFIED',
+            'user' => UserPayload::make($user->fresh()),
         ]);
     }
 
@@ -133,9 +187,14 @@ class AuthController extends ApiController
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        Password::sendResetLink([
-            'email' => (string) $request->string('email'),
-        ]);
+        $user = User::query()
+            ->where('email', (string) $request->string('email'))
+            ->first();
+
+        if ($user) {
+            $token = Password::broker()->createToken($user);
+            $user->notify(new ApiResetPasswordNotification($token));
+        }
 
         return $this->success([
             'status' => 'PASSWORD_RESET_EMAIL_SENT_IF_EXISTS',

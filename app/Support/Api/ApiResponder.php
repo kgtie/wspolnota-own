@@ -3,6 +3,7 @@
 namespace App\Support\Api;
 
 use Illuminate\Http\JsonResponse;
+
 trait ApiResponder
 {
     protected function success(array $payload = [], int $status = 200): JsonResponse

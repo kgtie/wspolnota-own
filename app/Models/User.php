@@ -294,6 +294,21 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
         ]);
     }
 
+    public function resetParishApproval(): void
+    {
+        $this->forceFill([
+            'is_user_verified' => false,
+            'user_verified_at' => null,
+            'verified_by_user_id' => null,
+            'verification_code' => null,
+        ])->save();
+    }
+
+    public function canAccessOffice(): bool
+    {
+        return $this->hasVerifiedEmail() && (bool) $this->is_user_verified;
+    }
+
     // =========================================
     // SCOPE'Y
     // =========================================

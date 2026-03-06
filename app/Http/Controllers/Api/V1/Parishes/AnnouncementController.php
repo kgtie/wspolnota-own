@@ -81,11 +81,16 @@ class AnnouncementController extends ApiController
             'week_label' => $set->week_label,
             'lead' => $set->lead,
             'footer_notes' => $set->footer_notes,
+            'summary_ai' => $set->summary_ai,
             'effective_from' => optional($set->effective_from)?->toDateString(),
             'effective_to' => optional($set->effective_to)?->toDateString(),
             'published_at' => optional($set->published_at)?->toISOString(),
             'created_at' => optional($set->created_at)?->toISOString(),
             'updated_at' => optional($set->updated_at)?->toISOString(),
+            'pdf_url' => route('api.v1.announcements.pdf', [
+                'parishId' => $set->parish_id,
+                'packageId' => $set->getKey(),
+            ]),
         ];
 
         if ($withItems) {
