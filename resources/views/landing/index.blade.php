@@ -1,518 +1,261 @@
-<!DOCTYPE html>
-<html lang="pl" data-bs-theme="light">
+@extends('layouts.landing')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description"
-        content="Wspólnota to nowoczesna platforma do zarządzania parafią w chmurze. Intuicyjna aplikacja dla proboszcza i parafian. Dołącz do listy oczekujących już dziś!">
-    <meta name="keywords" content="Wspólnota, aplikacja, logowanie, zarządzanie">
-    <meta name="author" content="Konrad Gruza">
-    <meta name="theme-color" content="#f0f0f0ff" />
+@section('title', 'Wspólnota | Nowoczesna strona główna usługi dla parafii')
+@section('meta_description', 'Wspólnota porządkuje komunikację parafii: msze, ogłoszenia, aktualności, kancelaria online i panel proboszcza w jednym miejscu.')
 
-    <title>⛪ Wspólnota - Platforma do zarządzania parafią</title>
+@section('content')
+    <section class="grid gap-8 pb-10 pt-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pb-16 lg:pt-10">
+        <div class="space-y-8">
+            <span class="eyebrow">Usługa dla parafii, które chcą być bliżej ludzi</span>
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+            <div class="space-y-5">
+                <h1 class="font-display text-5xl leading-[0.95] text-balance text-stone-950 sm:text-6xl lg:text-7xl">
+                    Parafia, która nadąża za codziennością.
+                </h1>
+                <p class="max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">
+                    Wspólnota łączy panel administratora dla proboszcza z prostą aplikacją PWA dla parafian. Msze, ogłoszenia, aktualności i kancelaria online trafiają tam, gdzie naprawdę dzieje się życie: do telefonu i przeglądarki.
+                </p>
+            </div>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <a href="{{ route('landing.contact') }}" class="inline-flex items-center justify-center rounded-full bg-stone-950 px-6 py-3 text-base font-semibold text-white transition hover:bg-[#b87333]">
+                    Porozmawiajmy o wdrożeniu
+                </a>
+                <a href="{{ route('login') }}" class="inline-flex items-center justify-center rounded-full border border-stone-300 px-6 py-3 text-base font-semibold text-stone-700 transition hover:border-stone-900 hover:text-stone-950">
+                    Wejście do panelu proboszcza
+                </a>
+            </div>
 
-    <style>
-        /* --- CUSTOM CSS --- */
-        body {
-            font-family: 'Poppins', sans-serif;
-            transition: background 0.5s ease;
-        }
+            <dl class="grid gap-4 sm:grid-cols-3">
+                <div class="panel px-5 py-4">
+                    <dt class="text-sm text-stone-500">Dla parafii</dt>
+                    <dd class="mt-2 text-2xl font-extrabold text-stone-950">1 panel</dd>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">Jedno miejsce do zarządzania mszami, ogłoszeniami, aktualnościami i wiadomościami.</p>
+                </div>
+                <div class="panel px-5 py-4">
+                    <dt class="text-sm text-stone-500">Dla parafian</dt>
+                    <dd class="mt-2 text-2xl font-extrabold text-stone-950">PWA</dd>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">Działa w przeglądarce i na telefonie, bez ciężkiego wdrożenia po stronie użytkownika.</p>
+                </div>
+                <div class="panel px-5 py-4">
+                    <dt class="text-sm text-stone-500">Komunikacja</dt>
+                    <dd class="mt-2 text-2xl font-extrabold text-stone-950">24/7</dd>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">Ogłoszenia, newsy i kontakt z kancelarią są dostępne wtedy, gdy parafianin ich potrzebuje.</p>
+                </div>
+            </dl>
+        </div>
 
-        /* Gradienty tła */
-        [data-bs-theme="light"] body {
-            background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
-            background-attachment: fixed;
-        }
-
-        [data-bs-theme="dark"] body {
-            background: linear-gradient(120deg, #2b1055 0%, #1e3c72 100%);
-            background-attachment: fixed;
-        }
-
-        /* Glassmorphism - Klasa Bazowa */
-        .glass-card {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        [data-bs-theme="light"] .glass-card {
-            background: rgba(255, 255, 255, 0.6);
-        }
-
-        [data-bs-theme="dark"] .glass-card {
-            background: rgba(33, 37, 41, 0.6);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(79, 70, 229, 0.2);
-        }
-
-        /* Nawigacja */
-        .navbar-glass {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        [data-bs-theme="dark"] .navbar-glass {
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        /* Ikony i Teksty */
-        .icon-lg {
-            font-size: 3.5rem;
-            background: -webkit-linear-gradient(45deg, #4F46E5, #F59E0B);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Tło dekoracyjne */
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            z-index: -1;
-            filter: blur(60px);
-            animation: float 8s infinite ease-in-out;
-            opacity: 0.6;
-        }
-
-        .s1 {
-            width: 300px;
-            height: 300px;
-            background: #667eea;
-            top: -50px;
-            left: -50px;
-        }
-
-        .s2 {
-            width: 400px;
-            height: 400px;
-            background: #764ba2;
-            bottom: 10%;
-            right: -50px;
-            animation-delay: 2s;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-30px);
-            }
-        }
-
-        .btn-gradient {
-            background: linear-gradient(90deg, #4F46E5 0%, #7c3aed 100%);
-            color: white;
-            border: none;
-        }
-
-        .btn-gradient:hover {
-            background: linear-gradient(90deg, #4338ca 0%, #6d28d9 100%);
-            color: white;
-            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
-        }
-
-        /* --- NOWE STYLE DLA FAQ (Accordion) --- */
-        .accordion-glass .accordion-item {
-            background: transparent;
-            border: none;
-            margin-bottom: 1rem;
-        }
-
-        .accordion-glass .accordion-button {
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 15px !important;
-            backdrop-filter: blur(5px);
-            box-shadow: none;
-            font-weight: 600;
-            color: inherit;
-            /* Dziedziczy kolor tekstu z body */
-        }
-
-        [data-bs-theme="dark"] .accordion-glass .accordion-button {
-            background: rgba(0, 0, 0, 0.3);
-            color: #fff;
-        }
-
-        .accordion-glass .accordion-button:not(.collapsed) {
-            background: rgba(79, 70, 229, 0.1);
-            /* Lekki fiolet po otwarciu */
-            color: var(--bs-primary);
-            box-shadow: none;
-        }
-
-        .accordion-glass .accordion-body {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 0 0 15px 15px;
-            padding: 1.5rem;
-        }
-
-        [data-bs-theme="dark"] .accordion-glass .accordion-body {
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        /* --- NOWE STYLE DLA ROADMAPY --- */
-        .roadmap-step {
-            position: relative;
-            padding-left: 30px;
-            border-left: 2px solid rgba(79, 70, 229, 0.3);
-            padding-bottom: 30px;
-        }
-
-        .roadmap-step:last-child {
-            border-left: none;
-        }
-
-        .roadmap-dot {
-            position: absolute;
-            left: -11px;
-            top: 0;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--bs-primary);
-            border: 4px solid var(--bs-body-bg);
-            /* Otwór w środku */
-        }
-    </style>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
-</head>
-
-<body>
-    @if (session('status'))
-        <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
-            <div id="statusToast" class="toast align-items-center text-bg-success border-0" role="alert"
-                aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
-
-                <div class="d-flex">
-                    <div class="toast-body">
-                        {{ session('status') }}
+        <div class="panel relative overflow-hidden px-6 py-6 sm:px-8 sm:py-8">
+            <div class="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#b8733380] to-transparent"></div>
+            <div class="grid gap-4">
+                <div class="landing-elevated-card p-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-stone-900">Panel administratora</p>
+                            <p class="mt-1 text-sm text-stone-500">Kalendarz, ogłoszenia, kancelaria online</p>
+                        </div>
+                        <span class="landing-status-pill px-3 py-1 text-xs font-bold uppercase tracking-[0.2em]">Live</span>
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close">
-                    </button>
+                    <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-2xl bg-stone-950 px-4 py-4 text-white">
+                            <p class="text-xs uppercase tracking-[0.24em] text-stone-300">Najbliższy tydzień</p>
+                            <p class="mt-3 text-2xl font-bold">12 mszy</p>
+                            <p class="mt-2 text-sm text-stone-300">Gotowe do publikacji wraz z intencjami.</p>
+                        </div>
+                        <div class="landing-metric-card px-4 py-4 text-white">
+                            <p class="text-xs uppercase tracking-[0.24em] text-white/70">Komunikacja</p>
+                            <p class="mt-3 text-2xl font-bold">8 rozmów</p>
+                            <p class="mt-2 text-sm text-white/80">Kancelaria online porządkuje zapytania bez chaosu w skrzynce.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="landing-soft-card p-6">
+                    <p class="text-xs font-bold uppercase tracking-[0.28em] text-stone-500">Wspólnota w praktyce</p>
+                    <ul class="mt-4 space-y-3 text-sm leading-6 text-stone-600">
+                        <li>Parafianin sprawdza najbliższe msze i zapisuje swoją obecność.</li>
+                        <li>Proboszcz publikuje ogłoszenia raz, a parafianie dostają je od razu w aplikacji.</li>
+                        <li>Aktualności i kancelaria online porządkują kontakt bez mnożenia kanałów.</li>
+                    </ul>
                 </div>
             </div>
         </div>
-    @endif
+    </section>
 
+    <section id="funkcje" class="space-y-6 py-10 lg:py-14">
+        <div class="max-w-3xl space-y-3">
+            <span class="eyebrow">Co dokładnie robi Wspólnota</span>
+            <h2 class="font-display text-4xl text-stone-950 sm:text-5xl">Usługa, która porządkuje rytm parafii zamiast dokładać kolejny system.</h2>
+            <p class="text-lg leading-8 text-stone-600">
+                Zamiast rozproszonych komunikatów, papierowych list i wiadomości rozsianych po kilku kanałach, parafia dostaje jedno centrum pracy. Parafianin zyskuje prostą drogę do informacji. Proboszcz odzyskuje czas.
+            </p>
+        </div>
 
-    <div class="overflow-hidden position-fixed w-100 h-100" style="z-index: -2; pointer-events: none;">
-        <div class="shape s1"></div>
-        <div class="shape s2"></div>
-    </div>
+        <div class="grid gap-5 lg:grid-cols-3">
+            <article class="feature-card">
+                <p class="feature-index">01</p>
+                <h3 class="mt-4 text-2xl font-bold text-stone-950">Msze i intencje bez chaosu</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">
+                    Kalendarz mszy, szczegóły celebracji, zapisy obecności i gotowe wydruki do wykorzystania w parafii. Wszystko spójne dla administratora i czytelne dla parafian.
+                </p>
+            </article>
+            <article class="feature-card">
+                <p class="feature-index">02</p>
+                <h3 class="mt-4 text-2xl font-bold text-stone-950">Ogłoszenia, które naprawdę docierają</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">
+                    Tygodniowe zestawy ogłoszeń, ich streszczenia, możliwość udostępniania i wygodny podgląd historii. Jedna publikacja, wiele punktów styku z wiernymi.
+                </p>
+            </article>
+            <article class="feature-card">
+                <p class="feature-index">03</p>
+                <h3 class="mt-4 text-2xl font-bold text-stone-950">Kancelaria online z ludzkim tempem</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">
+                    Prywatne rozmowy i bezpieczne załączniki porządkują sprawy urzędowe, bez konieczności przerzucania wszystkiego na prywatne komunikatory czy przypadkowe maile.
+                </p>
+            </article>
+        </div>
+    </section>
 
-    <nav class="navbar navbar-expand-lg fixed-top navbar-glass">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">
-                ⛪ Wspólnota App
+    <section class="grid gap-6 py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start lg:py-14">
+        <div class="panel px-6 py-6 sm:px-8">
+            <span class="eyebrow">Dla proboszcza i zespołu parafii</span>
+            <h2 class="mt-4 font-display text-4xl text-stone-950">Panel, który nie wymaga instrukcji obsługi.</h2>
+            <p class="mt-4 text-base leading-8 text-stone-600">
+                Dashboard pokazuje najważniejsze sprawy parafii, przypomina o publikacjach i porządkuje codzienną administrację. Wspólnota nie próbuje zastąpić duszpasterstwa. Ona usuwa tarcie organizacyjne.
+            </p>
+            <ul class="mt-6 space-y-3 text-sm leading-7 text-stone-600">
+                <li>Publikacja mszy, ogłoszeń i aktualności z jednego miejsca.</li>
+                <li>Podgląd zgłoszeń i rozmów z kancelarii online.</li>
+                <li>Wygodne zarządzanie użytkownikami i statystykami parafii.</li>
+            </ul>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div class="panel px-6 py-6">
+                <p class="text-xs font-bold uppercase tracking-[0.26em] text-stone-500">Aktualności</p>
+                <h3 class="mt-3 text-2xl font-bold text-stone-950">Blog parafialny z komentarzami i mediami</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">Wpisy działają jak newsroom parafii: od krótkiej informacji po większy artykuł ze zdjęciami lub plikami.</p>
+            </div>
+            <div class="panel px-6 py-6">
+                <p class="text-xs font-bold uppercase tracking-[0.26em] text-stone-500">Powiadomienia</p>
+                <h3 class="mt-3 text-2xl font-bold text-stone-950">Przypomnienia i komunikaty trafiają na czas</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">Usługa wspiera parafię w wysyłce informacji o mszach, ogłoszeniach i nowych treściach bez ręcznego przypominania każdemu z osobna.</p>
+            </div>
+            <div class="panel px-6 py-6 sm:col-span-2">
+                <p class="text-xs font-bold uppercase tracking-[0.26em] text-stone-500">Ton usługi</p>
+                <blockquote class="mt-3 max-w-3xl font-display text-3xl leading-tight text-stone-950">
+                    „Technologia ma być tu cicha. Ma zostawić więcej miejsca na obecność, rozmowę i porządek”.
+                </blockquote>
+            </div>
+        </div>
+    </section>
+
+    <section id="ekrany" class="space-y-6 py-10 lg:py-14">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div class="max-w-3xl">
+                <span class="eyebrow">Miejsca na screeny</span>
+                <h2 class="mt-3 font-display text-4xl text-stone-950 sm:text-5xl">Tu możesz wstawić kluczowe widoki usługi.</h2>
+                <p class="mt-3 text-lg leading-8 text-stone-600">
+                    Zostawiłem gotowe boksy na zrzuty ekranu, aby można było później podmienić je na prawdziwe widoki aplikacji i panelu bez przebudowy układu strony.
+                </p>
+            </div>
+            <a href="{{ route('login') }}" class="inline-flex rounded-full border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-700 transition hover:border-stone-900 hover:text-stone-950">
+                Zobacz wejście do panelu
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        </div>
 
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav align-items-center gap-3">
-                    <li class="nav-item"><a class="nav-link" href="#details">Funkcje</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#roadmap">Rozwój</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#faq">Pytania</a></li>
-                    <li class="nav-item">
-                        <button class="btn btn-sm btn-outline-secondary rounded-circle" id="themeToggle">
-                            <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#newsletter" class="btn btn-primary btn-sm rounded-pill px-3">Dołącz</a>
-                    </li>
+        <div class="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+            <div class="screen-placeholder min-h-[22rem]">
+                <div>
+                    <p class="screen-label">Screen 01</p>
+                    <h3 class="mt-3 text-3xl font-bold text-stone-950">Panel administratora</h3>
+                    <p class="mt-2 max-w-md text-sm leading-7 text-stone-600">Miejsce na widok dashboardu proboszcza z modułami mszy, ogłoszeń i kancelarii online.</p>
+                </div>
+            </div>
+            <div class="grid gap-5">
+                <div class="screen-placeholder min-h-[10.5rem]">
+                    <div>
+                        <p class="screen-label">Screen 02</p>
+                        <h3 class="mt-3 text-2xl font-bold text-stone-950">Aplikacja PWA</h3>
+                        <p class="mt-2 text-sm leading-7 text-stone-600">Miejsce na ekran główny dla parafian z mszami i ogłoszeniami.</p>
+                    </div>
+                </div>
+                <div class="screen-placeholder min-h-[10.5rem]">
+                    <div>
+                        <p class="screen-label">Screen 03</p>
+                        <h3 class="mt-3 text-2xl font-bold text-stone-950">Kancelaria online</h3>
+                        <p class="mt-2 text-sm leading-7 text-stone-600">Miejsce na konwersację użytkownika z administracją parafii.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="cennik" class="space-y-6 py-10 lg:py-14">
+        <div class="max-w-3xl">
+            <span class="eyebrow">Pricing</span>
+            <h2 class="mt-3 font-display text-4xl text-stone-950 sm:text-5xl">Model wdrożenia dopasowany do etapu parafii.</h2>
+            <p class="mt-3 text-lg leading-8 text-stone-600">
+                W dokumentacji usługi zakładany jest start od wdrożeń pilotażowych, a następnie przejście do modelu abonamentowego. Sekcja poniżej komunikuje to w prosty i sprzedażowy sposób, bez obiecywania więcej niż gotowy etap produktu.
+            </p>
+        </div>
+
+        <div class="grid gap-5 xl:grid-cols-3">
+            <article class="pricing-card">
+                <p class="text-sm font-semibold text-stone-500">Pilotaż</p>
+                <h3 class="mt-3 text-3xl font-bold text-stone-950">0 zł</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">Dla parafii testowych uczestniczących w uruchomieniu usługi.</p>
+                <ul class="mt-6 space-y-3 text-sm leading-6 text-stone-700">
+                    <li>Panel administratora dla proboszcza</li>
+                    <li>Podstawowe moduły aplikacji PWA</li>
+                    <li>Wspólne dopracowanie wdrożenia</li>
                 </ul>
-            </div>
-        </div>
-    </nav>
+            </article>
 
-    <header class="d-flex align-items-center min-vh-100 text-center position-relative pt-5">
-        <div class="container pt-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <span class="badge rounded-pill bg-warning text-dark mb-3 px-3 py-2 shadow-sm">
-                        <i class="bi bi-rocket-takeoff-fill me-1"></i> Wersja wczesnorozwojowa Alpha 0.1
-                    </span>
-                    <h1 class="display-3 fw-bold mb-4">Zarządzanie Parafią<br>w Epoce Cyfrowej</h1>
-                    <p class="lead mb-5 opacity-75">
-                        Nowoczesny system w chmurze dla Proboszcza i intuicyjna aplikacja dla Parafian.
-                        Cyfryzacja, która łączy, a nie dzieli.
+            <article class="pricing-card pricing-card-featured">
+                <p class="text-sm font-semibold text-stone-700">Abonament parafialny</p>
+                <h3 class="mt-3 text-3xl font-bold text-stone-950">Po premierze</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-700">Docelowy model SaaS dla parafii, które chcą stałego dostępu do usługi i rozwoju funkcji.</p>
+                <ul class="mt-6 space-y-3 text-sm leading-6 text-stone-800">
+                    <li>Pełny pakiet komunikacji z parafianami</li>
+                    <li>Rozwój wraz z kolejnymi modułami</li>
+                    <li>Wsparcie wdrożeniowe i aktualizacje</li>
+                </ul>
+            </article>
+
+            <article class="pricing-card">
+                <p class="text-sm font-semibold text-stone-500">Wdrożenie indywidualne</p>
+                <h3 class="mt-3 text-3xl font-bold text-stone-950">Kontakt</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">Dla większych struktur, kilku parafii lub wdrożeń wymagających niestandardowego zakresu prac.</p>
+                <ul class="mt-6 space-y-3 text-sm leading-6 text-stone-700">
+                    <li>Ustalenie zakresu i harmonogramu</li>
+                    <li>Pomoc przy materiałach i konfiguracji</li>
+                    <li>Priorytetowy kontakt roboczy</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section class="py-10 lg:py-14">
+        <div class="panel overflow-hidden px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+            <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+                <div class="max-w-3xl">
+                    <span class="eyebrow">Gotowi na rozmowę</span>
+                    <h2 class="mt-3 font-display text-4xl text-stone-950 sm:text-5xl">Jeśli Twoja parafia chce wejść w cyfrową codzienność bez zadęcia, zacznijmy od prostej rozmowy.</h2>
+                    <p class="mt-4 text-lg leading-8 text-stone-600">
+                        Pokażemy kierunek wdrożenia, omówimy potrzeby parafii i zaplanujemy pierwsze materiały, w tym screeny do uzupełnienia na tej stronie.
                     </p>
-                    <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-                        <a href="#newsletter" class="btn btn-gradient btn-lg rounded-pill px-5 shadow">Zapisz się na
-                            listę oczekujących</a>
-                    </div>
                 </div>
-            </div>
-        </div>
-    </header>
 
-    <section id="details" class="py-5">
-        <div class="container py-5">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="card glass-card h-100 border-0 p-4 text-center text-md-start">
-                        <div class="card-body">
-                            <i class="bi bi-building-check icon-lg mb-3 d-block"></i>
-                            <h3 class="card-title fw-bold">Dla Parafii</h3>
-                            <p class="card-text opacity-75 mb-4">Bezpieczna i szybka administracja parafią.</p>
-                            <ul class="list-unstyled text-start">
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Zarządzanie
-                                    intencjami oraz ogłoszeniami parafialnymi</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Kancelaria
-                                    online</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Bezpośredni
-                                    kontakt z parafianami</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card glass-card h-100 border-0 p-4 text-center text-md-start">
-                        <div class="card-body">
-                            <i class="bi bi-phone-vibrate icon-lg mb-3 d-block"></i>
-                            <h3 class="card-title fw-bold">Dla Wiernych</h3>
-                            <p class="card-text opacity-75 mb-4">Wszystkie sprawy parafialne w kieszeni.</p>
-                            <ul class="list-unstyled text-start">
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Natychmiastowe
-                                    powiadomienia
-                                    o mszach</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Kontakt z
-                                    proboszczem online</li>
-                                <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Wygodny
-                                    podgląd intencji mszalnych i ogłoszeń parafialnych</li>
-                            </ul>
-                        </div>
-                    </div>
+                <div class="flex flex-col gap-3">
+                    <a href="{{ route('landing.contact') }}" class="inline-flex items-center justify-center rounded-full bg-stone-950 px-6 py-3 text-base font-semibold text-white transition hover:bg-[#b87333]">
+                        Przejdź do kontaktu
+                    </a>
+                    <a href="{{ route('landing.privacy') }}" class="inline-flex items-center justify-center rounded-full border border-stone-300 px-6 py-3 text-base font-semibold text-stone-700 transition hover:border-stone-900 hover:text-stone-950">
+                        Polityka prywatności
+                    </a>
                 </div>
             </div>
         </div>
     </section>
-
-    <section id="roadmap" class="py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">Nasz plan działania</h2>
-                <p class="opacity-75">Transparentnie o tym, gdzie jesteśmy i dokąd zmierzamy.</p>
-            </div>
-
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-lg-6">
-                    <div class="roadmap-step">
-                        <div class="roadmap-dot"></div>
-                        <div class="glass-card p-4 ms-3">
-                            <span class="badge bg-success mb-2">Ukończono</span>
-                            <h5 class="fw-bold">Faza Koncepcyjna</h5>
-                            <p class="small mb-0 opacity-75">Wiemy już, co chcemy stworzyć. Mamy konkretny plan na
-                                zbudowanie nowoczesnej Usługi, z której skorzystają nasze parafie oraz wszyscy wierni,
-                                którzy chcą być jeszcze bliżej swojej parafii. Na wyciągnięcie ręki. Po telefon.</p>
-                        </div>
-                    </div>
-
-                    <div class="roadmap-step">
-                        <div class="roadmap-dot bg-warning"></div>
-                        <div class="glass-card p-4 ms-3 border-warning">
-                            <span class="badge bg-warning text-dark mb-2">Jesteśmy tutaj</span>
-                            <h5 class="fw-bold">Budujemy usługę i aplikację</h5>
-                            <p class="small mb-0 opacity-75">Tworzymy oprogramowanie, rozwijamy nasze bazy danych oraz
-                                opracowujemy szereg zabezpieczeń dla naszych użytkowników. Rozpoczynamy także pierwsze
-                                testy z parafiami. Prowadzimy rownież zapisy do używania Usługi.</p>
-                        </div>
-                    </div>
-
-                    <div class="roadmap-step">
-                        <div class="roadmap-dot bg-secondary"></div>
-                        <div class="glass-card p-4 ms-3">
-                            <span class="badge bg-secondary mb-2">2026? :)</span>
-                            <h5 class="fw-bold">Publiczna premiera</h5>
-                            <p class="small mb-0 opacity-75">Chcemy jak najszybciej oddać naszą Usługę do użytkowania
-                                przez parafie i parafian. Dlatego też zapraszamy do zapisu na listę oczekujących. To
-                                realne wsparcie naszego porjektu :)</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="faq" class="py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">Pytania i Odpowiedzi</h2>
-                <p class="opacity-75">Rozwiewamy wątpliwości technologiczne i duszpasterskie.</p>
-            </div>
-
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="accordion accordion-glass" id="faqAccordion">
-
-                        <div class="accordion-item glass-card mb-3 p-0">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#faq1">
-                                    <i class="bi bi-shield-lock-fill me-2 text-primary"></i>
-                                    Czy dane parafian w chmurze są bezpieczne?
-                                </button>
-                            </h2>
-                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Absolutnie. Bezpieczeństwo to nasz priorytet. Korzystamy z szyfrowania klasy
-                                    bankowej (SSL/TLS). Ponadto wrazżliwe informacje w naszej bazie danych są
-                                    szyfrowane. Dostęp do nich jest ograniczony do konta użytkownika. Spełniamy
-                                    wszystkie wymogi RODO. Nikt niepowołany nie ma dostępu do danych.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="accordion-item glass-card mb-3 p-0">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#faq2">
-                                    <i class="bi bi-phone me-2 text-warning"></i>
-                                    Czy starsi parafianie poradzą sobie z aplikacją?
-                                </button>
-                            </h2>
-                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Projektujemy aplikację mobilną z myślą o seniorach. Duże czcionki, wysoki kontrast i
-                                    maksymalnie uproszczony interfejs. Dodatkowo, system pozwala parafii na
-                                    uporządkowany wydruk tradycyjnych ogłoszeń oraz listy intencji mszalnych
-                                    bezpośrednio z systemu, więc nikt nie zostanie wykluczony.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="accordion-item glass-card mb-3 p-0">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#faq3">
-                                    <i class="bi bi-wallet2 me-2 text-success"></i>
-                                    Ile to kosztuje parafię?
-                                </button>
-                            </h2>
-                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Przede wszystkim - aplikacja zawsze będzie darmowa dla wiernych - użytkowników
-                                    aplikacji.W fazie rozwoju (dopóki ona trwa) Usługa Wspólnoyta jest darmowa dla
-                                    parafii, którzy tę usługę testują. Docelowo model będzie oparty o dogodny abonament
-                                    dla parafii (SaaS). Pierwsze współpracujące parafie mogą liczyć na atrakcyjne
-                                    zniżki.
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="newsletter" class="py-5 mb-5">
-        <div class="container">
-            <div class="glass-card p-5 text-center position-relative overflow-hidden">
-                <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient opacity-10"
-                    style="background: linear-gradient(45deg, var(--bs-primary), transparent);"></div>
-
-                <div class="position-relative z-1">
-                    <h2 class="fw-bold mb-3">Zbudujmy to razem</h2>
-                    <p class="mb-4 opacity-75" style="max-width: 600px; margin: 0 auto;">
-                        Dołącz do newslettera, aby otrzymać powiadomienie o starcie i
-                        <strong>atrakcyjną zniżkę</strong> na abonament dla Twojej parafii.
-                    </p>
-                    <livewire:landing.join-waitlist />
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-5 mb-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">A może po prostu masz jakieś inne pytanie? A może po prostu chcesz do nas napisać?
-                </h2>
-                <p class="opacity-75">Ok :) Jesteśmy dostępni pod adresem: <a
-                        href="mailto:wspolnota@wspolnota.app"><span class="badge text-bg-success">
-                            wspolnota@wspolnota.app </span></a></p>
-            </div>
-        </div>
-    </section>
-
-    <footer class="text-center py-4 opacity-50">
-        <div class="container">
-            <small>&copy; 2025 Wspólnota</small>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    @livewireScripts
-    <script>
-        const themeToggleBtn = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const htmlElement = document.documentElement;
-
-        const setTheme = (theme) => {
-            if (theme === 'auto') {
-                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    htmlElement.setAttribute('data-bs-theme', 'dark');
-                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
-                } else {
-                    htmlElement.setAttribute('data-bs-theme', 'light');
-                    themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
-                }
-            } else {
-                htmlElement.setAttribute('data-bs-theme', theme);
-                if (theme === 'dark') {
-                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
-                } else {
-                    themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
-                }
-            }
-        };
-
-        const savedTheme = localStorage.getItem('theme');
-        setTheme(savedTheme ? savedTheme : 'auto');
-
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            setTheme(newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
-    </script>
-    @if (session('status'))
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const toastEl = document.getElementById('statusToast');
-                if (toastEl) {
-                    const toast = new bootstrap.Toast(toastEl);
-                    toast.show();
-                }
-            });
-        </script>
-    @endif
-</body>
-
-</html>
+@endsection

@@ -1,0 +1,326 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source "../views/layouts/landing.blade.php";
+@source "../views/landing/**/*.blade.php";
+@source "../js/**/*.js";
+
+@theme {
+    --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Fraunces", ui-serif, Georgia, serif;
+    --color-canvas: #f3efe6;
+    --color-panel: rgba(255, 251, 245, 0.78);
+    --color-accent: #b87333;
+    --color-accent-dark: #8e5520;
+    --color-olive: #4c5e3f;
+    --landing-shadow: 0 24px 80px rgba(58, 40, 24, 0.08);
+    --landing-panel-border: rgba(120, 90, 58, 0.14);
+    --landing-surface-strong: rgba(255, 251, 245, 0.84);
+    --landing-surface-elevated: rgba(255, 255, 255, 0.78);
+    --landing-surface-soft: rgba(245, 241, 232, 0.75);
+    --landing-muted: #57534e;
+    --landing-subtle: #6b645f;
+    --landing-title: #1c1917;
+    --landing-input-bg: rgba(255, 255, 255, 0.9);
+    --landing-input-border: rgba(120, 90, 58, 0.18);
+    --landing-screen-from: rgba(255, 255, 255, 0.8);
+    --landing-screen-to: rgba(244, 236, 221, 0.8);
+    --landing-screen-grid: rgba(184, 115, 51, 0.08);
+    --landing-screen-outline: rgba(255, 255, 255, 0.45);
+    --landing-accent-panel-shadow: 0 18px 60px rgba(76, 94, 63, 0.12);
+    --landing-feature-shadow: 0 24px 60px rgba(58, 40, 24, 0.06);
+    --landing-legal-shadow: 0 24px 60px rgba(58, 40, 24, 0.05);
+    --landing-pricing-featured-from: rgba(184, 115, 51, 0.18);
+    --landing-pricing-featured-to: rgba(255, 248, 240, 0.92);
+    --landing-success-bg: rgba(236, 253, 245, 0.92);
+    --landing-success-border: rgba(110, 231, 183, 0.55);
+    --landing-success-text: #065f46;
+    --landing-success-pill-bg: #d1fae5;
+    --landing-success-pill-text: #065f46;
+    --landing-cookie-bg: rgba(250, 247, 242, 0.96);
+}
+
+html.dark {
+    --color-canvas: #14110f;
+    --color-panel: rgba(28, 24, 22, 0.82);
+    --color-accent: #d39a65;
+    --color-accent-dark: #efc598;
+    --color-olive: #71856a;
+    --landing-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+    --landing-panel-border: rgba(255, 255, 255, 0.08);
+    --landing-surface-strong: rgba(34, 29, 26, 0.92);
+    --landing-surface-elevated: rgba(33, 28, 26, 0.88);
+    --landing-surface-soft: rgba(27, 23, 21, 0.88);
+    --landing-muted: #d6d3d1;
+    --landing-subtle: #a8a29e;
+    --landing-title: #f5f5f4;
+    --landing-input-bg: rgba(22, 18, 17, 0.88);
+    --landing-input-border: rgba(255, 255, 255, 0.12);
+    --landing-screen-from: rgba(35, 30, 28, 0.96);
+    --landing-screen-to: rgba(24, 20, 19, 0.96);
+    --landing-screen-grid: rgba(211, 154, 101, 0.11);
+    --landing-screen-outline: rgba(255, 255, 255, 0.06);
+    --landing-accent-panel-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+    --landing-feature-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    --landing-legal-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    --landing-pricing-featured-from: rgba(211, 154, 101, 0.22);
+    --landing-pricing-featured-to: rgba(40, 33, 29, 0.95);
+    --landing-success-bg: rgba(11, 47, 36, 0.9);
+    --landing-success-border: rgba(52, 211, 153, 0.32);
+    --landing-success-text: #d1fae5;
+    --landing-success-pill-bg: rgba(20, 83, 45, 0.72);
+    --landing-success-pill-text: #bbf7d0;
+    --landing-cookie-bg: rgba(24, 20, 18, 0.94);
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        font-family: var(--font-sans);
+        background:
+            radial-gradient(circle at top, rgba(255, 255, 255, 0.58), transparent 35%),
+            linear-gradient(180deg, #f7f1e7 0%, #f1ebdf 100%);
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    html.dark body {
+        background:
+            radial-gradient(circle at top, rgba(211, 154, 101, 0.08), transparent 28%),
+            linear-gradient(180deg, #1a1614 0%, #110f0e 100%);
+    }
+}
+
+@layer components {
+    .panel {
+        border: 1px solid var(--landing-panel-border);
+        border-radius: 2rem;
+        background: var(--color-panel);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--landing-shadow);
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        border-radius: 9999px;
+        border: 1px solid var(--landing-input-border);
+        background: color-mix(in srgb, var(--color-panel) 84%, transparent);
+        padding: 0.5rem 0.9rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-accent-dark);
+    }
+
+    .feature-card {
+        border: 1px solid var(--landing-panel-border);
+        border-radius: 2rem;
+        background: var(--landing-surface-strong);
+        padding: 1.75rem;
+        box-shadow: var(--landing-feature-shadow);
+    }
+
+    .feature-index {
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: var(--color-accent-dark);
+    }
+
+    .screen-placeholder {
+        display: flex;
+        align-items: end;
+        border: 1px dashed rgba(120, 90, 58, 0.28);
+        border-radius: 2rem;
+        background:
+            linear-gradient(135deg, var(--landing-screen-from), var(--landing-screen-to)),
+            linear-gradient(var(--landing-screen-grid) 1px, transparent 1px),
+            linear-gradient(90deg, var(--landing-screen-grid) 1px, transparent 1px);
+        background-size: auto, auto, 24px 24px;
+        background-position: 0 0, 0 0, 0 0;
+        padding: 1.75rem;
+        box-shadow: inset 0 0 0 1px var(--landing-screen-outline);
+    }
+
+    .screen-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--color-accent-dark);
+    }
+
+    .pricing-card {
+        border: 1px solid var(--landing-panel-border);
+        border-radius: 2rem;
+        background: var(--landing-surface-strong);
+        padding: 1.75rem;
+        box-shadow: var(--landing-feature-shadow);
+    }
+
+    .pricing-card-featured {
+        background:
+            linear-gradient(180deg, var(--landing-pricing-featured-from), var(--landing-pricing-featured-to));
+        border-color: rgba(184, 115, 51, 0.3);
+    }
+
+    .legal-stack {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .legal-card {
+        border: 1px solid var(--landing-panel-border);
+        border-radius: 1.75rem;
+        background: var(--landing-surface-strong);
+        padding: 1.5rem;
+        box-shadow: var(--landing-legal-shadow);
+    }
+
+    .legal-card h2 {
+        font-family: var(--font-display);
+        font-size: 1.7rem;
+        line-height: 1.15;
+        color: var(--landing-title);
+    }
+
+    .legal-card p {
+        margin-top: 0.75rem;
+        font-size: 0.98rem;
+        line-height: 1.9;
+        color: var(--landing-muted);
+    }
+
+    .landing-input {
+        width: 100%;
+        border: 1px solid var(--landing-input-border);
+        border-radius: 1.25rem;
+        background: var(--landing-input-bg);
+        padding: 0.95rem 1rem;
+        color: var(--landing-title);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        transition:
+            border-color 150ms ease,
+            box-shadow 150ms ease,
+            background-color 150ms ease;
+    }
+
+    .landing-input::placeholder {
+        color: var(--landing-subtle);
+    }
+
+    .landing-input:focus {
+        outline: none;
+        border-color: color-mix(in srgb, var(--color-accent) 72%, white);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 18%, transparent);
+    }
+
+    .landing-error {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #dc2626;
+    }
+
+    .landing-elevated-card {
+        border: 1px solid var(--landing-panel-border);
+        border-radius: 2rem;
+        background: var(--landing-surface-elevated);
+        box-shadow: var(--landing-accent-panel-shadow);
+    }
+
+    .landing-soft-card {
+        border: 1px dashed color-mix(in srgb, var(--landing-panel-border) 140%, transparent);
+        border-radius: 2rem;
+        background: var(--landing-surface-soft);
+    }
+
+    .landing-metric-card {
+        border-radius: 1rem;
+        background: var(--color-olive);
+    }
+
+    .landing-status-pill {
+        border-radius: 9999px;
+        background: var(--landing-success-pill-bg);
+        color: var(--landing-success-pill-text);
+    }
+
+    .landing-success-banner {
+        border-color: var(--landing-success-border);
+        background: var(--landing-success-bg);
+        color: var(--landing-success-text);
+    }
+
+    .landing-cookie-banner {
+        border-color: color-mix(in srgb, var(--landing-input-border) 120%, transparent);
+        background: var(--landing-cookie-bg);
+        box-shadow: var(--landing-shadow);
+    }
+
+    .floating-orb {
+        position: absolute;
+        border-radius: 9999px;
+        filter: blur(22px);
+        animation: drift 16s ease-in-out infinite;
+    }
+
+    .animation-delay-2s {
+        animation-delay: 2s;
+    }
+
+    .animation-delay-4s {
+        animation-delay: 4s;
+    }
+}
+
+@layer utilities {
+    html.dark .text-stone-950,
+    html.dark .text-stone-900,
+    html.dark .text-stone-800 {
+        color: #f5f5f4 !important;
+    }
+
+    html.dark .text-stone-700 {
+        color: #e7e5e4 !important;
+    }
+
+    html.dark .text-stone-600,
+    html.dark .text-stone-500 {
+        color: #d6d3d1 !important;
+    }
+
+    html.dark .border-stone-300,
+    html.dark .border-stone-300\/70,
+    html.dark .border-stone-300\/80 {
+        border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+
+    html.dark .bg-white\/70,
+    html.dark .bg-white\/75 {
+        background-color: rgba(29, 24, 22, 0.86) !important;
+    }
+
+    html.dark .border-white\/70 {
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+}
+
+@keyframes drift {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate3d(0, -22px, 0) scale(1.03);
+    }
+}

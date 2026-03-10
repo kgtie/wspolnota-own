@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::name('landing.')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/regulamin', [HomeController::class, 'terms'])->name('terms');
+    Route::get('/polityka-prywatnosci', [HomeController::class, 'privacy'])->name('privacy');
+    Route::get('/kontakt', [HomeController::class, 'contact'])->name('contact');
+    Route::post('/kontakt', [HomeController::class, 'sendContact'])
+        ->middleware('throttle:5,1')
+        ->name('contact.send');
     Route::get('/mailing/confirm/{token}', [MailingWaitlistController::class, 'confirm'])->name('mailing.confirm');
     Route::get('/mailing/unsubscribe/{token}', [MailingWaitlistController::class, 'unsubscribe'])->name('mailing.unsubscribe');
 });

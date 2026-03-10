@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'wspolnota' => [
+        'contact_recipient' => env('WSPOLNOTA_CONTACT_RECIPIENT', 'konrad@wspolnota.app'),
+    ],
+
 ];
