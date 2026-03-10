@@ -7,6 +7,7 @@ use App\Http\Middleware\Api\EnsureApiParishApproved;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsSuperAdmin;
 use App\Http\Middleware\ForceEmailVerification;
+use App\Http\Middleware\RedirectWwwToApex;
 use App\Support\Api\ErrorCode;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -34,6 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.auth' => ApiAuthenticate::class,
             'api.verified' => EnsureApiEmailVerified::class,
             'api.parish_approved' => EnsureApiParishApproved::class,
+        ]);
+        $middleware->web(prepend: [
+            RedirectWwwToApex::class,
         ]);
         $middleware->web(append: [
             ForceEmailVerification::class,
