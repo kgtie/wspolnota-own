@@ -1,7 +1,8 @@
 @extends('layouts.landing')
 
 @section('title', 'Regulamin | Wspólnota')
-@section('meta_description', 'Regulamin korzystania ze strony informacyjnej i usługi Wspólnota.')
+@section('meta_description', 'Regulamin korzystania ze strony informacyjnej i usługi Wspólnota dla parafii i użytkowników aplikacji.')
+@section('canonical', route('landing.terms'))
 
 @section('content')
     <section class="mx-auto max-w-4xl space-y-6">

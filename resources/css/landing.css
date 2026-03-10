@@ -3,7 +3,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @source "../views/layouts/landing.blade.php";
+@source "../views/layouts/parish.blade.php";
 @source "../views/landing/**/*.blade.php";
+@source "../views/parish/**/*.blade.php";
 @source "../js/**/*.js";
 
 @theme {
@@ -266,6 +268,106 @@ html.dark {
         box-shadow: var(--landing-shadow);
     }
 
+    .parish-orb {
+        background: radial-gradient(circle at center, color-mix(in srgb, var(--parish-accent, #b87333) 30%, transparent), transparent 72%);
+    }
+
+    .parish-top-glow {
+        background: radial-gradient(circle at top, rgba(255, 255, 255, 0.72), transparent 65%);
+    }
+
+    .parish-glass {
+        border: 1px solid rgba(120, 90, 58, 0.14);
+        border-radius: 2rem;
+        background: rgba(255, 251, 245, 0.68);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 24px 80px rgba(58, 40, 24, 0.08);
+    }
+
+    .parish-surface {
+        border: 1px solid rgba(120, 90, 58, 0.14);
+        border-radius: 2rem;
+        background: rgba(255, 251, 245, 0.9);
+        box-shadow: 0 24px 72px rgba(58, 40, 24, 0.06);
+    }
+
+    .parish-hero-fallback-active {
+        background: linear-gradient(135deg, rgba(28, 25, 23, 0.92), rgba(28, 25, 23, 0.62) 45%, rgba(76, 94, 63, 0.52));
+    }
+
+    .parish-hero-fallback-inactive {
+        background: linear-gradient(135deg, rgba(245, 241, 232, 0.98), rgba(250, 247, 242, 0.94) 48%, rgba(232, 223, 208, 0.88));
+    }
+
+    .parish-hero-overlay-active {
+        background: linear-gradient(120deg, rgba(28, 25, 23, 0.88) 8%, rgba(28, 25, 23, 0.72) 42%, rgba(28, 25, 23, 0.28) 100%);
+    }
+
+    .parish-hero-overlay-inactive {
+        background: linear-gradient(115deg, rgba(244, 239, 231, 0.96) 8%, rgba(244, 239, 231, 0.9) 48%, rgba(244, 239, 231, 0.72) 100%);
+    }
+
+    .parish-accent-panel {
+        border: 1px solid color-mix(in srgb, var(--parish-accent, #b87333) 22%, white);
+        background: color-mix(in srgb, var(--parish-accent, #b87333) 10%, white);
+    }
+
+    .parish-richtext {
+        color: #57534e;
+        line-height: 1.9;
+    }
+
+    .parish-richtext > * + * {
+        margin-top: 1rem;
+    }
+
+    .parish-richtext h1,
+    .parish-richtext h2,
+    .parish-richtext h3 {
+        color: #1c1917;
+        font-family: var(--font-display);
+        line-height: 1.2;
+    }
+
+    .parish-richtext h1 {
+        font-size: 2rem;
+    }
+
+    .parish-richtext h2 {
+        font-size: 1.6rem;
+    }
+
+    .parish-richtext h3 {
+        font-size: 1.25rem;
+    }
+
+    .parish-richtext ul,
+    .parish-richtext ol {
+        padding-left: 1.25rem;
+    }
+
+    .parish-richtext li + li {
+        margin-top: 0.45rem;
+    }
+
+    .parish-richtext a {
+        color: var(--parish-accent, #b87333);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .parish-richtext blockquote {
+        border-left: 3px solid color-mix(in srgb, var(--parish-accent, #b87333) 46%, white);
+        padding-left: 1rem;
+        color: #44403c;
+        font-style: italic;
+    }
+
+    .parish-richtext img {
+        width: 100%;
+        border-radius: 1.5rem;
+    }
+
     .floating-orb {
         position: absolute;
         border-radius: 9999px;
@@ -298,17 +400,86 @@ html.dark {
         color: #d6d3d1 !important;
     }
 
+    html.dark .parish-glass {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(30, 26, 24, 0.78);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
+    }
+
+    html.dark .parish-top-glow {
+        background: radial-gradient(circle at top, rgba(211, 154, 101, 0.08), transparent 60%);
+    }
+
+    html.dark .parish-surface {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(29, 24, 22, 0.9);
+        box-shadow: 0 24px 72px rgba(0, 0, 0, 0.24);
+    }
+
+    html.dark .parish-hero-fallback-active {
+        background: linear-gradient(135deg, rgba(18, 16, 15, 0.96), rgba(18, 16, 15, 0.82) 46%, rgba(63, 77, 57, 0.48));
+    }
+
+    html.dark .parish-hero-fallback-inactive {
+        background: linear-gradient(135deg, rgba(23, 20, 19, 0.96), rgba(23, 20, 19, 0.92) 48%, rgba(41, 35, 32, 0.88));
+    }
+
+    html.dark .parish-hero-overlay-active {
+        background: linear-gradient(120deg, rgba(9, 8, 8, 0.74) 8%, rgba(9, 8, 8, 0.58) 42%, rgba(9, 8, 8, 0.2) 100%);
+    }
+
+    html.dark .parish-hero-overlay-inactive {
+        background: linear-gradient(115deg, rgba(17, 15, 14, 0.86) 8%, rgba(17, 15, 14, 0.8) 48%, rgba(17, 15, 14, 0.66) 100%);
+    }
+
+    html.dark .parish-accent-panel {
+        border-color: color-mix(in srgb, var(--parish-accent, #d39a65) 38%, rgba(255, 255, 255, 0.1));
+        background: color-mix(in srgb, var(--parish-accent, #d39a65) 12%, rgba(24, 20, 18, 0.96));
+    }
+
+    html.dark .parish-richtext {
+        color: #d6d3d1;
+    }
+
+    html.dark .parish-richtext h1,
+    html.dark .parish-richtext h2,
+    html.dark .parish-richtext h3 {
+        color: #f5f5f4;
+    }
+
+    html.dark .parish-richtext blockquote {
+        color: #e7e5e4;
+    }
+
+    html.dark .bg-stone-50,
+    html.dark .bg-stone-50\/95 {
+        background-color: rgba(29, 24, 22, 0.94) !important;
+    }
+
+    html.dark .bg-stone-100 {
+        background-color: rgba(41, 35, 32, 0.96) !important;
+    }
+
     html.dark .border-stone-300,
+    html.dark .border-stone-200,
+    html.dark .border-stone-200\/80,
     html.dark .border-stone-300\/70,
     html.dark .border-stone-300\/80 {
         border-color: rgba(255, 255, 255, 0.14) !important;
     }
 
+    html.dark .bg-white,
     html.dark .bg-white\/70,
-    html.dark .bg-white\/75 {
+    html.dark .bg-white\/75,
+    html.dark .bg-white\/76,
+    html.dark .bg-white\/80,
+    html.dark .bg-white\/85 {
         background-color: rgba(29, 24, 22, 0.86) !important;
     }
 
+    html.dark .border-white\/18,
+    html.dark .border-white\/60,
+    html.dark .border-white\/65,
     html.dark .border-white\/70 {
         border-color: rgba(255, 255, 255, 0.08) !important;
     }

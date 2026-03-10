@@ -1,13 +1,69 @@
 <!DOCTYPE html>
-<html lang="pl">
-
+@php
+    $seoTitle = trim($__env->yieldContent('title', 'Wspólnota | Aplikacja i panel dla parafii'));
+    $seoDescription = trim($__env->yieldContent('meta_description', 'Wspólnota to nowoczesna usługa dla parafii: aplikacja PWA dla parafian i panel administratora dla proboszcza.'));
+    $seoCanonical = trim($__env->yieldContent('canonical', url()->current()));
+    $seoRobots = trim($__env->yieldContent('meta_robots', 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'));
+    $seoImage = trim($__env->yieldContent('meta_image', asset('assets/seo/wspolnota-og.svg')));
+    $seoType = trim($__env->yieldContent('og_type', 'website'));
+    $seoSchemaType = trim($__env->yieldContent('schema_type', 'WebPage'));
+    $organizationSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        'name' => config('app.name', 'Wspólnota'),
+        'url' => rtrim(config('app.url'), '/'),
+        'logo' => asset('assets/seo/wspolnota-og.svg'),
+        'email' => 'wspolnota@wspolnota.app',
+    ];
+    $websiteSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebSite',
+        'name' => config('app.name', 'Wspólnota'),
+        'url' => rtrim(config('app.url'), '/'),
+        'inLanguage' => 'pl-PL',
+    ];
+    $pageSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => $seoSchemaType,
+        'name' => $seoTitle,
+        'description' => $seoDescription,
+        'url' => $seoCanonical,
+        'inLanguage' => 'pl-PL',
+        'isPartOf' => [
+            '@type' => 'WebSite',
+            'name' => config('app.name', 'Wspólnota'),
+            'url' => rtrim(config('app.url'), '/'),
+        ],
+    ];
+@endphp
+<html lang="pl-PL">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="@yield('meta_description', 'Wspólnota to nowoczesna usługa dla parafii: aplikacja PWA dla parafian i panel administratora dla proboszcza.')">
+    <meta name="description" content="{{ $seoDescription }}">
+    <meta name="robots" content="{{ $seoRobots }}">
     <meta name="theme-color" content="#f3efe6">
-    <title>@yield('title', 'Wspólnota')</title>
+    <meta name="author" content="Wspólnota">
+    <meta name="application-name" content="{{ config('app.name', 'Wspólnota') }}">
+    <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Wspólnota') }}">
+    <meta property="og:locale" content="pl_PL">
+    <meta property="og:type" content="{{ $seoType }}">
+    <meta property="og:site_name" content="{{ config('app.name', 'Wspólnota') }}">
+    <meta property="og:title" content="{{ $seoTitle }}">
+    <meta property="og:description" content="{{ $seoDescription }}">
+    <meta property="og:url" content="{{ $seoCanonical }}">
+    <meta property="og:image" content="{{ $seoImage }}">
+    <meta property="og:image:alt" content="Wspólnota - aplikacja i panel dla parafii">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $seoTitle }}">
+    <meta name="twitter:description" content="{{ $seoDescription }}">
+    <meta name="twitter:image" content="{{ $seoImage }}">
+    <link rel="canonical" href="{{ $seoCanonical }}">
+    <link rel="alternate" hreflang="pl-PL" href="{{ $seoCanonical }}">
+    <link rel="alternate" hreflang="x-default" href="{{ $seoCanonical }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <title>{{ $seoTitle }}</title>
 
     <script>
         (() => {
@@ -23,6 +79,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="application/ld+json">@json($organizationSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+    <script type="application/ld+json">@json($websiteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+    <script type="application/ld+json">@json($pageSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+    @hasSection('structured_data')
+        @yield('structured_data')
+    @endif
 
     @vite(['resources/css/landing.css', 'resources/js/app.js'])
 </head>
@@ -44,7 +106,8 @@
 
                 <nav class="hidden items-center gap-6 text-sm font-medium text-stone-600 md:flex">
                     <a href="{{ route('landing.home') }}#funkcje" class="transition hover:text-stone-950">Funkcje</a>
-                    <a href="{{ route('landing.home') }}#ekrany" class="transition hover:text-stone-950">Ekrany</a>
+                    <a href="{{ route('landing.home') }}#korzysci" class="transition hover:text-stone-950">Korzyści</a>
+                    <a href="{{ route('landing.home') }}#technologia" class="transition hover:text-stone-950">Technologia</a>
                     <a href="{{ route('landing.home') }}#cennik" class="transition hover:text-stone-950">Pricing</a>
                     <a href="{{ route('landing.contact') }}" class="transition hover:text-stone-950">Kontakt</a>
                 </nav>

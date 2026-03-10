@@ -1,7 +1,8 @@
 @extends('layouts.landing')
 
 @section('title', 'Polityka prywatności | Wspólnota')
-@section('meta_description', 'Polityka prywatności i informacje o cookies dla usługi Wspólnota.')
+@section('meta_description', 'Polityka prywatności, zasady przetwarzania danych i informacje o cookies dla usługi Wspólnota.')
+@section('canonical', route('landing.privacy'))
 
 @section('content')
     <section class="mx-auto max-w-4xl space-y-6">

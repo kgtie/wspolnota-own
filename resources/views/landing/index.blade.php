@@ -1,7 +1,35 @@
 @extends('layouts.landing')
 
-@section('title', 'Wspólnota | Nowoczesna strona główna usługi dla parafii')
-@section('meta_description', 'Wspólnota porządkuje komunikację parafii: msze, ogłoszenia, aktualności, kancelaria online i panel proboszcza w jednym miejscu.')
+@section('title', 'Wspólnota | Aplikacja i panel dla parafii, mszy, ogłoszeń i kancelarii online')
+@section('meta_description', 'Wspólnota to bezpieczna usługa dla parafii: panel dla proboszcza, aplikacja dla wiernych, ogłoszenia, msze, aktualności i kancelaria online w jednym miejscu.')
+@section('canonical', route('landing.home'))
+@section('schema_type', 'Service')
+@section('structured_data')
+    @php
+        $serviceSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Service',
+            'name' => 'Wspólnota',
+            'serviceType' => 'Usługa cyfrowa dla parafii',
+            'description' => 'Panel dla proboszcza i aplikacja dla wiernych: msze, ogłoszenia, aktualności oraz kancelaria online w jednym miejscu.',
+            'provider' => [
+                '@type' => 'Organization',
+                'name' => config('app.name', 'Wspólnota'),
+                'url' => rtrim(config('app.url'), '/'),
+            ],
+            'areaServed' => [
+                '@type' => 'Country',
+                'name' => 'Polska',
+            ],
+            'audience' => [
+                '@type' => 'Audience',
+                'audienceType' => 'Parafie katolickie i parafianie',
+            ],
+            'url' => route('landing.home'),
+        ];
+    @endphp
+    <script type="application/ld+json">@json($serviceSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endsection
 
 @section('content')
     <section class="grid gap-8 pb-10 pt-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pb-16 lg:pt-10">
@@ -13,7 +41,7 @@
                     Parafia, która nadąża za codziennością.
                 </h1>
                 <p class="max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl">
-                    Wspólnota łączy panel administratora dla proboszcza z prostą aplikacją PWA dla parafian. Msze, ogłoszenia, aktualności i kancelaria online trafiają tam, gdzie naprawdę dzieje się życie: do telefonu i przeglądarki.
+                    Wspólnota pomaga parafii lepiej informować wiernych i spokojniej organizować codzienne sprawy. Msze, ogłoszenia, aktualności i kancelaria online są zebrane w jednym miejscu, prostym dla księdza i wygodnym dla parafian.
                 </p>
             </div>
 
@@ -30,17 +58,17 @@
                 <div class="panel px-5 py-4">
                     <dt class="text-sm text-stone-500">Dla parafii</dt>
                     <dd class="mt-2 text-2xl font-extrabold text-stone-950">1 panel</dd>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">Jedno miejsce do zarządzania mszami, ogłoszeniami, aktualnościami i wiadomościami.</p>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">Jedno miejsce do prowadzenia mszy, ogłoszeń, aktualności i kontaktu z wiernymi.</p>
                 </div>
                 <div class="panel px-5 py-4">
                     <dt class="text-sm text-stone-500">Dla parafian</dt>
                     <dd class="mt-2 text-2xl font-extrabold text-stone-950">PWA</dd>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">Działa w przeglądarce i na telefonie, bez ciężkiego wdrożenia po stronie użytkownika.</p>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">Działa w telefonie i przeglądarce, bez skomplikowanego wdrażania po stronie użytkownika.</p>
                 </div>
                 <div class="panel px-5 py-4">
                     <dt class="text-sm text-stone-500">Komunikacja</dt>
                     <dd class="mt-2 text-2xl font-extrabold text-stone-950">24/7</dd>
-                    <p class="mt-2 text-sm leading-6 text-stone-600">Ogłoszenia, newsy i kontakt z kancelarią są dostępne wtedy, gdy parafianin ich potrzebuje.</p>
+                    <p class="mt-2 text-sm leading-6 text-stone-600">Wierni widzą najważniejsze informacje wtedy, kiedy naprawdę ich potrzebują.</p>
                 </div>
             </dl>
         </div>
@@ -52,7 +80,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-semibold text-stone-900">Panel administratora</p>
-                            <p class="mt-1 text-sm text-stone-500">Kalendarz, ogłoszenia, kancelaria online</p>
+                            <p class="mt-1 text-sm text-stone-500">Msze, ogłoszenia, aktualności i kancelaria online</p>
                         </div>
                         <span class="landing-status-pill px-3 py-1 text-xs font-bold uppercase tracking-[0.2em]">Live</span>
                     </div>
@@ -60,12 +88,12 @@
                         <div class="rounded-2xl bg-stone-950 px-4 py-4 text-white">
                             <p class="text-xs uppercase tracking-[0.24em] text-stone-300">Najbliższy tydzień</p>
                             <p class="mt-3 text-2xl font-bold">12 mszy</p>
-                            <p class="mt-2 text-sm text-stone-300">Gotowe do publikacji wraz z intencjami.</p>
+                            <p class="mt-2 text-sm text-stone-300">Gotowe do pokazania wiernym razem z intencjami.</p>
                         </div>
                         <div class="landing-metric-card px-4 py-4 text-white">
                             <p class="text-xs uppercase tracking-[0.24em] text-white/70">Komunikacja</p>
                             <p class="mt-3 text-2xl font-bold">8 rozmów</p>
-                            <p class="mt-2 text-sm text-white/80">Kancelaria online porządkuje zapytania bez chaosu w skrzynce.</p>
+                            <p class="mt-2 text-sm text-white/80">Kancelaria online pomaga odpowiadać bez chaosu w telefonach i wiadomościach.</p>
                         </div>
                     </div>
                 </div>
@@ -73,9 +101,9 @@
                 <div class="landing-soft-card p-6">
                     <p class="text-xs font-bold uppercase tracking-[0.28em] text-stone-500">Wspólnota w praktyce</p>
                     <ul class="mt-4 space-y-3 text-sm leading-6 text-stone-600">
-                        <li>Parafianin sprawdza najbliższe msze i zapisuje swoją obecność.</li>
-                        <li>Proboszcz publikuje ogłoszenia raz, a parafianie dostają je od razu w aplikacji.</li>
-                        <li>Aktualności i kancelaria online porządkują kontakt bez mnożenia kanałów.</li>
+                        <li>Parafianin sprawdza godziny mszy i najważniejsze informacje bez szukania po kilku miejscach.</li>
+                        <li>Ksiądz publikuje ogłoszenia jeden raz, a wierni od razu widzą je w aplikacji.</li>
+                        <li>Kancelaria online i aktualności porządkują kontakt z parafią bez niepotrzebnego zamieszania.</li>
                     </ul>
                 </div>
             </div>
@@ -85,9 +113,9 @@
     <section id="funkcje" class="space-y-6 py-10 lg:py-14">
         <div class="max-w-3xl space-y-3">
             <span class="eyebrow">Co dokładnie robi Wspólnota</span>
-            <h2 class="font-display text-4xl text-stone-950 sm:text-5xl">Usługa, która porządkuje rytm parafii zamiast dokładać kolejny system.</h2>
+            <h2 class="font-display text-4xl text-stone-950 sm:text-5xl">Usługa, która pomaga w codziennym prowadzeniu parafii, zamiast dokładać kolejne obowiązki.</h2>
             <p class="text-lg leading-8 text-stone-600">
-                Zamiast rozproszonych komunikatów, papierowych list i wiadomości rozsianych po kilku kanałach, parafia dostaje jedno centrum pracy. Parafianin zyskuje prostą drogę do informacji. Proboszcz odzyskuje czas.
+                Zamiast osobnych kartek, wiadomości, telefonów i pytań o rzeczy podstawowe, parafia dostaje jedno uporządkowane miejsce pracy. Wierni łatwiej znajdują informacje, a ksiądz ma większy porządek w komunikacji.
             </p>
         </div>
 
@@ -96,21 +124,21 @@
                 <p class="feature-index">01</p>
                 <h3 class="mt-4 text-2xl font-bold text-stone-950">Msze i intencje bez chaosu</h3>
                 <p class="mt-3 text-sm leading-7 text-stone-600">
-                    Kalendarz mszy, szczegóły celebracji, zapisy obecności i gotowe wydruki do wykorzystania w parafii. Wszystko spójne dla administratora i czytelne dla parafian.
+                    Godziny mszy, intencje i najważniejsze szczegóły są zebrane przejrzyście. Parafia łatwiej panuje nad kalendarzem, a wierni szybciej znajdują potrzebne informacje.
                 </p>
             </article>
             <article class="feature-card">
                 <p class="feature-index">02</p>
                 <h3 class="mt-4 text-2xl font-bold text-stone-950">Ogłoszenia, które naprawdę docierają</h3>
                 <p class="mt-3 text-sm leading-7 text-stone-600">
-                    Tygodniowe zestawy ogłoszeń, ich streszczenia, możliwość udostępniania i wygodny podgląd historii. Jedna publikacja, wiele punktów styku z wiernymi.
+                    Ogłoszenia można przygotować raz i przekazać wiernym w uporządkowany sposób. Łatwiej wrócić do wcześniejszych treści i uniknąć sytuacji, w której coś „przepada”.
                 </p>
             </article>
             <article class="feature-card">
                 <p class="feature-index">03</p>
                 <h3 class="mt-4 text-2xl font-bold text-stone-950">Kancelaria online z ludzkim tempem</h3>
                 <p class="mt-3 text-sm leading-7 text-stone-600">
-                    Prywatne rozmowy i bezpieczne załączniki porządkują sprawy urzędowe, bez konieczności przerzucania wszystkiego na prywatne komunikatory czy przypadkowe maile.
+                    Sprawy kancelaryjne mogą być prowadzone spokojniej i czytelniej, bez przenoszenia wszystkiego na prywatne komunikatory albo przypadkowe maile.
                 </p>
             </article>
         </div>
@@ -119,14 +147,14 @@
     <section class="grid gap-6 py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start lg:py-14">
         <div class="panel px-6 py-6 sm:px-8">
             <span class="eyebrow">Dla proboszcza i zespołu parafii</span>
-            <h2 class="mt-4 font-display text-4xl text-stone-950">Panel, który nie wymaga instrukcji obsługi.</h2>
+            <h2 class="mt-4 font-display text-4xl text-stone-950">Panel, który ma pomagać, a nie wymagać długiego uczenia się.</h2>
             <p class="mt-4 text-base leading-8 text-stone-600">
-                Dashboard pokazuje najważniejsze sprawy parafii, przypomina o publikacjach i porządkuje codzienną administrację. Wspólnota nie próbuje zastąpić duszpasterstwa. Ona usuwa tarcie organizacyjne.
+                Panel pokazuje najważniejsze sprawy parafii, przypomina o tym, co trzeba uzupełnić, i pomaga utrzymać porządek w codziennych obowiązkach. Wspólnota nie zastępuje duszpasterstwa, tylko odciąża od organizacyjnego chaosu.
             </p>
             <ul class="mt-6 space-y-3 text-sm leading-7 text-stone-600">
-                <li>Publikacja mszy, ogłoszeń i aktualności z jednego miejsca.</li>
-                <li>Podgląd zgłoszeń i rozmów z kancelarii online.</li>
-                <li>Wygodne zarządzanie użytkownikami i statystykami parafii.</li>
+                <li>Jedno miejsce do publikacji mszy, ogłoszeń i aktualności.</li>
+                <li>Łatwiejszy podgląd wiadomości i spraw prowadzonych przez kancelarię online.</li>
+                <li>Większy porządek w użytkownikach, zgłoszeniach i podstawowych statystykach parafii.</li>
             </ul>
         </div>
 
@@ -134,58 +162,120 @@
             <div class="panel px-6 py-6">
                 <p class="text-xs font-bold uppercase tracking-[0.26em] text-stone-500">Aktualności</p>
                 <h3 class="mt-3 text-2xl font-bold text-stone-950">Blog parafialny z komentarzami i mediami</h3>
-                <p class="mt-3 text-sm leading-7 text-stone-600">Wpisy działają jak newsroom parafii: od krótkiej informacji po większy artykuł ze zdjęciami lub plikami.</p>
+                <p class="mt-3 text-sm leading-7 text-stone-600">Od prostego komunikatu po dłuższą relację ze zdjęciami. Parafia może publikować treści w bardziej uporządkowany sposób niż tylko przez pojedyncze ogłoszenia.</p>
             </div>
             <div class="panel px-6 py-6">
                 <p class="text-xs font-bold uppercase tracking-[0.26em] text-stone-500">Powiadomienia</p>
                 <h3 class="mt-3 text-2xl font-bold text-stone-950">Przypomnienia i komunikaty trafiają na czas</h3>
-                <p class="mt-3 text-sm leading-7 text-stone-600">Usługa wspiera parafię w wysyłce informacji o mszach, ogłoszeniach i nowych treściach bez ręcznego przypominania każdemu z osobna.</p>
+                <p class="mt-3 text-sm leading-7 text-stone-600">Usługa pomaga przekazywać informacje o mszach, ogłoszeniach i nowych treściach bez konieczności przypominania każdemu osobno.</p>
             </div>
             <div class="panel px-6 py-6 sm:col-span-2">
                 <p class="text-xs font-bold uppercase tracking-[0.26em] text-stone-500">Ton usługi</p>
                 <blockquote class="mt-3 max-w-3xl font-display text-3xl leading-tight text-stone-950">
-                    „Technologia ma być tu cicha. Ma zostawić więcej miejsca na obecność, rozmowę i porządek”.
+                    „Technologia ma tu służyć parafii po cichu. Ma dawać więcej porządku, spokoju i czasu dla ludzi”.
                 </blockquote>
             </div>
         </div>
     </section>
 
-    <section id="ekrany" class="space-y-6 py-10 lg:py-14">
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div class="max-w-3xl">
-                <span class="eyebrow">Miejsca na screeny</span>
-                <h2 class="mt-3 font-display text-4xl text-stone-950 sm:text-5xl">Tu możesz wstawić kluczowe widoki usługi.</h2>
-                <p class="mt-3 text-lg leading-8 text-stone-600">
-                    Zostawiłem gotowe boksy na zrzuty ekranu, aby można było później podmienić je na prawdziwe widoki aplikacji i panelu bez przebudowy układu strony.
-                </p>
-            </div>
-            <a href="{{ route('login') }}" class="inline-flex rounded-full border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-700 transition hover:border-stone-900 hover:text-stone-950">
-                Zobacz wejście do panelu
-            </a>
+    <section id="korzysci" class="space-y-6 py-10 lg:py-14">
+        <div class="max-w-3xl">
+            <span class="eyebrow">Korzyści dla parafii</span>
+            <h2 class="mt-3 font-display text-4xl text-stone-950 sm:text-5xl">Mniej improwizacji, mniej niepotrzebnych pytań, więcej porządku.</h2>
+            <p class="mt-3 text-lg leading-8 text-stone-600">
+                Wspólnota nie ma być tylko kolejną stroną z informacjami. To narzędzie, które pomaga parafii lepiej poukładać tydzień pracy, uporządkować kontakt z wiernymi i ograniczyć liczbę spraw załatwianych „na szybko” albo „na pamięć”.
+            </p>
         </div>
 
-        <div class="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-            <div class="screen-placeholder min-h-[22rem]">
-                <div>
-                    <p class="screen-label">Screen 01</p>
-                    <h3 class="mt-3 text-3xl font-bold text-stone-950">Panel administratora</h3>
-                    <p class="mt-2 max-w-md text-sm leading-7 text-stone-600">Miejsce na widok dashboardu proboszcza z modułami mszy, ogłoszeń i kancelarii online.</p>
+        <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <article class="feature-card">
+                <p class="feature-index">01</p>
+                <h3 class="mt-4 text-2xl font-bold text-stone-950">Mniej telefonów i pytań o podstawy</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">
+                    Gdy wierni mają łatwy dostęp do godzin mszy, ogłoszeń i aktualności, rzadziej trzeba odpowiadać kilka razy na te same podstawowe pytania.
+                </p>
+            </article>
+            <article class="feature-card">
+                <p class="feature-index">02</p>
+                <h3 class="mt-4 text-2xl font-bold text-stone-950">Lepszy rytm tygodnia parafii</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">
+                    Łatwiej przygotować msze, opublikować ogłoszenia i zapanować nad bieżącym kontaktem, gdy wszystko jest zebrane w jednym panelu.
+                </p>
+            </article>
+            <article class="feature-card">
+                <p class="feature-index">03</p>
+                <h3 class="mt-4 text-2xl font-bold text-stone-950">Więcej czasu na duszpasterstwo</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">
+                    Gdy mniej energii idzie na powtarzalne informowanie i porządkowanie wiadomości, więcej czasu zostaje na rozmowę, obecność i realne sprawy parafii.
+                </p>
+            </article>
+            <article class="feature-card">
+                <p class="feature-index">04</p>
+                <h3 class="mt-4 text-2xl font-bold text-stone-950">Nowoczesny wizerunek parafii</h3>
+                <p class="mt-3 text-sm leading-7 text-stone-600">
+                    Parafia może komunikować się jasno i nowocześnie, nie tracąc swojego charakteru. Technologia pomaga budować porządek, a nie odbiera relacji.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section id="technologia" class="grid gap-6 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:py-14">
+        <div class="panel px-6 py-6 sm:px-8">
+            <span class="eyebrow">Zaawansowanie technologiczne</span>
+            <h2 class="mt-4 font-display text-4xl text-stone-950">Nowoczesna technologia, która ma po prostu działać pewnie i spokojnie.</h2>
+            <p class="mt-4 text-base leading-8 text-stone-600">
+                Wspólnota jest budowana jako jedna spójna usługa: z aplikacją dla wiernych i panelem dla proboszcza. Dla parafii oznacza to mniej rozproszonych narzędzi, większy porządek w danych i łatwiejszy rozwój kolejnych funkcji w przyszłości.
+            </p>
+
+            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                <div class="landing-soft-card p-5">
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-stone-500">Architektura</p>
+                    <p class="mt-3 text-xl font-bold text-stone-950">Jedna usługa zamiast wielu porozrzucanych narzędzi</p>
+                    <p class="mt-2 text-sm leading-7 text-stone-600">Strona usługi, aplikacja dla wiernych i panel administracyjny są częścią jednego spójnego systemu.</p>
+                </div>
+                <div class="landing-soft-card p-5">
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-stone-500">Mobilność</p>
+                    <p class="mt-3 text-xl font-bold text-stone-950">Wygoda dla wiernych na telefonie i komputerze</p>
+                    <p class="mt-2 text-sm leading-7 text-stone-600">Parafianie mogą korzystać z usługi wygodnie na swoich urządzeniach, bez konieczności uczenia się skomplikowanych rozwiązań.</p>
+                </div>
+                <div class="landing-soft-card p-5">
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-stone-500">Automatyzacja</p>
+                    <p class="mt-3 text-xl font-bold text-stone-950">Powiadomienia i przypomnienia tam, gdzie pomagają</p>
+                    <p class="mt-2 text-sm leading-7 text-stone-600">System może wspierać parafię w przypomnieniach, publikacjach i porządkowaniu treści, żeby mniej rzeczy trzeba było pilnować ręcznie.</p>
+                </div>
+                <div class="landing-soft-card p-5">
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-stone-500">Rozwój</p>
+                    <p class="mt-3 text-xl font-bold text-stone-950">Gotowość na kolejne potrzeby parafii</p>
+                    <p class="mt-2 text-sm leading-7 text-stone-600">Usługa jest przygotowana do dalszego rozwoju, bez potrzeby budowania wszystkiego od nowa przy każdym kolejnym module.</p>
                 </div>
             </div>
-            <div class="grid gap-5">
-                <div class="screen-placeholder min-h-[10.5rem]">
-                    <div>
-                        <p class="screen-label">Screen 02</p>
-                        <h3 class="mt-3 text-2xl font-bold text-stone-950">Aplikacja PWA</h3>
-                        <p class="mt-2 text-sm leading-7 text-stone-600">Miejsce na ekran główny dla parafian z mszami i ogłoszeniami.</p>
-                    </div>
+        </div>
+
+        <div class="grid gap-5">
+            <div class="panel px-6 py-6 sm:px-8">
+                <span class="eyebrow">Bezpieczeństwo i prywatność</span>
+                <h3 class="mt-4 text-3xl font-bold text-stone-950">Dane parafii i parafian muszą być pod właściwą opieką.</h3>
+                <p class="mt-4 text-sm leading-7 text-stone-600">
+                    Wspólnota jest projektowana z myślą o tym, że nie każda informacja powinna być publiczna i nie każda osoba powinna mieć dostęp do wszystkiego. To szczególnie ważne przy kancelarii online i dokumentach.
+                </p>
+                <ul class="mt-6 space-y-4 text-sm leading-7 text-stone-600">
+                    <li>Dostęp jest rozdzielony pomiędzy zwykłego użytkownika, administratora parafii i superadministratora.</li>
+                    <li>Pliki kancelarii online są oddzielone od treści publicznych i wymagają właściwego dostępu.</li>
+                    <li>Potwierdzanie kont i kontrola uprawnień pomagają chronić funkcje, które nie powinny być dostępne dla każdego.</li>
+                    <li>Jedna centralna usługa ułatwia pilnowanie porządku, bezpieczeństwa i dalszego dostosowania do wymogów europejskich.</li>
+                </ul>
+            </div>
+
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="panel px-6 py-6">
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-stone-500">Prywatne dyski</p>
+                    <p class="mt-3 text-2xl font-bold text-stone-950">Oddzielenie treści publicznych od prywatnych</p>
+                    <p class="mt-3 text-sm leading-7 text-stone-600">Inaczej traktowane są pliki do aktualności, a inaczej dokumenty i załączniki z kancelarii online.</p>
                 </div>
-                <div class="screen-placeholder min-h-[10.5rem]">
-                    <div>
-                        <p class="screen-label">Screen 03</p>
-                        <h3 class="mt-3 text-2xl font-bold text-stone-950">Kancelaria online</h3>
-                        <p class="mt-2 text-sm leading-7 text-stone-600">Miejsce na konwersację użytkownika z administracją parafii.</p>
-                    </div>
+                <div class="panel px-6 py-6">
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-stone-500">Kontrola dostępu</p>
+                    <p class="mt-3 text-2xl font-bold text-stone-950">Właściwe funkcje dla właściwych osób</p>
+                    <p class="mt-3 text-sm leading-7 text-stone-600">Dostęp do panelu, wiadomości i bardziej wrażliwych funkcji jest ograniczony do tych osób, które naprawdę powinny z nich korzystać.</p>
                 </div>
             </div>
         </div>
@@ -196,7 +286,7 @@
             <span class="eyebrow">Pricing</span>
             <h2 class="mt-3 font-display text-4xl text-stone-950 sm:text-5xl">Model wdrożenia dopasowany do etapu parafii.</h2>
             <p class="mt-3 text-lg leading-8 text-stone-600">
-                W dokumentacji usługi zakładany jest start od wdrożeń pilotażowych, a następnie przejście do modelu abonamentowego. Sekcja poniżej komunikuje to w prosty i sprzedażowy sposób, bez obiecywania więcej niż gotowy etap produktu.
+                Na początku przewidujemy wdrożenia pilotażowe, a docelowo spokojny model abonamentowy dla parafii. Chcemy, żeby wejście do usługi było zrozumiałe i przewidywalne.
             </p>
         </div>
 
@@ -204,33 +294,33 @@
             <article class="pricing-card">
                 <p class="text-sm font-semibold text-stone-500">Pilotaż</p>
                 <h3 class="mt-3 text-3xl font-bold text-stone-950">0 zł</h3>
-                <p class="mt-3 text-sm leading-7 text-stone-600">Dla parafii testowych uczestniczących w uruchomieniu usługi.</p>
+                <p class="mt-3 text-sm leading-7 text-stone-600">Dla parafii, które chcą wejść we współpracę na etapie uruchamiania usługi.</p>
                 <ul class="mt-6 space-y-3 text-sm leading-6 text-stone-700">
-                    <li>Panel administratora dla proboszcza</li>
-                    <li>Podstawowe moduły aplikacji PWA</li>
-                    <li>Wspólne dopracowanie wdrożenia</li>
+                    <li>Panel dla proboszcza i podstawowe moduły usługi</li>
+                    <li>Aplikacja dla wiernych w podstawowym zakresie</li>
+                    <li>Wspólne dopracowanie wdrożenia w realiach parafii</li>
                 </ul>
             </article>
 
             <article class="pricing-card pricing-card-featured">
                 <p class="text-sm font-semibold text-stone-700">Abonament parafialny</p>
                 <h3 class="mt-3 text-3xl font-bold text-stone-950">Po premierze</h3>
-                <p class="mt-3 text-sm leading-7 text-stone-700">Docelowy model SaaS dla parafii, które chcą stałego dostępu do usługi i rozwoju funkcji.</p>
+                <p class="mt-3 text-sm leading-7 text-stone-700">Docelowy model dla parafii, które chcą korzystać z usługi stale i rozwijać komunikację z wiernymi w uporządkowany sposób.</p>
                 <ul class="mt-6 space-y-3 text-sm leading-6 text-stone-800">
-                    <li>Pełny pakiet komunikacji z parafianami</li>
-                    <li>Rozwój wraz z kolejnymi modułami</li>
-                    <li>Wsparcie wdrożeniowe i aktualizacje</li>
+                    <li>Pełniejszy pakiet komunikacji parafii z wiernymi</li>
+                    <li>Rozwój kolejnych funkcji wraz z usługą</li>
+                    <li>Aktualizacje i wsparcie we wdrożeniu</li>
                 </ul>
             </article>
 
             <article class="pricing-card">
                 <p class="text-sm font-semibold text-stone-500">Wdrożenie indywidualne</p>
                 <h3 class="mt-3 text-3xl font-bold text-stone-950">Kontakt</h3>
-                <p class="mt-3 text-sm leading-7 text-stone-600">Dla większych struktur, kilku parafii lub wdrożeń wymagających niestandardowego zakresu prac.</p>
+                <p class="mt-3 text-sm leading-7 text-stone-600">Dla większych wdrożeń, kilku parafii albo sytuacji, w których zakres prac trzeba ustalić indywidualnie.</p>
                 <ul class="mt-6 space-y-3 text-sm leading-6 text-stone-700">
-                    <li>Ustalenie zakresu i harmonogramu</li>
-                    <li>Pomoc przy materiałach i konfiguracji</li>
-                    <li>Priorytetowy kontakt roboczy</li>
+                    <li>Ustalenie potrzeb i harmonogramu krok po kroku</li>
+                    <li>Pomoc przy konfiguracji i przygotowaniu materiałów</li>
+                    <li>Bezpośredni kontakt roboczy</li>
                 </ul>
             </article>
         </div>
@@ -243,7 +333,7 @@
                     <span class="eyebrow">Gotowi na rozmowę</span>
                     <h2 class="mt-3 font-display text-4xl text-stone-950 sm:text-5xl">Jeśli Twoja parafia chce wejść w cyfrową codzienność bez zadęcia, zacznijmy od prostej rozmowy.</h2>
                     <p class="mt-4 text-lg leading-8 text-stone-600">
-                        Pokażemy kierunek wdrożenia, omówimy potrzeby parafii i zaplanujemy pierwsze materiały, w tym screeny do uzupełnienia na tej stronie.
+                        Pokażemy, od czego warto zacząć, omówimy potrzeby parafii i dobierzemy taki zakres usługi, który naprawdę pomoże w codziennym funkcjonowaniu.
                     </p>
                 </div>
 

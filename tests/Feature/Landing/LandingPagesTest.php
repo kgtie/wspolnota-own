@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\RedirectWwwToApex;
 use App\Mail\LandingContactMessage;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
@@ -11,7 +13,10 @@ it('renders the landing homepage', function () {
     $this->get(route('landing.home'))
         ->assertOk()
         ->assertSee('Parafia, która nadąża za codziennością.')
-        ->assertSee('Pricing');
+        ->assertSee('Pricing')
+        ->assertSee('application/ld+json', false)
+        ->assertSee('rel="canonical"', false)
+        ->assertSee('property="og:title"', false);
 });
 
 it('renders the terms page', function () {
@@ -29,7 +34,8 @@ it('renders the privacy page', function () {
 it('renders the contact page', function () {
     $this->get(route('landing.contact'))
         ->assertOk()
-        ->assertSee('wspolnota@wspolnota.app');
+        ->assertSee('wspolnota@wspolnota.app')
+        ->assertSee('ContactPage', false);
 });
 
 it('sends a contact form email', function () {
@@ -63,4 +69,37 @@ it('validates the contact form payload', function () {
         ->assertSessionHasErrors(['name', 'email', 'subject', 'message']);
 
     Mail::assertNothingSent();
+});
+
+it('serves a sitemap for public pages', function () {
+    $this->get(route('landing.sitemap'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+        ->assertSee(route('landing.home'), false)
+        ->assertSee(route('landing.contact'), false);
+});
+
+it('serves robots with sitemap reference', function () {
+    $this->get(route('landing.robots'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertSee('Sitemap:')
+        ->assertSee('/sitemap.xml');
+});
+
+it('marks guest auth pages as noindex', function () {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertSee('noindex,nofollow,noarchive', false);
+});
+
+it('redirects www host to apex host', function () {
+    config()->set('app.url', 'https://wspolnota.test');
+
+    $request = Request::create('https://www.wspolnota.test/kontakt?utm_source=test', 'GET');
+    $middleware = new RedirectWwwToApex();
+    $response = $middleware->handle($request, fn () => response('ok'));
+
+    expect($response->getStatusCode())->toBe(301);
+    expect($response->headers->get('Location'))->toBe('https://wspolnota.test/kontakt?utm_source=test');
 });

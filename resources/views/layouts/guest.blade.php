@@ -1,11 +1,19 @@
 <!DOCTYPE html>
+@php
+    $guestTitle = trim($__env->yieldContent('title', config('app.name', 'Wspólnota').' | Dostęp do panelu'));
+    $guestDescription = trim($__env->yieldContent('meta_description', 'Logowanie i odzyskiwanie dostępu do panelu Wspólnota.'));
+    $guestCanonical = trim($__env->yieldContent('canonical', url()->current()));
+@endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Wspólnota') }}</title>
+    <meta name="description" content="{{ $guestDescription }}">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <link rel="canonical" href="{{ $guestCanonical }}">
+    <title>{{ $guestTitle }}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 

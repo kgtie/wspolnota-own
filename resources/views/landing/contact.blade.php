@@ -1,7 +1,9 @@
 @extends('layouts.landing')
 
 @section('title', 'Kontakt | Wspólnota')
-@section('meta_description', 'Skontaktuj się z zespołem Wspólnota w sprawie wdrożenia usługi dla parafii.')
+@section('meta_description', 'Kontakt z zespołem Wspólnota w sprawie wdrożenia usługi dla parafii, prezentacji i współpracy.')
+@section('canonical', route('landing.contact'))
+@section('schema_type', 'ContactPage')
 
 @section('content')
     <section class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
