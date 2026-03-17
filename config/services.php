@@ -37,6 +37,10 @@ return [
 
     'wspolnota' => [
         'contact_recipient' => env('WSPOLNOTA_CONTACT_RECIPIENT', 'konrad@wspolnota.app'),
+        'scheduler_report_recipient' => env(
+            'WSPOLNOTA_SCHEDULER_REPORT_RECIPIENT',
+            env('WSPOLNOTA_CONTACT_RECIPIENT', 'konrad@wspolnota.app')
+        ),
     ],
 
 ];

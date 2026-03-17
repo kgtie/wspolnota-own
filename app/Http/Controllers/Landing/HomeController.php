@@ -37,7 +37,7 @@ class HomeController extends Controller
         $validated = $request->validated();
 
         Mail::to(config('services.wspolnota.contact_recipient', 'konrad@wspolnota.app'))
-            ->send(new LandingContactMessage(
+            ->queue(new LandingContactMessage(
                 name: $validated['name'],
                 email: $validated['email'],
                 parish: $validated['parish'] ?? null,
@@ -48,7 +48,7 @@ class HomeController extends Controller
 
         return redirect()
             ->route('landing.contact')
-            ->with('status', 'Wiadomość została wysłana. Odezwiemy się możliwie szybko.');
+            ->with('status', 'Wiadomość została przyjęta do wysyłki. Odezwiemy się możliwie szybko.');
     }
 
     public function sitemap(): Response

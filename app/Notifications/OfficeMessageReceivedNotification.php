@@ -6,10 +6,11 @@ use App\Models\OfficeMessage;
 use App\Models\User;
 use App\Support\Notifications\NotificationPreferenceResolver;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class OfficeMessageReceivedNotification extends Notification
+class OfficeMessageReceivedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -30,6 +31,8 @@ class OfficeMessageReceivedNotification extends Notification
 
     public function toDatabase(object $notifiable): array
     {
+        $parishId = $this->message->conversation?->parish_id;
+
         return [
             'type' => 'OFFICE_MESSAGE_RECEIVED',
             'title' => 'Nowa wiadomość w kancelarii',
@@ -37,6 +40,7 @@ class OfficeMessageReceivedNotification extends Notification
             'data' => [
                 'chat_id' => (string) $this->message->office_conversation_id,
                 'message_id' => (string) $this->message->getKey(),
+                'parish_id' => $parishId ? (string) $parishId : null,
             ],
         ];
     }

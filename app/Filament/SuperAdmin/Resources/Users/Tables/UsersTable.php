@@ -40,6 +40,7 @@ class UsersTable
             ->persistFiltersInSession()
             ->columns([
                 ImageColumn::make('avatar_url')
+                    ->state(fn (User $record): string => $record->avatar_url)
                     ->label('Avatar')
                     ->circular()
                     ->imageSize(40),

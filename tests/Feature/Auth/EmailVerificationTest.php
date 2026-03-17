@@ -1,8 +1,11 @@
 <?php
 
+use App\Notifications\QueuedVerifyEmailNotification;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
 test('email verification screen can be rendered', function () {
@@ -13,6 +16,20 @@ test('email verification screen can be rendered', function () {
     $response = $this->actingAs($user)->get('/verify-email');
 
     $response->assertStatus(200);
+});
+
+test('verification email can be requested and is queued', function () {
+    Notification::fake();
+
+    $user = User::factory()->admin()->state([
+        'email_verified_at' => null,
+    ])->create();
+
+    $this->actingAs($user)
+        ->post('/email/verification-notification')
+        ->assertRedirect();
+
+    Notification::assertSentTo($user, QueuedVerifyEmailNotification::class, fn ($notification) => $notification instanceof ShouldQueue);
 });
 
 test('email can be verified', function () {

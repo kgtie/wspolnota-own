@@ -126,10 +126,13 @@ class MeController extends ApiController
 
         $user = $request->user();
 
-        $user->addMedia($validated['avatar'])->toMediaCollection('avatar');
+        $user->addMedia($validated['avatar'])->toMediaCollection('avatar', 'profiles');
+        $user->refresh();
+        $user->syncAvatarAttributeFromMedia();
+        $user->refresh();
 
         return $this->success([
-            'avatar_url' => $user->fresh()->getFirstMediaUrl('avatar', 'thumb') ?: null,
+            'avatar_url' => $user->avatar_media_url,
         ], 201);
     }
 
@@ -137,6 +140,8 @@ class MeController extends ApiController
     {
         $user = $request->user();
         $user->clearMediaCollection('avatar');
+        $user->refresh();
+        $user->syncAvatarAttributeFromMedia();
 
         return $this->noContent();
     }

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Events\ParishApprovalStatusChanged;
+use App\Notifications\QueuedResetPasswordNotification;
+use App\Notifications\QueuedVerifyEmailNotification;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasDefaultTenant;
 use Filament\Models\Contracts\HasTenants;
@@ -24,6 +26,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Throwable;
 
 class User extends Authenticatable implements FilamentUser, HasDefaultTenant, HasMedia, HasTenants, MustVerifyEmail
 {
@@ -81,6 +84,7 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')
+            ->useDisk('profiles')
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
     }
@@ -185,6 +189,11 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
     public function devices(): HasMany
     {
         return $this->hasMany(UserDevice::class);
+    }
+
+    public function pushDeliveries(): HasMany
+    {
+        return $this->hasMany(PushDelivery::class);
     }
 
     public function notificationPreference(): HasOne
@@ -309,6 +318,16 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
         return $this->hasVerifiedEmail() && (bool) $this->is_user_verified;
     }
 
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new QueuedVerifyEmailNotification);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new QueuedResetPasswordNotification($token));
+    }
+
     // =========================================
     // SCOPE'Y
     // =========================================
@@ -334,17 +353,77 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
     // =========================================
 
     /**
+     * URL realnego avatara bez placeholdera.
+     */
+    public function getAvatarMediaUrlAttribute(): ?string
+    {
+        $media = $this->getFirstMedia('avatar');
+
+        if ($media instanceof Media) {
+            return $this->normalizeAvatarUrl($this->resolveAvatarMediaUrl($media));
+        }
+
+        return $this->normalizeAvatarUrl($this->avatar);
+    }
+
+    /**
      * URL avatara (z Media Library lub fallback)
      */
     public function getAvatarUrlAttribute(): string
     {
-        $mediaUrl = $this->getFirstMediaUrl('avatar', 'thumb');
+        return $this->avatar_media_url ?: $this->avatar_placeholder_url;
+    }
 
-        if (filled($mediaUrl)) {
-            return $mediaUrl;
+    /**
+     * Synchronizuje legacy kolumne `users.avatar` z media library.
+     */
+    public function syncAvatarAttributeFromMedia(): void
+    {
+        $avatarUrl = $this->getFirstMediaUrl('avatar') ?: null;
+
+        if ($this->avatar === $avatarUrl) {
+            return;
         }
 
-        return $this->avatar_placeholder_url;
+        $this->forceFill([
+            'avatar' => $avatarUrl,
+        ])->saveQuietly();
+    }
+
+    private function normalizeAvatarUrl(?string $url): ?string
+    {
+        if (blank($url)) {
+            return null;
+        }
+
+        if (filter_var($url, FILTER_VALIDATE_URL) !== false || str($url)->startsWith(['data:', '//'])) {
+            return $url;
+        }
+
+        return url(ltrim($url, '/'));
+    }
+
+    private function resolveAvatarMediaUrl(Media $media): ?string
+    {
+        $conversion = $media->hasGeneratedConversion('thumb') ? 'thumb' : null;
+        $diskVisibility = (string) config("filesystems.disks.{$media->disk}.visibility", 'private');
+
+        if ($diskVisibility !== 'public') {
+            try {
+                return $media->getTemporaryUrl(
+                    now()->addMinutes(30),
+                    $conversion ?? '',
+                );
+            } catch (Throwable) {
+                // Fallback below.
+            }
+        }
+
+        if ($conversion) {
+            return $media->getUrl($conversion);
+        }
+
+        return $media->getUrl();
     }
 
     /**

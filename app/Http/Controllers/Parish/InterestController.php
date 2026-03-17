@@ -16,7 +16,7 @@ class InterestController extends Controller
         $parish = $subdomain;
 
         Mail::to(config('services.wspolnota.contact_recipient', 'konrad@wspolnota.app'))
-            ->send(new ParishInterestMessage(
+            ->queue(new ParishInterestMessage(
                 parish: $parish,
                 publicUrl: route('parish.home', ['subdomain' => $parish]),
                 requestedAt: now(),
@@ -24,6 +24,6 @@ class InterestController extends Controller
                 userAgent: $request->userAgent(),
             ));
 
-        return back()->with('status', 'Dziękujemy. Zgłoszenie zostało zapisane, a my skontaktujemy się z parafią w sprawie uruchomienia usługi.');
+        return back()->with('status', 'Dziękujemy. Zgłoszenie zostało zapisane i przekazane do wysyłki, a my skontaktujemy się z parafią w sprawie uruchomienia usługi.');
     }
 }

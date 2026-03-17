@@ -94,7 +94,7 @@ class NewsController extends ApiController
                 'user' => [
                     'id' => (string) $comment->user?->getKey(),
                     'name' => $comment->user?->full_name ?: $comment->user?->name,
-                    'avatar_url' => $comment->user?->getFirstMediaUrl('avatar', 'thumb') ?: null,
+                    'avatar_url' => $comment->user?->avatar_media_url,
                 ],
                 'created_at' => optional($comment->created_at)?->toISOString(),
                 'updated_at' => optional($comment->updated_at)?->toISOString(),

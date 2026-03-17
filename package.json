@@ -3,6 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "build:seohost:data": "bash scripts/prepare-seohost-release.sh --with-storage-data",
         "build:seohost": "bash scripts/prepare-seohost-release.sh",
         "build": "vite build",
         "dev": "vite"

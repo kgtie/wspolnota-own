@@ -3,6 +3,7 @@
 use App\Models\Parish;
 use App\Models\User;
 use App\Notifications\ApiVerifyEmailNotification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -183,6 +184,7 @@ it('changes email, clears verification and sends new verification notification',
     Notification::assertSentTo(
         User::query()->where('email', 'after-change@example.com')->firstOrFail(),
         ApiVerifyEmailNotification::class,
+        fn (ApiVerifyEmailNotification $notification): bool => $notification instanceof ShouldQueue,
     );
 });
 

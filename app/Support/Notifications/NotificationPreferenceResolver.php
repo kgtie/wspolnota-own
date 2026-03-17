@@ -23,6 +23,24 @@ class NotificationPreferenceResolver
         };
     }
 
+    public function wantsPush(User $user, string $topic): bool
+    {
+        $preferences = $user->notificationPreference;
+
+        if (! $preferences) {
+            return $this->defaultPush($topic);
+        }
+
+        return match ($topic) {
+            'news' => (bool) $preferences->news_push,
+            'announcements' => (bool) $preferences->announcements_push,
+            'office_messages' => (bool) $preferences->office_messages_push,
+            'parish_approval_status' => (bool) $preferences->parish_approval_status_push,
+            'auth_security' => (bool) $preferences->auth_security_push,
+            default => false,
+        };
+    }
+
     private function defaultEmail(string $topic): bool
     {
         return match ($topic) {
@@ -30,6 +48,18 @@ class NotificationPreferenceResolver
             'announcements' => true,
             'office_messages' => true,
             'parish_approval_status' => true,
+            default => false,
+        };
+    }
+
+    private function defaultPush(string $topic): bool
+    {
+        return match ($topic) {
+            'news' => true,
+            'announcements' => true,
+            'office_messages' => true,
+            'parish_approval_status' => true,
+            'auth_security' => false,
             default => false,
         };
     }

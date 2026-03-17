@@ -436,18 +436,18 @@ class CommunicationCenter extends Page
 
         $actor = Filament::auth()->user();
 
-        $sent = 0;
+        $queued = 0;
         $failed = 0;
 
         foreach ($recipients as $recipient) {
             try {
-                Mail::to((string) $recipient['email'])->send(new CommunicationBroadcastMessage(
+                Mail::to((string) $recipient['email'])->queue(new CommunicationBroadcastMessage(
                     subjectLine: $this->subjectLine,
                     messageBody: $this->messageBody,
                     senderName: $actor instanceof User ? ($actor->full_name ?: $actor->name) : null,
                     senderEmail: $actor instanceof User ? $actor->email : null,
                 ));
-                $sent++;
+                $queued++;
             } catch (Throwable) {
                 $failed++;
             }
@@ -455,7 +455,7 @@ class CommunicationCenter extends Page
 
         if ($this->sendCopyToMe && $actor instanceof User && filled($actor->email)) {
             try {
-                Mail::to($actor->email)->send(new CommunicationBroadcastMessage(
+                Mail::to($actor->email)->queue(new CommunicationBroadcastMessage(
                     subjectLine: '[Kopia] '.$this->subjectLine,
                     messageBody: $this->messageBody,
                     senderName: $actor->full_name ?: $actor->name,
@@ -473,7 +473,7 @@ class CommunicationCenter extends Page
                 ->withProperties([
                     'recipient_scope' => $this->recipientScope,
                     'recipients_total' => $recipients->count(),
-                    'sent_count' => $sent,
+                    'queued_count' => $queued,
                     'failed_count' => $failed,
                     'subject' => $this->subjectLine,
                     'message_length' => mb_strlen($this->messageBody),
@@ -483,12 +483,12 @@ class CommunicationCenter extends Page
                     'only_verified_users' => $this->onlyVerifiedUsers,
                     'include_inactive_users' => $this->includeInactiveUsers,
                 ])
-                ->log('Superadmin wyslal kampanie email z centrum komunikacji.');
+                ->log('Superadmin zakolejkowal kampanie email z centrum komunikacji.');
         }
 
         $notification = Notification::make()
-            ->title('Wysylka kampanii zakonczona')
-            ->body("Wyslano: {$sent} · bledy: {$failed} · odbiorcy: {$recipients->count()}");
+            ->title('Kolejkowanie kampanii zakonczone')
+            ->body("Zakolejkowano: {$queued} · bledy: {$failed} · odbiorcy: {$recipients->count()}");
 
         if ($failed > 0) {
             $notification->warning();

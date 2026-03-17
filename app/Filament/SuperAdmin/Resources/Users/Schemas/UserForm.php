@@ -6,6 +6,7 @@ use App\Models\Parish;
 use App\Models\User;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -20,6 +21,18 @@ class UserForm
                 Section::make('Konto')
                     ->columns(2)
                     ->schema([
+                        SpatieMediaLibraryFileUpload::make('avatar_media')
+                            ->label('Avatar')
+                            ->collection('avatar')
+                            ->disk('profiles')
+                            ->conversionsDisk('profiles')
+                            ->visibility('public')
+                            ->image()
+                            ->imageEditor()
+                            ->circleCropper()
+                            ->maxSize(4096)
+                            ->columnSpanFull(),
+
                         TextInput::make('full_name')
                             ->label('Imie i nazwisko')
                             ->maxLength(255),

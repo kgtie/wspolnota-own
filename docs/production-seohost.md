@@ -16,6 +16,8 @@ To jest szczegolnie wazne dla tej aplikacji, bo korzysta z:
 - [`.env.production.example`](/Users/konradgruza/Herd/wspolnota/.env.production.example) zawiera bezpieczny punkt startowy dla produkcji.
 - [`scripts/prepare-seohost-release.sh`](/Users/konradgruza/Herd/wspolnota/scripts/prepare-seohost-release.sh) buduje assety i tworzy gotowa paczke `ZIP`.
 
+Domyslnie skrypt tworzy paczke tylko z kodem aplikacji, bez danych uzytkownikow z `storage/app/public` i `storage/app/office`.
+
 ## Dlaczego `QUEUE_CONNECTION=sync`
 
 W tym projekcie nie ma stale uruchamianego workera kolejek, a hosting wspoldzielony zwykle nie nadaje sie do utrzymywania procesu `queue:work` 24/7.
@@ -35,6 +37,24 @@ W katalogu projektu uruchom:
 bash scripts/prepare-seohost-release.sh
 ```
 
+Skrot `npm` dla tego wariantu:
+
+```bash
+npm run build:seohost
+```
+
+Jesli chcesz przeniesc rowniez aktualne pliki uzytkownikow, uruchom:
+
+```bash
+bash scripts/prepare-seohost-release.sh --with-storage-data
+```
+
+Skrot `npm` dla paczki z danymi:
+
+```bash
+npm run build:seohost:data
+```
+
 Po wykonaniu dostaniesz:
 
 - katalog `.build/seohost/release`
@@ -47,7 +67,11 @@ Ta paczka zawiera:
 - kod aplikacji bez lokalnego `.env`
 - oczyszczone katalogi runtime (`storage/framework`, `storage/logs`, `bootstrap/cache`)
 
-Paczka nie zawiera dumpa bazy MySQL.
+W trybie domyslnym paczka nie zawiera:
+
+- dumpa bazy MySQL
+- publicznych uploadow z `storage/app/public`
+- prywatnych plikow z `storage/app/office`
 
 ## Struktura na serwerze
 
@@ -81,6 +105,12 @@ Nastepnie w panelu domeny ustaw webroot na:
 bash scripts/prepare-seohost-release.sh
 ```
 
+Jesli chcesz zbudowac paczke razem z plikami uzytkownikow:
+
+```bash
+bash scripts/prepare-seohost-release.sh --with-storage-data
+```
+
 2. Wrzuc `wspolnota-seohost-release.zip` na serwer do katalogu domeny, np.:
 
 ```text
@@ -108,6 +138,8 @@ cp .env.production.example .env
 - `APP_URL=https://twoja-domena.pl`
 - dane bazy MySQL z SEOHOST
 - dane SMTP
+- `WSPOLNOTA_CONTACT_RECIPIENT`
+- `WSPOLNOTA_SCHEDULER_REPORT_RECIPIENT`
 - ewentualnie `GEMINI_API_KEY`, jesli AI ma dzialac na produkcji
 
 6. Wygeneruj klucz aplikacji:
@@ -215,7 +247,17 @@ Jesli nie masz dostepu do importu przez SSH, mozna uzyc phpMyAdmin z panelu host
 
 ### Pliki uzytkownikow
 
-Ten projekt zapisuje publiczne pliki w `storage/app/public`, wiec jesli w obecnym srodowisku masz juz uploady, zostana one zabrane do paczki release razem z kodem.
+Ten projekt zapisuje dane uzytkownikow co najmniej w:
+
+- `storage/app/public`
+- `storage/app/office`
+
+Domyslny release ich nie pakuje, zeby nie wrzucac danych deweloperskich na produkcje przypadkiem.
+
+Jesli chcesz przeniesc te pliki, masz dwie bezpieczne opcje:
+
+1. Zbudowac paczke poleceniem `bash scripts/prepare-seohost-release.sh --with-storage-data`.
+2. Przeniesc te katalogi osobno po SFTP/SSH po zbudowaniu standardowej paczki.
 
 ## Konfiguracja maili
 
@@ -241,6 +283,15 @@ W aplikacji sa zaplanowane zadania:
 - generowanie streszczen AI ogloszen
 - publikacja zaplanowanych aktualnosci
 - wysylka powiadomien o aktualnych ogloszeniach
+- dzienny raport email z wykonania schedulera
+
+Raport jest wysylany raz dziennie o `23:59` na adres z:
+
+- `WSPOLNOTA_SCHEDULER_REPORT_RECIPIENT`
+
+Jesli ta zmienna nie jest ustawiona, aplikacja korzysta z:
+
+- `WSPOLNOTA_CONTACT_RECIPIENT`
 
 Bez crona te procesy nie beda dzialac.
 

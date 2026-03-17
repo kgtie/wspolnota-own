@@ -348,6 +348,8 @@
         $mediaMax = max(1, (int) collect($this->mediaBreakdown)->max('total_size'));
         $queueMax = max(1, (int) collect($this->queueBreakdown)->map(fn ($row) => max((int) $row['pending'], (int) $row['failed']))->max());
         $hotspotMax = max(1, (int) collect($this->conversationHotspots)->max('unread_for_priest'));
+        $pushTypeMax = max(1, (int) collect($this->pushTypeBreakdown)->max('total'));
+        $pushPlatformMax = max(1, (int) collect($this->pushPlatformBreakdown)->max('total'));
     @endphp
 
     <div class="sa-health-shell" wire:poll.30s>
@@ -383,6 +385,24 @@
         >
             <div class="sa-health-grid infra">
                 @foreach ($this->infrastructureCards as $card)
+                    <div class="sa-health-card sa-health-tone-{{ $card['color'] }}">
+                        <div class="sa-health-top">
+                            <p class="sa-health-label">{{ $card['label'] }}</p>
+                            <span class="sa-health-pill">{{ $toneText[$card['color']] ?? $card['color'] }}</span>
+                        </div>
+                        <p class="sa-health-value" style="font-size: 1.25rem;">{{ $card['value'] }}</p>
+                        <p class="sa-health-hint">{{ $card['hint'] }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </x-filament::section>
+
+        <x-filament::section
+            heading="Push / FCM health"
+            description="Stan urzadzen, dostarczen i higieny tokenow push."
+        >
+            <div class="sa-health-grid infra">
+                @foreach ($this->pushCards as $card)
                     <div class="sa-health-card sa-health-tone-{{ $card['color'] }}">
                         <div class="sa-health-top">
                             <p class="sa-health-label">{{ $card['label'] }}</p>
@@ -443,6 +463,64 @@
                         </div>
                     @empty
                         <p class="text-sm text-gray-500">Brak rekordow w tabeli media.</p>
+                    @endforelse
+                </div>
+            </x-filament::section>
+        </div>
+
+        <div class="sa-health-panels">
+            <x-filament::section
+                heading="Push delivery typy (24h)"
+                description="Skutecznosc i ruch push pogrupowane po typie notyfikacji."
+            >
+                <div class="sa-health-list">
+                    @forelse ($this->pushTypeBreakdown as $row)
+                        @php
+                            $pct = (int) round(($row['total'] / $pushTypeMax) * 100);
+                        @endphp
+                        <div class="sa-health-row">
+                            <div class="sa-health-row-top">
+                                <p class="sa-health-row-name">{{ $row['type'] }}</p>
+                                <p class="sa-health-row-meta">sent {{ number_format($row['sent'], 0, ',', ' ') }} · failed {{ number_format($row['failed'], 0, ',', ' ') }} · queued {{ number_format($row['queued'], 0, ',', ' ') }}</p>
+                            </div>
+                            <div class="mt-1 flex items-center gap-2">
+                                <span class="sa-health-row-meta-chip">lacznie {{ number_format($row['total'], 0, ',', ' ') }}</span>
+                            </div>
+                            <div class="sa-health-bar">
+                                <div class="sa-health-bar-fill" style="width: {{ max(3, $pct) }}%;"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-500">Brak dostarczen push w ostatnich 24h.</p>
+                    @endforelse
+                </div>
+            </x-filament::section>
+
+            <x-filament::section
+                heading="Push devices per platform"
+                description="Rozklad urzadzen, aktywnosci i odmow zgody po platformie."
+            >
+                <div class="sa-health-list">
+                    @forelse ($this->pushPlatformBreakdown as $row)
+                        @php
+                            $pct = (int) round(($row['total'] / $pushPlatformMax) * 100);
+                        @endphp
+                        <div class="sa-health-row">
+                            <div class="sa-health-row-top">
+                                <p class="sa-health-row-name">{{ $row['platform'] }}</p>
+                                <p class="sa-health-row-meta">urzadzen {{ number_format($row['total'], 0, ',', ' ') }}</p>
+                            </div>
+                            <div class="mt-1 flex items-center gap-2">
+                                <span class="sa-health-row-meta-chip">pushable {{ number_format($row['pushable'], 0, ',', ' ') }}</span>
+                                <span class="sa-health-row-meta-chip">disabled {{ number_format($row['disabled'], 0, ',', ' ') }}</span>
+                                <span class="sa-health-row-meta-chip">denied {{ number_format($row['denied'], 0, ',', ' ') }}</span>
+                            </div>
+                            <div class="sa-health-bar">
+                                <div class="sa-health-bar-fill" style="width: {{ max(3, $pct) }}%;"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-500">Brak zarejestrowanych urzadzen push.</p>
                     @endforelse
                 </div>
             </x-filament::section>

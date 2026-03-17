@@ -191,6 +191,14 @@ class UserResource extends Resource
         return $code;
     }
 
+    public static function syncRecordAvatar(User $record): void
+    {
+        $record->refresh();
+        $record->load('media');
+        $record->syncAvatarAttributeFromMedia();
+        $record->refresh();
+    }
+
     private static function resolveActor(?User $actor = null): ?User
     {
         if ($actor instanceof User) {

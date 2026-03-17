@@ -6,10 +6,11 @@ use App\Models\NewsPost;
 use App\Models\User;
 use App\Support\Notifications\NotificationPreferenceResolver;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewsPublishedNotification extends Notification
+class NewsPublishedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

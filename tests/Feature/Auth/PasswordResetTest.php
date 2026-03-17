@@ -1,7 +1,8 @@
 <?php
 
+use App\Notifications\QueuedResetPasswordNotification;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 
 test('reset password link screen can be rendered', function () {
@@ -17,7 +18,7 @@ test('reset password link can be requested', function () {
 
     $this->post('/forgot-password', ['email' => $user->email]);
 
-    Notification::assertSentTo($user, ResetPassword::class);
+    Notification::assertSentTo($user, QueuedResetPasswordNotification::class, fn ($notification) => $notification instanceof ShouldQueue);
 });
 
 test('reset password screen can be rendered', function () {
@@ -27,12 +28,12 @@ test('reset password screen can be rendered', function () {
 
     $this->post('/forgot-password', ['email' => $user->email]);
 
-    Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
+    Notification::assertSentTo($user, QueuedResetPasswordNotification::class, function ($notification) {
         $response = $this->get('/reset-password/'.$notification->token);
 
         $response->assertStatus(200);
 
-        return true;
+        return $notification instanceof ShouldQueue;
     });
 });
 
@@ -43,7 +44,7 @@ test('password can be reset with valid token', function () {
 
     $this->post('/forgot-password', ['email' => $user->email]);
 
-    Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+    Notification::assertSentTo($user, QueuedResetPasswordNotification::class, function ($notification) use ($user) {
         $response = $this->post('/reset-password', [
             'token' => $notification->token,
             'email' => $user->email,
@@ -55,6 +56,6 @@ test('password can be reset with valid token', function () {
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('login'));
 
-        return true;
+        return $notification instanceof ShouldQueue;
     });
 });

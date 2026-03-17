@@ -16,7 +16,7 @@ class UserPayload
             'first_name' => $firstName,
             'last_name' => $lastName,
             'email' => (string) $user->email,
-            'avatar_url' => $user->getFirstMediaUrl('avatar', 'thumb') ?: null,
+            'avatar_url' => $user->avatar_media_url,
             'default_parish_id' => $user->home_parish_id ? (string) $user->home_parish_id : null,
             'is_email_verified' => $user->hasVerifiedEmail(),
             'is_parish_approved' => (bool) $user->is_user_verified,

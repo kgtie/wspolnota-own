@@ -4,6 +4,7 @@ use App\Models\Parish;
 use App\Models\User;
 use App\Notifications\ApiResetPasswordNotification;
 use App\Notifications\ApiVerifyEmailNotification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
@@ -46,6 +47,7 @@ it('registers user and returns tokens payload', function (): void {
     Notification::assertSentTo(
         User::query()->where('email', 'jan.kowalski@example.com')->firstOrFail(),
         ApiVerifyEmailNotification::class,
+        fn (ApiVerifyEmailNotification $notification): bool => $notification instanceof ShouldQueue,
     );
 });
 
@@ -201,10 +203,15 @@ it('rejects inactive parishes during registration', function (): void {
 it('resends verification email for authenticated user and verifies email through signed api route', function (): void {
     Notification::fake();
 
+    $parish = Parish::factory()->predefined(0)->create([
+        'slug' => 'wiskitki-test',
+    ]);
+
     $user = User::factory()->unverifiedEmail()->create([
         'email' => 'verify-me@example.com',
         'password' => Hash::make('Secret#2026'),
         'status' => 'active',
+        'home_parish_id' => $parish->getKey(),
     ]);
 
     $loginResponse = $this->postJson('/api/v1/auth/login', [
@@ -225,7 +232,13 @@ it('resends verification email for authenticated user and verifies email through
         ->assertOk()
         ->assertJsonPath('data.status', 'EMAIL_VERIFICATION_SENT');
 
-    Notification::assertSentTo($user, ApiVerifyEmailNotification::class);
+    Notification::assertSentTo($user, ApiVerifyEmailNotification::class, function (ApiVerifyEmailNotification $notification, array $channels, User $notifiable) use ($parish): bool {
+        $mailMessage = $notification->toMail($notifiable);
+
+        return $notification instanceof ShouldQueue
+            && str_contains((string) $mailMessage->actionUrl, $parish->slug.'.')
+            && str_contains((string) $mailMessage->actionUrl, '/potwierdzenie-email/');
+    });
 
     $verificationUrl = URL::temporarySignedRoute(
         'api.v1.auth.verify-email',
@@ -260,7 +273,8 @@ it('uses api-friendly reset password notification links', function (): void {
     Notification::assertSentTo($user, ApiResetPasswordNotification::class, function (ApiResetPasswordNotification $notification, array $channels, User $notifiable): bool {
         $mailMessage = $notification->toMail($notifiable);
 
-        return str_contains((string) $mailMessage->actionUrl, 'wspolnota://reset-password')
+        return $notification instanceof ShouldQueue
+            && str_contains((string) $mailMessage->actionUrl, 'wspolnota://reset-password')
             && str_contains((string) $mailMessage->actionUrl, 'email=');
     });
 });

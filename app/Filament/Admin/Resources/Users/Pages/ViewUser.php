@@ -188,7 +188,7 @@ class ViewUser extends ViewRecord
                     }
 
                     try {
-                        Mail::to($record->email)->send(
+                        Mail::to($record->email)->queue(
                             new ParishPriestMessage(
                                 recipient: $record,
                                 sender: $admin,
@@ -230,11 +230,11 @@ class ViewUser extends ViewRecord
                             'message_length' => mb_strlen((string) $data['message']),
                             'parish_id' => Filament::getTenant()?->getKey(),
                         ])
-                        ->log('Proboszcz wysłał wiadomość email do parafianina.');
+                        ->log('Proboszcz zakolejkowal wiadomosc email do parafianina.');
 
                     Notification::make()
                         ->success()
-                        ->title('Wiadomość została wysłana.')
+                        ->title('Wiadomość została zakolejkowana.')
                         ->body('Parafianin otrzyma email z informacją, że wiadomość pochodzi od proboszcza.')
                         ->send();
                 }),

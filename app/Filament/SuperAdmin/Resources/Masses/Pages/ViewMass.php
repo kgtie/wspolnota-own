@@ -91,12 +91,12 @@ class ViewMass extends ViewRecord
                         return;
                     }
 
-                    $sent = 0;
+                    $queued = 0;
                     $failed = 0;
 
                     foreach ($participants as $participant) {
                         try {
-                            Mail::to($participant->email)->send(
+                            Mail::to($participant->email)->queue(
                                 new MassParticipantsMessage(
                                     mass: $record,
                                     sender: $admin,
@@ -105,15 +105,15 @@ class ViewMass extends ViewRecord
                                     parishName: $record->parish?->name,
                                 ),
                             );
-                            $sent++;
+                            $queued++;
                         } catch (Throwable) {
                             $failed++;
                         }
                     }
 
                     $notification = Notification::make()
-                        ->title('Wysylka wiadomosci zakonczona.')
-                        ->body("Wyslano: {$sent}, bledy: {$failed}");
+                        ->title('Kolejkowanie wiadomosci zakonczone.')
+                        ->body("Zakolejkowano: {$queued}, bledy: {$failed}");
 
                     if ($failed > 0) {
                         $notification->warning();
@@ -129,12 +129,12 @@ class ViewMass extends ViewRecord
                             ->withProperties([
                                 'parish_id' => $record->parish_id,
                                 'participants_count' => $participants->count(),
-                                'sent_count' => $sent,
+                                'queued_count' => $queued,
                                 'failed_count' => $failed,
                                 'subject' => (string) $data['subject'],
                                 'message_length' => mb_strlen((string) $data['message']),
                             ])
-                            ->log('Proboszcz wyslal wiadomosc email do uczestnikow mszy.');
+                            ->log('Proboszcz zakolejkowal wiadomosc email do uczestnikow mszy.');
                     }
 
                     $notification->send();

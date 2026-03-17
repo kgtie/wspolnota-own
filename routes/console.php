@@ -13,3 +13,11 @@ Schedule::command('announcements:notify-current --limit=150')
 Schedule::command('news:publish-scheduled --limit=150')
     ->everyFiveMinutes()
     ->withoutOverlapping();
+
+Schedule::command('push:prune-dead-tokens --invalid-hours=24')
+    ->hourlyAt(17)
+    ->withoutOverlapping();
+
+Schedule::command('scheduler:send-report')
+    ->dailyAt('23:59')
+    ->withoutOverlapping();

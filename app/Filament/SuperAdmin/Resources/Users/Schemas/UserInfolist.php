@@ -17,8 +17,9 @@ class UserInfolist
                 Section::make('Uzytkownik')
                     ->columns(2)
                     ->schema([
-                        ImageEntry::make('avatar_url')
+                        ImageEntry::make('avatar_preview')
                             ->label('Avatar')
+                            ->state(fn (User $record): string => $record->avatar_url)
                             ->circular()
                             ->imageSize(88)
                             ->columnSpanFull(),

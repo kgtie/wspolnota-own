@@ -50,7 +50,7 @@ it('sends a contact form email', function () {
         'message' => 'Chcemy porozmawiać o pilotażu oraz o tym, jak pokazać screeny na stronie głównej.',
     ])->assertRedirect(route('landing.contact'));
 
-    Mail::assertSent(LandingContactMessage::class, function (LandingContactMessage $mail) {
+    Mail::assertQueued(LandingContactMessage::class, function (LandingContactMessage $mail) {
         return $mail->hasTo(config('services.wspolnota.contact_recipient', 'konrad@wspolnota.app'));
     });
 });
@@ -68,7 +68,7 @@ it('validates the contact form payload', function () {
         ->assertRedirect(route('landing.contact'))
         ->assertSessionHasErrors(['name', 'email', 'subject', 'message']);
 
-    Mail::assertNothingSent();
+    Mail::assertNothingQueued();
 });
 
 it('serves a sitemap for public pages', function () {

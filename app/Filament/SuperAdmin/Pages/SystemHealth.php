@@ -9,7 +9,10 @@ use App\Models\NewsPost;
 use App\Models\OfficeConversation;
 use App\Models\OfficeMessage;
 use App\Models\Parish;
+use App\Models\PushDelivery;
 use App\Models\User;
+use App\Models\UserDevice;
+use App\Settings\FcmSettings;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -60,6 +63,9 @@ class SystemHealth extends Page
 
         $mailingCount = MailingMail::withTrashed()->count();
         $mailingConfirmed = MailingMail::withTrashed()->whereNotNull('confirmed_at')->count();
+        $pushableDevices = $this->pushableDevicesCount();
+        $pushSent24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_SENT, 24);
+        $pushFailed24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_FAILED, 24);
 
         [$mediaFiles, $mediaSize] = $this->mediaTotals();
 
@@ -95,6 +101,12 @@ class SystemHealth extends Page
                 'color' => 'primary',
             ],
             [
+                'label' => 'Push / FCM',
+                'value' => number_format($pushableDevices, 0, ',', ' '),
+                'hint' => "Aktywne urzadzenia · sent 24h: {$pushSent24h} · failed 24h: {$pushFailed24h}",
+                'color' => $pushFailed24h > 0 ? 'warning' : 'success',
+            ],
+            [
                 'label' => 'Media (pliki)',
                 'value' => number_format($mediaFiles, 0, ',', ' '),
                 'hint' => 'Laczny rozmiar: '.$this->formatBytes($mediaSize),
@@ -111,6 +123,8 @@ class SystemHealth extends Page
         $activityCount1h = $this->countActivityLogs(1);
         $jobsCount = $this->tableCount(config('queue.connections.database.table', 'jobs'));
         $failedJobsCount = $this->tableCount(config('queue.failed.table', 'failed_jobs'));
+        $fcmSettings = app(FcmSettings::class);
+        $deadTokens = $this->deadTokensCount();
 
         return [
             [
@@ -143,11 +157,19 @@ class SystemHealth extends Page
                 'hint' => 'Nieudane zadania',
                 'color' => $failedJobsCount > 0 ? 'danger' : 'success',
             ],
+            [
+                'label' => 'FCM',
+                'value' => $fcmSettings->enabled ? 'ON' : 'OFF',
+                'hint' => 'project_id: '.($fcmSettings->resolvedProjectId() !== '' ? $fcmSettings->resolvedProjectId() : 'brak').' · martwe tokeny: '.$deadTokens,
+                'color' => ! $fcmSettings->enabled ? 'warning' : ($deadTokens > 0 ? 'warning' : 'success'),
+            ],
         ];
     }
 
     public function getSystemSnapshotProperty(): array
     {
+        $fcmSettings = app(FcmSettings::class);
+
         return [
             ['label' => 'Srodowisko', 'value' => (string) config('app.env')],
             ['label' => 'Debug', 'value' => config('app.debug') ? 'true' : 'false'],
@@ -157,6 +179,49 @@ class SystemHealth extends Page
             ['label' => 'Cache driver', 'value' => (string) config('cache.default')],
             ['label' => 'Queue default', 'value' => (string) config('queue.default')],
             ['label' => 'Settings cache', 'value' => config('settings.cache.enabled') ? 'enabled' : 'disabled'],
+            ['label' => 'FCM enabled', 'value' => $fcmSettings->enabled ? 'true' : 'false'],
+            ['label' => 'FCM project_id', 'value' => $fcmSettings->resolvedProjectId() !== '' ? $fcmSettings->resolvedProjectId() : 'brak'],
+        ];
+    }
+
+    public function getPushCardsProperty(): array
+    {
+        $allDevices = $this->userDevicesCount();
+        $pushableDevices = $this->pushableDevicesCount();
+        $disabledDevices = $this->disabledDevicesCount();
+        $deadTokens = $this->deadTokensCount();
+        $sent24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_SENT, 24);
+        $failed24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_FAILED, 24);
+        $queued24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_QUEUED, 24);
+        $successRate = $sent24h + $failed24h > 0
+            ? round(($sent24h / max(1, $sent24h + $failed24h)) * 100, 1)
+            : null;
+
+        return [
+            [
+                'label' => 'Urzadzenia',
+                'value' => number_format($allDevices, 0, ',', ' '),
+                'hint' => "Pushable: {$pushableDevices} · disabled: {$disabledDevices}",
+                'color' => $pushableDevices > 0 ? 'info' : 'warning',
+            ],
+            [
+                'label' => 'Dostarczenia 24h',
+                'value' => number_format($sent24h, 0, ',', ' '),
+                'hint' => "Sent · failed: {$failed24h} · queued: {$queued24h}",
+                'color' => $failed24h > 0 ? 'warning' : 'success',
+            ],
+            [
+                'label' => 'Skutecznosc 24h',
+                'value' => $successRate === null ? 'brak' : number_format($successRate, 1, ',', ' ').'%',
+                'hint' => 'Liczona jako sent / (sent + failed)',
+                'color' => $successRate === null ? 'gray' : ($successRate >= 98 ? 'success' : ($successRate >= 90 ? 'warning' : 'danger')),
+            ],
+            [
+                'label' => 'Martwe tokeny',
+                'value' => number_format($deadTokens, 0, ',', ' '),
+                'hint' => 'Disabled albo z bledem UNREGISTERED / INVALID_ARGUMENT',
+                'color' => $deadTokens > 0 ? 'danger' : 'success',
+            ],
         ];
     }
 
@@ -254,6 +319,63 @@ class SystemHealth extends Page
             ->all();
     }
 
+    public function getPushTypeBreakdownProperty(): array
+    {
+        if (! $this->tableExists('push_deliveries')) {
+            return [];
+        }
+
+        return PushDelivery::query()
+            ->selectRaw("COALESCE(NULLIF(type, ''), 'unknown') as push_type")
+            ->selectRaw("SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as sent_count", [PushDelivery::STATUS_SENT])
+            ->selectRaw("SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as failed_count", [PushDelivery::STATUS_FAILED])
+            ->selectRaw("SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as queued_count", [PushDelivery::STATUS_QUEUED])
+            ->where('created_at', '>=', now()->subDay())
+            ->groupBy('push_type')
+            ->orderByRaw(
+                "SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) + SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) + SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) DESC",
+                [
+                    PushDelivery::STATUS_SENT,
+                    PushDelivery::STATUS_FAILED,
+                    PushDelivery::STATUS_QUEUED,
+                ],
+            )
+            ->get()
+            ->map(fn (PushDelivery $row): array => [
+                'type' => (string) $row->push_type,
+                'sent' => (int) $row->sent_count,
+                'failed' => (int) $row->failed_count,
+                'queued' => (int) $row->queued_count,
+                'total' => (int) $row->sent_count + (int) $row->failed_count + (int) $row->queued_count,
+            ])
+            ->all();
+    }
+
+    public function getPushPlatformBreakdownProperty(): array
+    {
+        if (! $this->tableExists('user_devices')) {
+            return [];
+        }
+
+        return UserDevice::query()
+            ->selectRaw("COALESCE(NULLIF(platform, ''), 'unknown') as device_platform")
+            ->selectRaw('COUNT(*) as total_devices')
+            ->selectRaw("SUM(CASE WHEN disabled_at IS NOT NULL THEN 1 ELSE 0 END) as disabled_devices")
+            ->selectRaw("SUM(CASE WHEN disabled_at IS NULL AND provider = 'fcm' AND push_token IS NOT NULL AND permission_status IN ('authorized', 'provisional') THEN 1 ELSE 0 END) as pushable_devices")
+            ->selectRaw("SUM(CASE WHEN permission_status = 'denied' THEN 1 ELSE 0 END) as denied_devices")
+            ->groupBy('device_platform')
+            ->orderByDesc('total_devices')
+            ->get()
+            ->map(fn (UserDevice $row): array => [
+                'platform' => (string) $row->device_platform,
+                'total' => (int) $row->total_devices,
+                'pushable' => (int) $row->pushable_devices,
+                'disabled' => (int) $row->disabled_devices,
+                'denied' => (int) $row->denied_devices,
+            ])
+            ->all();
+    }
+
     public function getConversationHotspotsProperty(): array
     {
         return OfficeConversation::query()
@@ -293,6 +415,56 @@ class SystemHealth extends Page
         }
 
         return [(int) $totals->files_count, (int) $totals->total_size];
+    }
+
+    protected function userDevicesCount(): int
+    {
+        if (! $this->tableExists('user_devices')) {
+            return 0;
+        }
+
+        return (int) UserDevice::query()->count();
+    }
+
+    protected function pushableDevicesCount(): int
+    {
+        if (! $this->tableExists('user_devices')) {
+            return 0;
+        }
+
+        return (int) UserDevice::query()->pushable()->count();
+    }
+
+    protected function disabledDevicesCount(): int
+    {
+        if (! $this->tableExists('user_devices')) {
+            return 0;
+        }
+
+        return (int) UserDevice::query()->whereNotNull('disabled_at')->count();
+    }
+
+    protected function deadTokensCount(): int
+    {
+        if (! $this->tableExists('user_devices')) {
+            return 0;
+        }
+
+        return (int) UserDevice::query()
+            ->deadToken()
+            ->count();
+    }
+
+    protected function pushDeliveriesByStatus(string $status, int $hours): int
+    {
+        if (! $this->tableExists('push_deliveries')) {
+            return 0;
+        }
+
+        return (int) PushDelivery::query()
+            ->where('status', $status)
+            ->where('created_at', '>=', now()->subHours($hours))
+            ->count();
     }
 
     protected function isDatabaseHealthy(): bool

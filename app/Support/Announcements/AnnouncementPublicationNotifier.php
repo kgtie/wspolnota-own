@@ -65,7 +65,7 @@ class AnnouncementPublicationNotifier
         $parishName = $set->parish?->name ?? 'Parafia';
 
         foreach ($recipients as $email) {
-            Mail::to((string) $email)->send(
+            Mail::to((string) $email)->queue(
                 new AnnouncementSetPublishedMessage(
                     announcementSet: $set,
                     parishName: $parishName,
@@ -89,7 +89,7 @@ class AnnouncementPublicationNotifier
                 'source' => $source,
                 'recipients_count' => $count,
             ])
-            ->log('Wyslano email do parafian o aktualnych ogloszeniach.');
+            ->log('Zakolejkowano email do parafian o aktualnych ogloszeniach.');
 
         return $count;
     }

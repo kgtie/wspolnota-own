@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Landing;
 
-use Livewire\Component;
-use App\Models\MailingMail;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\ConfirmSubscription;
+use App\Models\MailingMail;
+use Livewire\Component;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+
 class JoinWaitlist extends Component
 {
     public $email = ''; // Pole na email
@@ -88,7 +89,7 @@ class JoinWaitlist extends Component
         }
 
         // Wyślij maila
-        Mail::to($subscriber->email)->send(new ConfirmSubscription($subscriber));
+        Mail::to($subscriber->email)->queue(new ConfirmSubscription($subscriber));
 
         $this->statusMessage = 'Sprawdź skrzynkę pocztową i potwierdź zapis!';
         $this->statusType = 'success';

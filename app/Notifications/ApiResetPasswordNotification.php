@@ -4,9 +4,10 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class ApiResetPasswordNotification extends ResetPassword
+class ApiResetPasswordNotification extends ResetPassword implements ShouldQueue
 {
     use Queueable;
 

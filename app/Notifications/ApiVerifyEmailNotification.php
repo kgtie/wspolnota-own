@@ -2,13 +2,15 @@
 
 namespace App\Notifications;
 
+use App\Models\Parish;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\URL;
 
-class ApiVerifyEmailNotification extends Notification
+class ApiVerifyEmailNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -34,6 +36,20 @@ class ApiVerifyEmailNotification extends Notification
             return config('app.url');
         }
 
+        $parish = $this->resolveParish($notifiable);
+
+        if ($parish) {
+            return URL::temporarySignedRoute(
+                'parish.verification.verify',
+                now()->addMinutes((int) config('api_auth.email_verification_ttl_minutes', 60)),
+                [
+                    'subdomain' => $parish->slug,
+                    'id' => $notifiable->getKey(),
+                    'hash' => sha1($notifiable->getEmailForVerification()),
+                ],
+            );
+        }
+
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verify-email',
             now()->addMinutes((int) config('api_auth.email_verification_ttl_minutes', 60)),
@@ -43,22 +59,19 @@ class ApiVerifyEmailNotification extends Notification
             ],
         );
 
-        $mobileUrl = (string) config('api_auth.mobile_email_verification_url', '');
-
-        if ($mobileUrl === '') {
-            return $signedUrl;
-        }
-
-        return $this->appendQuery($mobileUrl, [
-            'verification_url' => $signedUrl,
-            'email' => $notifiable->getEmailForVerification(),
-        ]);
+        return $signedUrl;
     }
 
-    private function appendQuery(string $url, array $params): string
+    private function resolveParish(object $notifiable): ?Parish
     {
-        $separator = str_contains($url, '?') ? '&' : '?';
+        $parishId = data_get($notifiable, 'home_parish_id');
 
-        return $url.$separator.http_build_query($params);
+        if (! is_numeric($parishId)) {
+            return null;
+        }
+
+        return Parish::query()
+            ->select(['id', 'slug'])
+            ->find((int) $parishId);
     }
 }

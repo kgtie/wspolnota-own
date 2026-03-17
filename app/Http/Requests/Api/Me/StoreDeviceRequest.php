@@ -14,7 +14,7 @@ class StoreDeviceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'provider' => ['required', 'string', 'in:fcm,apns'],
+            'provider' => ['required', 'string', 'in:fcm'],
             'platform' => ['required', 'string', 'in:android,ios'],
             'push_token' => ['required', 'string', 'max:4096'],
             'device_id' => ['required', 'string', 'min:8', 'max:128'],
@@ -22,6 +22,8 @@ class StoreDeviceRequest extends FormRequest
             'app_version' => ['required', 'string', 'max:30'],
             'locale' => ['nullable', 'string', 'max:16'],
             'timezone' => ['nullable', 'string', 'max:64'],
+            'permission_status' => ['nullable', 'string', 'in:authorized,provisional,denied,not_determined'],
+            'parish_id' => ['nullable', 'integer', 'exists:parishes,id'],
         ];
     }
 }
