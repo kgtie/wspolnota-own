@@ -21,7 +21,7 @@ class SettingResource extends Resource
 {
     protected static ?string $model = SettingsProperty::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'ustawienie';
 
@@ -29,9 +29,9 @@ class SettingResource extends Resource
 
     protected static ?string $navigationLabel = 'Ustawienia aplikacji';
 
-    protected static string|UnitEnum|null $navigationGroup = 'System';
+    protected static string|UnitEnum|null $navigationGroup = 'System i diagnostyka';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 15;
 
     public static function form(Schema $schema): Schema
     {

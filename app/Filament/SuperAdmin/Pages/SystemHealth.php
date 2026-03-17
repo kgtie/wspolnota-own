@@ -24,9 +24,9 @@ class SystemHealth extends Page
 
     protected static ?string $navigationLabel = 'Globalne metryki';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar-square';
+    protected static string | \BackedEnum | null $navigationIcon = null;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Platforma';
+    protected static string | \UnitEnum | null $navigationGroup = 'System i diagnostyka';
 
     protected static ?int $navigationSort = 1;
 
@@ -35,6 +35,22 @@ class SystemHealth extends Page
     protected ?string $pollingInterval = '30s';
 
     protected ?string $subheading = 'Przekrojowa kondycja calej platformy, bez ograniczen tenantowych.';
+
+    public static function getNavigationBadge(): ?string
+    {
+        if (! Schema::hasTable('failed_jobs')) {
+            return null;
+        }
+
+        $failedJobs = DB::table('failed_jobs')->count();
+
+        return $failedJobs > 0 ? (string) $failedJobs : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getNavigationBadge() !== null ? 'warning' : 'success';
+    }
 
     public function getOverviewCardsProperty(): array
     {

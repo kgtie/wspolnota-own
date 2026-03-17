@@ -4,6 +4,7 @@ namespace App\Filament\SuperAdmin\Resources\Users\Tables;
 
 use App\Filament\SuperAdmin\Resources\Users\UserResource;
 use App\Models\User;
+use App\Support\SuperAdmin\InstantCommunicationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -17,6 +18,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
@@ -167,6 +169,8 @@ class UsersTable
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
+                    self::sendInstantPushAction(),
+                    self::sendInstantEmailAction(),
                     self::verifyUserWithCodeAction(),
                     self::unverifyUserAction(),
                     self::regenerateCodeAction(),
@@ -181,6 +185,8 @@ class UsersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    self::sendInstantPushBulkAction(),
+                    self::sendInstantEmailBulkAction(),
                     self::unverifyUsersBulkAction(),
                     self::regenerateCodesBulkAction(),
                     DeleteBulkAction::make(),
@@ -226,6 +232,74 @@ class UsersTable
                 }
             })
             ->successNotificationTitle('Uzytkownik zostal zatwierdzony.');
+    }
+
+    protected static function sendInstantPushAction(): Action
+    {
+        return Action::make('send_instant_push')
+            ->label('Wyslij push teraz')
+            ->icon('heroicon-o-device-phone-mobile')
+            ->color('info')
+            ->schema([
+                TextInput::make('title')
+                    ->label('Tytul push')
+                    ->required()
+                    ->maxLength(120)
+                    ->default('Wiadomosc od superadministratora'),
+                Textarea::make('body')
+                    ->label('Tresc push')
+                    ->required()
+                    ->rows(5)
+                    ->maxLength(1000),
+            ])
+            ->action(function (User $record, array $data, InstantCommunicationService $service): void {
+                $result = $service->queuePushToUsers(
+                    users: collect([$record->fresh('devices')]),
+                    title: (string) $data['title'],
+                    body: (string) $data['body'],
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano push.')
+                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · bez aktywnego tokenu: {$result['skipped']}")
+                    ->send();
+            });
+    }
+
+    protected static function sendInstantEmailAction(): Action
+    {
+        return Action::make('send_instant_email')
+            ->label('Wyslij email teraz')
+            ->icon('heroicon-o-envelope')
+            ->color('primary')
+            ->schema([
+                TextInput::make('subject')
+                    ->label('Temat')
+                    ->required()
+                    ->maxLength(200)
+                    ->default('Wiadomosc od superadministratora'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(8)
+                    ->maxLength(12000),
+            ])
+            ->action(function (User $record, array $data, InstantCommunicationService $service): void {
+                $actor = Filament::auth()->user();
+                $result = $service->sendEmailToUsers(
+                    users: collect([$record]),
+                    subjectLine: (string) $data['subject'],
+                    messageBody: (string) $data['body'],
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano email.')
+                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->send();
+            });
     }
 
     protected static function unverifyUserAction(): Action
@@ -334,6 +408,86 @@ class UsersTable
                     ->success()
                     ->title('Cofnieto zatwierdzenia.')
                     ->body("Liczba zmienionych rekordow: {$updated}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+    }
+
+    protected static function sendInstantPushBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_instant_push_bulk')
+            ->label('Wyslij push teraz')
+            ->icon('heroicon-o-device-phone-mobile')
+            ->color('info')
+            ->schema([
+                TextInput::make('title')
+                    ->label('Tytul push')
+                    ->required()
+                    ->maxLength(120)
+                    ->default('Wiadomosc od superadministratora'),
+                Textarea::make('body')
+                    ->label('Tresc push')
+                    ->required()
+                    ->rows(5)
+                    ->maxLength(1000),
+            ])
+            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+                $users = collect($records)
+                    ->filter(fn ($record): bool => $record instanceof User)
+                    ->values();
+
+                $users->each(fn (User $user) => $user->loadMissing('devices'));
+
+                $result = $service->queuePushToUsers(
+                    users: $users,
+                    title: (string) $data['title'],
+                    body: (string) $data['body'],
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano push dla zaznaczonych uzytkownikow.')
+                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · bez aktywnego tokenu: {$result['skipped']}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+    }
+
+    protected static function sendInstantEmailBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_instant_email_bulk')
+            ->label('Wyslij email teraz')
+            ->icon('heroicon-o-envelope')
+            ->color('primary')
+            ->schema([
+                TextInput::make('subject')
+                    ->label('Temat')
+                    ->required()
+                    ->maxLength(200)
+                    ->default('Wiadomosc od superadministratora'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(8)
+                    ->maxLength(12000),
+            ])
+            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+                $actor = Filament::auth()->user();
+                $users = collect($records)
+                    ->filter(fn ($record): bool => $record instanceof User)
+                    ->values();
+
+                $result = $service->sendEmailToUsers(
+                    users: $users,
+                    subjectLine: (string) $data['subject'],
+                    messageBody: (string) $data['body'],
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano email dla zaznaczonych uzytkownikow.')
+                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();

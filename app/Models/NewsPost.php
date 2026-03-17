@@ -33,6 +33,8 @@ class NewsPost extends Model implements HasMedia
         'content',
         'status',
         'published_at',
+        'push_notification_sent_at',
+        'email_notification_sent_at',
         'scheduled_for',
         'is_pinned',
         'created_by_user_id',
@@ -43,6 +45,8 @@ class NewsPost extends Model implements HasMedia
     {
         return [
             'published_at' => 'datetime',
+            'push_notification_sent_at' => 'datetime',
+            'email_notification_sent_at' => 'datetime',
             'scheduled_for' => 'datetime',
             'is_pinned' => 'boolean',
         ];

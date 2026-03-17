@@ -58,6 +58,16 @@ class NewsPostInfolist
                             ->dateTime('d.m.Y H:i')
                             ->placeholder('Nie opublikowano'),
 
+                        TextEntry::make('push_notification_sent_at')
+                            ->label('Push dispatch')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('Oczekuje'),
+
+                        TextEntry::make('email_notification_sent_at')
+                            ->label('Email dispatch')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('Oczekuje'),
+
                         TextEntry::make('content')
                             ->label('Pelna tresc')
                             ->html()

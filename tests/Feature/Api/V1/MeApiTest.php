@@ -91,12 +91,18 @@ it('updates notification preferences and marks notification as read', function (
         ->patchJson('/api/v1/me/notification-preferences', [
             'news' => ['push' => true, 'email' => false],
             'announcements' => ['push' => true, 'email' => true],
+            'mass_reminders' => ['push' => true, 'email' => true],
             'office_messages' => ['push' => true, 'email' => true],
             'parish_approval_status' => ['push' => true, 'email' => true],
             'auth_security' => ['push' => false, 'email' => true],
         ])
         ->assertOk()
         ->assertJsonPath('data.updated', true);
+
+    expect($user->fresh()->notificationPreference)
+        ->not->toBeNull()
+        ->and($user->fresh()->notificationPreference->mass_reminders_push)->toBeTrue()
+        ->and($user->fresh()->notificationPreference->mass_reminders_email)->toBeTrue();
 
     $id = (string) Str::uuid();
 

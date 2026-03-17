@@ -3,11 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\OfficeMessage;
-use App\Models\User;
-use App\Support\Notifications\NotificationPreferenceResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class OfficeMessageReceivedNotification extends Notification implements ShouldQueue
@@ -18,15 +15,7 @@ class OfficeMessageReceivedNotification extends Notification implements ShouldQu
 
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        if ($notifiable instanceof User
-            && app(NotificationPreferenceResolver::class)->wantsEmail($notifiable, 'office_messages')
-            && filled($notifiable->email)) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
+        return ['database'];
     }
 
     public function toDatabase(object $notifiable): array
@@ -43,13 +32,5 @@ class OfficeMessageReceivedNotification extends Notification implements ShouldQu
                 'parish_id' => $parishId ? (string) $parishId : null,
             ],
         ];
-    }
-
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject('Nowa wiadomość w kancelarii online')
-            ->line('Otrzymałeś nową wiadomość w kancelarii online.')
-            ->line('Otwórz aplikację, aby odpowiedzieć.');
     }
 }

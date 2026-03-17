@@ -25,7 +25,7 @@ class PushDeliveryResource extends Resource
 {
     protected static ?string $model = PushDelivery::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-paper-airplane';
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'dostarczenie push';
 
@@ -33,9 +33,9 @@ class PushDeliveryResource extends Resource
 
     protected static ?string $navigationLabel = 'Dostarczenia push';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Komunikacja';
+    protected static string|UnitEnum|null $navigationGroup = 'Push i urzadzenia';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 20;
 
     public static function table(Table $table): Table
     {
@@ -163,5 +163,20 @@ class PushDeliveryResource extends Resource
     public static function canEdit($record): bool
     {
         return false;
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $failed24h = static::getEloquentQuery()
+            ->where('status', PushDelivery::STATUS_FAILED)
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+
+        return $failed24h > 0 ? (string) $failed24h : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getNavigationBadge() !== null ? 'danger' : 'success';
     }
 }

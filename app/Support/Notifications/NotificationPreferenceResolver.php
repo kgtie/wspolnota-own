@@ -17,6 +17,7 @@ class NotificationPreferenceResolver
         return match ($topic) {
             'news' => (bool) $preferences->news_email,
             'announcements' => (bool) $preferences->announcements_email,
+            'mass_reminders' => (bool) $preferences->mass_reminders_email,
             'office_messages' => (bool) $preferences->office_messages_email,
             'parish_approval_status' => (bool) $preferences->parish_approval_status_email,
             default => false,
@@ -34,6 +35,7 @@ class NotificationPreferenceResolver
         return match ($topic) {
             'news' => (bool) $preferences->news_push,
             'announcements' => (bool) $preferences->announcements_push,
+            'mass_reminders' => (bool) $preferences->mass_reminders_push,
             'office_messages' => (bool) $preferences->office_messages_push,
             'parish_approval_status' => (bool) $preferences->parish_approval_status_push,
             'auth_security' => (bool) $preferences->auth_security_push,
@@ -46,6 +48,7 @@ class NotificationPreferenceResolver
         return match ($topic) {
             'news' => false,
             'announcements' => true,
+            'mass_reminders' => true,
             'office_messages' => true,
             'parish_approval_status' => true,
             default => false,
@@ -57,6 +60,7 @@ class NotificationPreferenceResolver
         return match ($topic) {
             'news' => true,
             'announcements' => true,
+            'mass_reminders' => true,
             'office_messages' => true,
             'parish_approval_status' => true,
             'auth_security' => false,

@@ -23,7 +23,7 @@ class AnnouncementSetResource extends Resource
 {
     protected static ?string $model = AnnouncementSet::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-megaphone';
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'zestaw ogloszen';
 
@@ -31,9 +31,9 @@ class AnnouncementSetResource extends Resource
 
     protected static ?string $navigationLabel = 'Ogloszenia mszalne';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Liturgia';
+    protected static string|UnitEnum|null $navigationGroup = 'Tresci i liturgia';
 
-    protected static ?int $navigationSort = 21;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {
@@ -88,16 +88,17 @@ class AnnouncementSetResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $draftCount = static::getEloquentQuery()
-            ->where('status', 'draft')
+        $pendingDispatchCount = static::getEloquentQuery()
+            ->where('status', 'published')
+            ->whereNull('push_notification_sent_at')
             ->count();
 
-        return $draftCount > 0 ? (string) $draftCount : null;
+        return $pendingDispatchCount > 0 ? (string) $pendingDispatchCount : null;
     }
 
     public static function getNavigationBadgeColor(): ?string
     {
-        return static::getEloquentQuery()->where('status', 'draft')->exists()
+        return static::getNavigationBadge() !== null
             ? 'warning'
             : 'success';
     }

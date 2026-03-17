@@ -18,13 +18,13 @@ class OfficeInbox extends Page
 
     protected static ?string $title = 'Centrum konwersacji online';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    protected static string | \BackedEnum | null $navigationIcon = null;
 
     protected static ?string $navigationLabel = 'Centrum konwersacji';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Komunikacja';
+    protected static string | \UnitEnum | null $navigationGroup = 'Komunikacja i kampanie';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 2;
 
     protected string $view = 'filament.superadmin.pages.office-inbox';
 

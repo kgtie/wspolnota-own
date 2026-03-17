@@ -97,6 +97,16 @@ class AnnouncementSetInfolist
                             ->dateTime('d.m.Y H:i')
                             ->placeholder('Nie wyslano'),
 
+                        TextEntry::make('push_notification_sent_at')
+                            ->label('Push dispatch')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('Oczekuje'),
+
+                        TextEntry::make('email_notification_sent_at')
+                            ->label('Email dispatch')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('Oczekuje'),
+
                         TextEntry::make('notifications_recipients_count')
                             ->label('Liczba odbiorcow')
                             ->placeholder('0'),

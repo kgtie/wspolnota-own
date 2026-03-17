@@ -3,11 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\NewsPost;
-use App\Models\User;
-use App\Support\Notifications\NotificationPreferenceResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class NewsPublishedNotification extends Notification implements ShouldQueue
@@ -18,15 +15,7 @@ class NewsPublishedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        if ($notifiable instanceof User
-            && app(NotificationPreferenceResolver::class)->wantsEmail($notifiable, 'news')
-            && filled($notifiable->email)) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
+        return ['database'];
     }
 
     public function toDatabase(object $notifiable): array
@@ -40,13 +29,5 @@ class NewsPublishedNotification extends Notification implements ShouldQueue
                 'news_id' => (string) $this->newsPost->getKey(),
             ],
         ];
-    }
-
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject('Nowa aktualność parafialna')
-            ->line('Opublikowano nową aktualność: '.$this->newsPost->title)
-            ->line('Sprawdź ją w aplikacji mobilnej.');
     }
 }

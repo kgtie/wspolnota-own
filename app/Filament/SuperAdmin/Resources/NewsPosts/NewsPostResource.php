@@ -22,7 +22,7 @@ class NewsPostResource extends Resource
 {
     protected static ?string $model = NewsPost::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-newspaper';
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'aktualnosc';
 
@@ -30,9 +30,9 @@ class NewsPostResource extends Resource
 
     protected static ?string $navigationLabel = 'Aktualnosci';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Komunikacja';
+    protected static string|UnitEnum|null $navigationGroup = 'Tresci i liturgia';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {

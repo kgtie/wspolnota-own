@@ -28,6 +28,8 @@ class AnnouncementSet extends Model
         'effective_to',
         'status',
         'published_at',
+        'push_notification_sent_at',
+        'email_notification_sent_at',
         'lead',
         'footer_notes',
         'summary_ai',
@@ -45,6 +47,8 @@ class AnnouncementSet extends Model
             'effective_from' => 'date',
             'effective_to' => 'date',
             'published_at' => 'datetime',
+            'push_notification_sent_at' => 'datetime',
+            'email_notification_sent_at' => 'datetime',
             'summary_generated_at' => 'datetime',
             'notifications_sent_at' => 'datetime',
         ];

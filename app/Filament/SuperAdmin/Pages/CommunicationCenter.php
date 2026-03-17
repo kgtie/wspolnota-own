@@ -7,6 +7,7 @@ use App\Models\MailingList;
 use App\Models\MailingMail;
 use App\Models\Parish;
 use App\Models\User;
+use App\Support\SuperAdmin\InstantCommunicationService;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -22,9 +23,9 @@ class CommunicationCenter extends Page
 
     protected static ?string $navigationLabel = 'Centrum komunikacji';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-envelope-open';
+    protected static string | \BackedEnum | null $navigationIcon = null;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Komunikacja';
+    protected static string | \UnitEnum | null $navigationGroup = 'Komunikacja i kampanie';
 
     protected static ?int $navigationSort = 1;
 
@@ -65,6 +66,18 @@ class CommunicationCenter extends Page
     public string $messageBody = '';
 
     public bool $sendCopyToMe = false;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = MailingMail::query()->whereNotNull('confirmed_at')->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'info';
+    }
 
     public function mount(): void
     {
@@ -499,6 +512,43 @@ class CommunicationCenter extends Page
         $notification->send();
     }
 
+    public function sendPushCampaign(InstantCommunicationService $service): void
+    {
+        $this->validate([
+            'subjectLine' => ['required', 'string', 'max:120'],
+            'messageBody' => ['required', 'string', 'max:1000'],
+            'recipientScope' => ['required', Rule::in(array_keys($this->recipientScopeOptions))],
+        ]);
+
+        $users = $this->resolvePushRecipients();
+
+        if ($users->isEmpty()) {
+            Notification::make()
+                ->danger()
+                ->title('Brak odbiorcow push dla wybranych kryteriow.')
+                ->body('Push wymaga rzeczywistych kont uzytkownikow z aktywnymi urzadzeniami.')
+                ->send();
+
+            return;
+        }
+
+        $result = $service->queuePushToUsers(
+            users: $users,
+            title: $this->subjectLine,
+            body: $this->messageBody,
+            type: 'MANUAL_MESSAGE',
+            routingData: [
+                'source' => 'communication_center',
+            ],
+        );
+
+        Notification::make()
+            ->success()
+            ->title('Zakolejkowano kampanie push')
+            ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+            ->send();
+    }
+
     protected function resolveRecipients(): Collection
     {
         $scope = $this->recipientScope;
@@ -525,6 +575,7 @@ class CommunicationCenter extends Page
                 ->whereNotNull('email')
                 ->get()
                 ->map(fn (User $user): array => [
+                    'user_id' => (int) $user->getKey(),
                     'email' => (string) $user->email,
                     'label' => $user->full_name ?: $user->name ?: $user->email,
                 ]);
@@ -536,6 +587,7 @@ class CommunicationCenter extends Page
                 ->whereNotNull('email')
                 ->get()
                 ->map(fn (User $user): array => [
+                    'user_id' => (int) $user->getKey(),
                     'email' => (string) $user->email,
                     'label' => $user->full_name ?: $user->name ?: $user->email,
                 ]);
@@ -547,6 +599,7 @@ class CommunicationCenter extends Page
                 ->whereNotNull('email')
                 ->get()
                 ->map(fn (User $user): array => [
+                    'user_id' => (int) $user->getKey(),
                     'email' => (string) $user->email,
                     'label' => $user->full_name ?: $user->name ?: $user->email,
                 ]);
@@ -558,6 +611,7 @@ class CommunicationCenter extends Page
                 ->whereNotNull('email')
                 ->get()
                 ->map(fn (User $user): array => [
+                    'user_id' => (int) $user->getKey(),
                     'email' => (string) $user->email,
                     'label' => $user->full_name ?: $user->name ?: $user->email,
                 ]);
@@ -573,6 +627,7 @@ class CommunicationCenter extends Page
                 ->whereNotNull('email')
                 ->get()
                 ->map(fn (User $user): array => [
+                    'user_id' => (int) $user->getKey(),
                     'email' => (string) $user->email,
                     'label' => $user->full_name ?: $user->name ?: $user->email,
                 ]);
@@ -584,6 +639,7 @@ class CommunicationCenter extends Page
                 ->whereNotNull('email')
                 ->get()
                 ->map(fn (User $user): array => [
+                    'user_id' => (int) $user->getKey(),
                     'email' => (string) $user->email,
                     'label' => $user->full_name ?: $user->name ?: $user->email,
                 ]);
@@ -631,5 +687,39 @@ class CommunicationCenter extends Page
             ->filter(fn (array $recipient): bool => filled($recipient['email']))
             ->unique(fn (array $recipient): string => mb_strtolower((string) $recipient['email']))
             ->values();
+    }
+
+    protected function resolvePushRecipients(): Collection
+    {
+        $scope = $this->recipientScope;
+
+        if (in_array($scope, ['mailing_list', 'custom_emails'], true)) {
+            return collect();
+        }
+
+        $usersQuery = User::query()->with('devices');
+
+        if (! $this->includeInactiveUsers) {
+            $usersQuery->where('status', 'active');
+        }
+
+        if ($this->onlyVerifiedUsers) {
+            $usersQuery->where('is_user_verified', true);
+        }
+
+        return match ($scope) {
+            'single_users' => $this->selectedUserIds === []
+                ? collect()
+                : $usersQuery->whereIn('id', $this->selectedUserIds)->get(),
+            'parishioners_all' => $usersQuery->where('role', 0)->get(),
+            'admins_all' => $usersQuery->where('role', 1)->get(),
+            'admins_and_superadmins' => $usersQuery->where('role', '>=', 1)->get(),
+            'users_by_parish' => $this->targetParishId
+                ? $usersQuery->where('home_parish_id', $this->targetParishId)->get()
+                : collect(),
+            'verified_users' => $usersQuery->where('is_user_verified', true)->get(),
+            'all_users' => $usersQuery->get(),
+            default => collect(),
+        };
     }
 }

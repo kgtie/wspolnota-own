@@ -46,6 +46,30 @@ class MassInfolist
                             ->badge()
                             ->color(fn (Mass $record): string => (($record->participants_count ?? 0) > 0) ? 'success' : 'gray'),
 
+                        TextEntry::make('reminder_push_24h_count')
+                            ->label('Push 24h')
+                            ->state(fn (Mass $record): string => (string) ($record->reminder_push_24h_count ?? 0))
+                            ->badge()
+                            ->color('info'),
+
+                        TextEntry::make('reminder_push_8h_count')
+                            ->label('Push 8h')
+                            ->state(fn (Mass $record): string => (string) ($record->reminder_push_8h_count ?? 0))
+                            ->badge()
+                            ->color('warning'),
+
+                        TextEntry::make('reminder_push_1h_count')
+                            ->label('Push 1h')
+                            ->state(fn (Mass $record): string => (string) ($record->reminder_push_1h_count ?? 0))
+                            ->badge()
+                            ->color('danger'),
+
+                        TextEntry::make('reminder_email_count')
+                            ->label('Email 5:00')
+                            ->state(fn (Mass $record): string => (string) ($record->reminder_email_count ?? 0))
+                            ->badge()
+                            ->color('success'),
+
                         TextEntry::make('parish.name')
                             ->label('Parafia')
                             ->placeholder('Brak'),

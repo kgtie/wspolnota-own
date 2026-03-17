@@ -7,6 +7,7 @@ use App\Models\Parish;
 use App\Models\User;
 use App\Support\Announcements\AnnouncementSetPdfExporter;
 use App\Support\Announcements\AnnouncementSetSummarizer;
+use App\Support\SuperAdmin\InstantCommunicationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -20,6 +21,8 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -111,6 +114,24 @@ class AnnouncementSetsTable
                     ->color(fn (AnnouncementSet $record): string => $record->notifications_sent_at ? 'success' : 'warning')
                     ->toggleable(),
 
+                TextColumn::make('push_notification_sent_at')
+                    ->label('Push dispatch')
+                    ->state(fn (AnnouncementSet $record): string => $record->push_notification_sent_at
+                        ? 'Wyslano '.$record->push_notification_sent_at->format('d.m H:i')
+                        : 'Oczekuje')
+                    ->badge()
+                    ->color(fn (AnnouncementSet $record): string => $record->push_notification_sent_at ? 'success' : 'warning')
+                    ->toggleable(),
+
+                TextColumn::make('email_notification_sent_at')
+                    ->label('Email dispatch')
+                    ->state(fn (AnnouncementSet $record): string => $record->email_notification_sent_at
+                        ? 'Wyslano '.$record->email_notification_sent_at->format('d.m H:i')
+                        : 'Oczekuje')
+                    ->badge()
+                    ->color(fn (AnnouncementSet $record): string => $record->email_notification_sent_at ? 'success' : 'warning')
+                    ->toggleable(),
+
                 TextColumn::make('published_at')
                     ->label('Opublikowano')
                     ->dateTime('d.m.Y H:i')
@@ -159,6 +180,8 @@ class AnnouncementSetsTable
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
+                    self::sendInstantPushAction(),
+                    self::sendInstantEmailAction(),
                     self::setStatusAction('published', 'Opublikuj', 'heroicon-o-check-circle', 'success'),
                     self::setStatusAction('draft', 'Ustaw jako szkic', 'heroicon-o-document-text', 'warning'),
                     self::setStatusAction('archived', 'Archiwizuj', 'heroicon-o-archive-box', 'gray'),
@@ -175,6 +198,8 @@ class AnnouncementSetsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    self::sendInstantPushBulkAction(),
+                    self::sendInstantEmailBulkAction(),
                     self::bulkSetStatusAction('published', 'Oznacz zaznaczone jako opublikowane', 'heroicon-o-check-circle', 'success'),
                     self::bulkSetStatusAction('draft', 'Oznacz zaznaczone jako szkice', 'heroicon-o-document-text', 'warning'),
                     self::bulkSetStatusAction('archived', 'Oznacz zaznaczone jako archiwalne', 'heroicon-o-archive-box', 'gray'),
@@ -264,6 +289,97 @@ class AnnouncementSetsTable
                 }
 
                 return $exporter->download($record);
+            });
+    }
+
+    protected static function sendInstantPushAction(): Action
+    {
+        return Action::make('send_announcement_push_now')
+            ->label('Push teraz')
+            ->icon('heroicon-o-device-phone-mobile')
+            ->color('info')
+            ->visible(fn (AnnouncementSet $record): bool => $record->status === 'published')
+            ->schema([
+                TextInput::make('title')
+                    ->label('Tytul')
+                    ->required()
+                    ->maxLength(120)
+                    ->default(fn (AnnouncementSet $record): string => 'Nowy pakiet ogloszen'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(5)
+                    ->maxLength(1000)
+                    ->default(fn (AnnouncementSet $record): string => 'Opublikowano nowy pakiet ogloszen: '.$record->title),
+            ])
+            ->action(function (AnnouncementSet $record, array $data, InstantCommunicationService $service): void {
+                $users = User::query()
+                    ->with('devices')
+                    ->where('status', 'active')
+                    ->where('role', 0)
+                    ->where('home_parish_id', $record->parish_id)
+                    ->get();
+
+                $result = $service->queuePushToUsers(
+                    users: $users,
+                    title: (string) $data['title'],
+                    body: (string) $data['body'],
+                    type: 'ANNOUNCEMENTS_PACKAGE_PUBLISHED',
+                    routingData: [
+                        'announcement_set_id' => (string) $record->getKey(),
+                        'parish_id' => (string) $record->parish_id,
+                        'source' => 'superadmin_manual',
+                    ],
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano push dla ogloszen.')
+                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->send();
+            });
+    }
+
+    protected static function sendInstantEmailAction(): Action
+    {
+        return Action::make('send_announcement_email_now')
+            ->label('Email teraz')
+            ->icon('heroicon-o-envelope')
+            ->color('primary')
+            ->visible(fn (AnnouncementSet $record): bool => $record->status === 'published')
+            ->schema([
+                TextInput::make('subject')
+                    ->label('Temat')
+                    ->required()
+                    ->maxLength(200)
+                    ->default(fn (AnnouncementSet $record): string => 'Nowy pakiet ogloszen: '.$record->title),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(8)
+                    ->maxLength(12000)
+                    ->default(fn (AnnouncementSet $record): string => 'Opublikowano nowy pakiet ogloszen w parafii: '.$record->title),
+            ])
+            ->action(function (AnnouncementSet $record, array $data, InstantCommunicationService $service): void {
+                $actor = Filament::auth()->user();
+                $users = User::query()
+                    ->where('status', 'active')
+                    ->where('role', 0)
+                    ->where('home_parish_id', $record->parish_id)
+                    ->get();
+
+                $result = $service->sendEmailToUsers(
+                    users: $users,
+                    subjectLine: (string) $data['subject'],
+                    messageBody: (string) $data['body'],
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano email dla ogloszen.')
+                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->send();
             });
     }
 
@@ -453,6 +569,109 @@ class AnnouncementSetsTable
                     ->success()
                     ->title('Zaktualizowano statusy zestawow ogloszen.')
                     ->body("Liczba zmienionych rekordow: {$updated}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+    }
+
+    protected static function sendInstantPushBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_announcement_push_bulk')
+            ->label('Push teraz')
+            ->icon('heroicon-o-device-phone-mobile')
+            ->color('info')
+            ->schema([
+                TextInput::make('title')
+                    ->label('Tytul')
+                    ->required()
+                    ->maxLength(120)
+                    ->default('Nowe informacje z wybranych parafii'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(5)
+                    ->maxLength(1000),
+            ])
+            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+                $sets = collect($records)
+                    ->filter(fn ($record): bool => $record instanceof AnnouncementSet && $record->status === 'published')
+                    ->values();
+
+                $parishIds = $sets->pluck('parish_id')->filter()->unique()->values();
+
+                $users = User::query()
+                    ->with('devices')
+                    ->where('status', 'active')
+                    ->where('role', 0)
+                    ->whereIn('home_parish_id', $parishIds->all())
+                    ->get();
+
+                $result = $service->queuePushToUsers(
+                    users: $users,
+                    title: (string) $data['title'],
+                    body: (string) $data['body'],
+                    type: 'MANUAL_MESSAGE',
+                    routingData: [
+                        'scope' => 'announcement_sets_bulk',
+                        'announcement_set_ids' => json_encode($sets->map(fn (AnnouncementSet $record): int => (int) $record->getKey())->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        'parish_ids' => json_encode($parishIds->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        'source' => 'superadmin_bulk',
+                    ],
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano push dla zaznaczonych ogloszen.')
+                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+    }
+
+    protected static function sendInstantEmailBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_announcement_email_bulk')
+            ->label('Email teraz')
+            ->icon('heroicon-o-envelope')
+            ->color('primary')
+            ->schema([
+                TextInput::make('subject')
+                    ->label('Temat')
+                    ->required()
+                    ->maxLength(200)
+                    ->default('Nowe informacje z wybranych parafii'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(8)
+                    ->maxLength(12000),
+            ])
+            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+                $actor = Filament::auth()->user();
+                $parishIds = collect($records)
+                    ->filter(fn ($record): bool => $record instanceof AnnouncementSet && $record->status === 'published')
+                    ->pluck('parish_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $users = User::query()
+                    ->where('status', 'active')
+                    ->where('role', 0)
+                    ->whereIn('home_parish_id', $parishIds->all())
+                    ->get();
+
+                $result = $service->sendEmailToUsers(
+                    users: $users,
+                    subjectLine: (string) $data['subject'],
+                    messageBody: (string) $data['body'],
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano email dla zaznaczonych ogloszen.')
+                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();

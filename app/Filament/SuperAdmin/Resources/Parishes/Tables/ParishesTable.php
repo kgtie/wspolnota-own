@@ -2,12 +2,22 @@
 
 namespace App\Filament\SuperAdmin\Resources\Parishes\Tables;
 
+use App\Models\Parish;
+use App\Models\User;
+use App\Support\SuperAdmin\InstantCommunicationService;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
@@ -67,6 +77,8 @@ class ParishesTable
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
+                    self::sendInstantPushAction(),
+                    self::sendInstantEmailAction(),
                     DeleteAction::make(),
                 ])
                     ->label('Akcje')
@@ -75,8 +87,265 @@ class ParishesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    self::sendInstantPushBulkAction(),
+                    self::sendInstantEmailBulkAction(),
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected static function sendInstantPushAction(): Action
+    {
+        return Action::make('send_parish_push_now')
+            ->label('Wyslij push')
+            ->icon('heroicon-o-device-phone-mobile')
+            ->color('info')
+            ->schema([
+                Select::make('audience')
+                    ->label('Odbiorcy')
+                    ->options([
+                        'parishioners' => 'Parafianie',
+                        'admins' => 'Administratorzy',
+                        'all' => 'Parafianie + administratorzy',
+                    ])
+                    ->default('parishioners')
+                    ->required(),
+                TextInput::make('title')
+                    ->label('Tytul')
+                    ->required()
+                    ->maxLength(120)
+                    ->default(fn (Parish $record): string => 'Wiadomosc: '.$record->name),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(5)
+                    ->maxLength(1000),
+            ])
+            ->action(function (Parish $record, array $data, InstantCommunicationService $service): void {
+                $users = self::resolveParishRecipients($record, (string) $data['audience']);
+                $result = $service->queuePushToUsers(
+                    users: $users,
+                    title: (string) $data['title'],
+                    body: (string) $data['body'],
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano push dla parafii.')
+                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->send();
+            });
+    }
+
+    protected static function sendInstantEmailAction(): Action
+    {
+        return Action::make('send_parish_email_now')
+            ->label('Wyslij email')
+            ->icon('heroicon-o-envelope')
+            ->color('primary')
+            ->schema([
+                Select::make('audience')
+                    ->label('Odbiorcy')
+                    ->options([
+                        'parishioners' => 'Parafianie',
+                        'admins' => 'Administratorzy',
+                        'all' => 'Parafianie + administratorzy',
+                    ])
+                    ->default('parishioners')
+                    ->required(),
+                TextInput::make('subject')
+                    ->label('Temat')
+                    ->required()
+                    ->maxLength(200)
+                    ->default(fn (Parish $record): string => 'Wiadomosc dotyczaca parafii '.$record->name),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(8)
+                    ->maxLength(12000),
+            ])
+            ->action(function (Parish $record, array $data, InstantCommunicationService $service): void {
+                $actor = Filament::auth()->user();
+                $users = self::resolveParishRecipients($record, (string) $data['audience']);
+                $result = $service->sendEmailToUsers(
+                    users: $users,
+                    subjectLine: (string) $data['subject'],
+                    messageBody: (string) $data['body'],
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano email dla parafii.')
+                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->send();
+            });
+    }
+
+    protected static function sendInstantPushBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_parish_push_bulk')
+            ->label('Wyslij push')
+            ->icon('heroicon-o-device-phone-mobile')
+            ->color('info')
+            ->schema([
+                Select::make('audience')
+                    ->label('Odbiorcy')
+                    ->options([
+                        'parishioners' => 'Parafianie',
+                        'admins' => 'Administratorzy',
+                        'all' => 'Parafianie + administratorzy',
+                    ])
+                    ->default('parishioners')
+                    ->required(),
+                TextInput::make('title')
+                    ->label('Tytul')
+                    ->required()
+                    ->maxLength(120)
+                    ->default('Wiadomosc do zaznaczonych parafii'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(5)
+                    ->maxLength(1000),
+            ])
+            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+                $users = self::resolveBulkParishRecipients($records, (string) $data['audience']);
+                $result = $service->queuePushToUsers(
+                    users: $users,
+                    title: (string) $data['title'],
+                    body: (string) $data['body'],
+                    type: 'MANUAL_MESSAGE',
+                    routingData: [
+                        'scope' => 'parishes_bulk',
+                        'parish_ids' => json_encode($users->pluck('home_parish_id')->filter()->unique()->values()->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        'source' => 'superadmin_bulk',
+                    ],
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano push dla zaznaczonych parafii.')
+                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+    }
+
+    protected static function sendInstantEmailBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_parish_email_bulk')
+            ->label('Wyslij email')
+            ->icon('heroicon-o-envelope')
+            ->color('primary')
+            ->schema([
+                Select::make('audience')
+                    ->label('Odbiorcy')
+                    ->options([
+                        'parishioners' => 'Parafianie',
+                        'admins' => 'Administratorzy',
+                        'all' => 'Parafianie + administratorzy',
+                    ])
+                    ->default('parishioners')
+                    ->required(),
+                TextInput::make('subject')
+                    ->label('Temat')
+                    ->required()
+                    ->maxLength(200)
+                    ->default('Wiadomosc do zaznaczonych parafii'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(8)
+                    ->maxLength(12000),
+            ])
+            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+                $actor = Filament::auth()->user();
+                $users = self::resolveBulkParishRecipients($records, (string) $data['audience']);
+                $result = $service->sendEmailToUsers(
+                    users: $users,
+                    subjectLine: (string) $data['subject'],
+                    messageBody: (string) $data['body'],
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano email dla zaznaczonych parafii.')
+                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int,User>
+     */
+    protected static function resolveParishRecipients(Parish $record, string $audience)
+    {
+        $query = User::query()
+            ->with('devices')
+            ->where('status', 'active');
+
+        return match ($audience) {
+            'admins' => $query
+                ->where('role', 1)
+                ->where(function ($inner) use ($record): void {
+                    $inner->where('home_parish_id', $record->getKey())
+                        ->orWhereHas('managedParishes', fn ($managed) => $managed->where('parishes.id', $record->getKey()));
+                })
+                ->get(),
+            'all' => $query
+                ->where(function ($inner) use ($record): void {
+                    $inner->where('home_parish_id', $record->getKey())
+                        ->orWhereHas('managedParishes', fn ($managed) => $managed->where('parishes.id', $record->getKey()));
+                })
+                ->get(),
+            default => $query
+                ->where('role', 0)
+                ->where('home_parish_id', $record->getKey())
+                ->get(),
+        };
+    }
+
+    /**
+     * @param  iterable<int,mixed>  $records
+     * @return \Illuminate\Support\Collection<int,User>
+     */
+    protected static function resolveBulkParishRecipients(iterable $records, string $audience)
+    {
+        $parishIds = collect($records)
+            ->filter(fn ($record): bool => $record instanceof Parish)
+            ->map(fn (Parish $record): int => (int) $record->getKey())
+            ->unique()
+            ->values();
+
+        if ($parishIds->isEmpty()) {
+            return collect();
+        }
+
+        $query = User::query()
+            ->with('devices')
+            ->where('status', 'active');
+
+        return match ($audience) {
+            'admins' => $query
+                ->where('role', 1)
+                ->where(function ($inner) use ($parishIds): void {
+                    $inner->whereIn('home_parish_id', $parishIds->all())
+                        ->orWhereHas('managedParishes', fn ($managed) => $managed->whereIn('parishes.id', $parishIds->all()));
+                })
+                ->get(),
+            'all' => $query
+                ->where(function ($inner) use ($parishIds): void {
+                    $inner->whereIn('home_parish_id', $parishIds->all())
+                        ->orWhereHas('managedParishes', fn ($managed) => $managed->whereIn('parishes.id', $parishIds->all()));
+                })
+                ->get(),
+            default => $query
+                ->where('role', 0)
+                ->whereIn('home_parish_id', $parishIds->all())
+                ->get(),
+        };
     }
 }

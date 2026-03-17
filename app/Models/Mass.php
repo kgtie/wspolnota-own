@@ -117,7 +117,13 @@ class Mass extends Model
     public function participants(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'mass_user')
-            ->withPivot(['registered_at'])
+            ->withPivot([
+                'registered_at',
+                'reminder_push_24h_sent_at',
+                'reminder_push_8h_sent_at',
+                'reminder_push_1h_sent_at',
+                'reminder_email_sent_at',
+            ])
             ->withTimestamps();
     }
 }

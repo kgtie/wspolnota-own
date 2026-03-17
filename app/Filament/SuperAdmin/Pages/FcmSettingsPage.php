@@ -30,13 +30,39 @@ class FcmSettingsPage extends SettingsPage
 
     protected static ?string $slug = 'fcm-push';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-device-phone-mobile';
+    protected static string | \BackedEnum | null $navigationIcon = null;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Komunikacja';
+    protected static string | \UnitEnum | null $navigationGroup = 'Push i urzadzenia';
 
     protected static ?int $navigationSort = 2;
 
     protected ?string $subheading = 'Globalna konfiguracja Firebase Cloud Messaging, testy wysylki i kontrola stanu push.';
+
+    public static function getNavigationBadge(): ?string
+    {
+        $failed24h = PushDelivery::query()
+            ->where('status', PushDelivery::STATUS_FAILED)
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+
+        if ($failed24h > 0) {
+            return (string) $failed24h;
+        }
+
+        $devices = UserDevice::query()->pushable()->count();
+
+        return $devices > 0 ? (string) $devices : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return PushDelivery::query()
+            ->where('status', PushDelivery::STATUS_FAILED)
+            ->where('created_at', '>=', now()->subDay())
+            ->exists()
+            ? 'danger'
+            : 'success';
+    }
 
     public function form(Schema $schema): Schema
     {
@@ -175,6 +201,7 @@ class FcmSettingsPage extends SettingsPage
                         ->options([
                             'NEWS_CREATED' => 'NEWS_CREATED',
                             'ANNOUNCEMENTS_PACKAGE_PUBLISHED' => 'ANNOUNCEMENTS_PACKAGE_PUBLISHED',
+                            'MASS_PENDING' => 'MASS_PENDING',
                             'OFFICE_MESSAGE_RECEIVED' => 'OFFICE_MESSAGE_RECEIVED',
                             'PARISH_APPROVAL_STATUS_CHANGED' => 'PARISH_APPROVAL_STATUS_CHANGED',
                             'TEST_MESSAGE' => 'TEST_MESSAGE',
@@ -263,26 +290,6 @@ class FcmSettingsPage extends SettingsPage
                         ->send();
                 }),
         ];
-    }
-
-    public static function getNavigationBadge(): ?string
-    {
-        $count = PushDelivery::query()
-            ->where('status', PushDelivery::STATUS_FAILED)
-            ->where('created_at', '>=', now()->subDay())
-            ->count();
-
-        return $count > 0 ? (string) $count : null;
-    }
-
-    public static function getNavigationBadgeColor(): ?string
-    {
-        return PushDelivery::query()
-            ->where('status', PushDelivery::STATUS_FAILED)
-            ->where('created_at', '>=', now()->subDay())
-            ->exists()
-            ? 'danger'
-            : 'success';
     }
 
     /**

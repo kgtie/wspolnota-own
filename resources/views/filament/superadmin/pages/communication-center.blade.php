@@ -430,9 +430,15 @@
                         </div>
                     </div>
 
-                    <x-filament::button wire:click="sendCampaign" wire:loading.attr="disabled" wire:target="sendCampaign" icon="heroicon-m-paper-airplane" color="primary" class="w-full justify-center">
-                        Wyslij kampanie email
-                    </x-filament::button>
+                    <div class="grid gap-3 md:grid-cols-2">
+                        <x-filament::button wire:click="sendCampaign" wire:loading.attr="disabled" wire:target="sendCampaign" icon="heroicon-m-envelope" color="primary" class="w-full justify-center">
+                            Wyslij kampanie email
+                        </x-filament::button>
+
+                        <x-filament::button wire:click="sendPushCampaign" wire:loading.attr="disabled" wire:target="sendPushCampaign" icon="heroicon-m-device-phone-mobile" color="info" class="w-full justify-center">
+                            Wyslij kampanie push
+                        </x-filament::button>
+                    </div>
                 </div>
             </x-filament::section>
         </div>

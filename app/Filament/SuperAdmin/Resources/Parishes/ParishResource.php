@@ -22,7 +22,7 @@ class ParishResource extends Resource
 {
     protected static ?string $model = Parish::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'parafia';
 
@@ -30,9 +30,9 @@ class ParishResource extends Resource
 
     protected static ?string $navigationLabel = 'Parafie';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Platforma';
+    protected static string|UnitEnum|null $navigationGroup = 'Podstawowe dane';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {
@@ -70,5 +70,19 @@ class ParishResource extends Resource
             'view' => ViewParish::route('/{record}'),
             'edit' => EditParish::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $inactiveCount = static::getEloquentQuery()
+            ->where('is_active', false)
+            ->count();
+
+        return $inactiveCount > 0 ? (string) $inactiveCount : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getNavigationBadge() !== null ? 'warning' : 'success';
     }
 }

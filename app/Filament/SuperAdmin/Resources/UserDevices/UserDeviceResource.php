@@ -24,7 +24,7 @@ class UserDeviceResource extends Resource
 {
     protected static ?string $model = UserDevice::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-device-phone-mobile';
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'urzadzenie push';
 
@@ -32,9 +32,9 @@ class UserDeviceResource extends Resource
 
     protected static ?string $navigationLabel = 'Urzadzenia push';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Komunikacja';
+    protected static string|UnitEnum|null $navigationGroup = 'Push i urzadzenia';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 10;
 
     public static function table(Table $table): Table
     {
@@ -168,5 +168,19 @@ class UserDeviceResource extends Resource
     public static function canEdit($record): bool
     {
         return false;
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getEloquentQuery()->pushable()->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getEloquentQuery()->whereNotNull('disabled_at')->exists()
+            ? 'warning'
+            : 'success';
     }
 }

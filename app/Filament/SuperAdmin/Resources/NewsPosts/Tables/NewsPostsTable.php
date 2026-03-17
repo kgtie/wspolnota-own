@@ -5,6 +5,7 @@ namespace App\Filament\SuperAdmin\Resources\NewsPosts\Tables;
 use App\Models\NewsPost;
 use App\Models\Parish;
 use App\Models\User;
+use App\Support\SuperAdmin\InstantCommunicationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -19,6 +20,8 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -85,6 +88,24 @@ class NewsPostsTable
                     ->placeholder('-')
                     ->sortable(),
 
+                TextColumn::make('push_notification_sent_at')
+                    ->label('Push dispatch')
+                    ->state(fn (NewsPost $record): string => $record->push_notification_sent_at
+                        ? 'Wyslano '.$record->push_notification_sent_at->format('d.m H:i')
+                        : 'Oczekuje')
+                    ->badge()
+                    ->color(fn (NewsPost $record): string => $record->push_notification_sent_at ? 'success' : 'warning')
+                    ->toggleable(),
+
+                TextColumn::make('email_notification_sent_at')
+                    ->label('Email dispatch')
+                    ->state(fn (NewsPost $record): string => $record->email_notification_sent_at
+                        ? 'Wyslano '.$record->email_notification_sent_at->format('d.m H:i')
+                        : 'Oczekuje')
+                    ->badge()
+                    ->color(fn (NewsPost $record): string => $record->email_notification_sent_at ? 'success' : 'warning')
+                    ->toggleable(),
+
                 TextColumn::make('updatedBy.full_name')
                     ->label('Edytowal')
                     ->placeholder('Brak')
@@ -132,6 +153,8 @@ class NewsPostsTable
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
+                    self::sendInstantPushAction(),
+                    self::sendInstantEmailAction(),
                     self::setStatusAction('published', 'Opublikuj', 'heroicon-o-check-circle', 'success'),
                     self::setStatusAction('scheduled', 'Zaplanuj', 'heroicon-o-clock', 'warning'),
                     self::setStatusAction('draft', 'Ustaw jako szkic', 'heroicon-o-document-text', 'info'),
@@ -147,6 +170,8 @@ class NewsPostsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    self::sendInstantPushBulkAction(),
+                    self::sendInstantEmailBulkAction(),
                     self::bulkSetStatusAction('published', 'Oznacz zaznaczone jako opublikowane', 'heroicon-o-check-circle', 'success'),
                     self::bulkSetStatusAction('scheduled', 'Oznacz zaznaczone jako zaplanowane', 'heroicon-o-clock', 'warning'),
                     self::bulkSetStatusAction('draft', 'Oznacz zaznaczone jako szkice', 'heroicon-o-document-text', 'info'),
@@ -211,6 +236,97 @@ class NewsPostsTable
             });
     }
 
+    protected static function sendInstantPushAction(): Action
+    {
+        return Action::make('send_news_push_now')
+            ->label('Push teraz')
+            ->icon('heroicon-o-device-phone-mobile')
+            ->color('info')
+            ->visible(fn (NewsPost $record): bool => $record->status === 'published')
+            ->schema([
+                TextInput::make('title')
+                    ->label('Tytul')
+                    ->required()
+                    ->maxLength(120)
+                    ->default(fn (NewsPost $record): string => 'Nowa aktualnosc w parafii'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(5)
+                    ->maxLength(1000)
+                    ->default(fn (NewsPost $record): string => 'Dodano nowa aktualnosc: '.$record->title),
+            ])
+            ->action(function (NewsPost $record, array $data, InstantCommunicationService $service): void {
+                $users = User::query()
+                    ->with('devices')
+                    ->where('status', 'active')
+                    ->where('role', 0)
+                    ->where('home_parish_id', $record->parish_id)
+                    ->get();
+
+                $result = $service->queuePushToUsers(
+                    users: $users,
+                    title: (string) $data['title'],
+                    body: (string) $data['body'],
+                    type: 'NEWS_CREATED',
+                    routingData: [
+                        'news_id' => (string) $record->getKey(),
+                        'parish_id' => (string) $record->parish_id,
+                        'source' => 'superadmin_manual',
+                    ],
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano push dla aktualnosci.')
+                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->send();
+            });
+    }
+
+    protected static function sendInstantEmailAction(): Action
+    {
+        return Action::make('send_news_email_now')
+            ->label('Email teraz')
+            ->icon('heroicon-o-envelope')
+            ->color('primary')
+            ->visible(fn (NewsPost $record): bool => $record->status === 'published')
+            ->schema([
+                TextInput::make('subject')
+                    ->label('Temat')
+                    ->required()
+                    ->maxLength(200)
+                    ->default(fn (NewsPost $record): string => 'Nowa aktualnosc: '.$record->title),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(8)
+                    ->maxLength(12000)
+                    ->default(fn (NewsPost $record): string => 'Opublikowano nowa aktualnosc w parafii: '.$record->title),
+            ])
+            ->action(function (NewsPost $record, array $data, InstantCommunicationService $service): void {
+                $actor = Filament::auth()->user();
+                $users = User::query()
+                    ->where('status', 'active')
+                    ->where('role', 0)
+                    ->where('home_parish_id', $record->parish_id)
+                    ->get();
+
+                $result = $service->sendEmailToUsers(
+                    users: $users,
+                    subjectLine: (string) $data['subject'],
+                    messageBody: (string) $data['body'],
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano email dla aktualnosci.')
+                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->send();
+            });
+    }
+
     protected static function bulkSetStatusAction(string $status, string $label, string $icon, string $color): BulkAction
     {
         return BulkAction::make("bulk_set_status_{$status}")
@@ -244,6 +360,109 @@ class NewsPostsTable
                     ->body("Zmieniono {$updated} z {$selectedCount} zaznaczonych rekordow.")
                     ->send();
             });
+    }
+
+    protected static function sendInstantPushBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_news_push_bulk')
+            ->label('Push teraz')
+            ->icon('heroicon-o-device-phone-mobile')
+            ->color('info')
+            ->schema([
+                TextInput::make('title')
+                    ->label('Tytul')
+                    ->required()
+                    ->maxLength(120)
+                    ->default('Aktualizacja z wybranych parafii'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(5)
+                    ->maxLength(1000),
+            ])
+            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+                $newsPosts = collect($records)
+                    ->filter(fn ($record): bool => $record instanceof NewsPost && $record->status === 'published')
+                    ->values();
+
+                $parishIds = $newsPosts->pluck('parish_id')->filter()->unique()->values();
+
+                $users = User::query()
+                    ->with('devices')
+                    ->where('status', 'active')
+                    ->where('role', 0)
+                    ->whereIn('home_parish_id', $parishIds->all())
+                    ->get();
+
+                $result = $service->queuePushToUsers(
+                    users: $users,
+                    title: (string) $data['title'],
+                    body: (string) $data['body'],
+                    type: 'MANUAL_MESSAGE',
+                    routingData: [
+                        'scope' => 'news_posts_bulk',
+                        'news_ids' => json_encode($newsPosts->map(fn (NewsPost $record): int => (int) $record->getKey())->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        'parish_ids' => json_encode($parishIds->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        'source' => 'superadmin_bulk',
+                    ],
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano push dla zaznaczonych aktualnosci.')
+                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+    }
+
+    protected static function sendInstantEmailBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_news_email_bulk')
+            ->label('Email teraz')
+            ->icon('heroicon-o-envelope')
+            ->color('primary')
+            ->schema([
+                TextInput::make('subject')
+                    ->label('Temat')
+                    ->required()
+                    ->maxLength(200)
+                    ->default('Aktualizacja z wybranych parafii'),
+                Textarea::make('body')
+                    ->label('Tresc')
+                    ->required()
+                    ->rows(8)
+                    ->maxLength(12000),
+            ])
+            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+                $actor = Filament::auth()->user();
+                $parishIds = collect($records)
+                    ->filter(fn ($record): bool => $record instanceof NewsPost && $record->status === 'published')
+                    ->pluck('parish_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $users = User::query()
+                    ->where('status', 'active')
+                    ->where('role', 0)
+                    ->whereIn('home_parish_id', $parishIds->all())
+                    ->get();
+
+                $result = $service->sendEmailToUsers(
+                    users: $users,
+                    subjectLine: (string) $data['subject'],
+                    messageBody: (string) $data['body'],
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano email dla zaznaczonych aktualnosci.')
+                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
     }
 
     /**

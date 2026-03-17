@@ -14,6 +14,7 @@ class NotificationController extends ApiController
     public function updatePreferences(UpdateNotificationPreferencesRequest $request): JsonResponse
     {
         $user = $request->user();
+        $existing = $user->notificationPreference;
 
         UserNotificationPreference::query()->updateOrCreate(
             ['user_id' => $user->getKey()],
@@ -22,6 +23,12 @@ class NotificationController extends ApiController
                 'news_email' => (bool) data_get($request->input('news'), 'email'),
                 'announcements_push' => (bool) data_get($request->input('announcements'), 'push'),
                 'announcements_email' => (bool) data_get($request->input('announcements'), 'email'),
+                'mass_reminders_push' => $request->has('mass_reminders')
+                    ? (bool) data_get($request->input('mass_reminders'), 'push')
+                    : (bool) ($existing?->mass_reminders_push ?? true),
+                'mass_reminders_email' => $request->has('mass_reminders')
+                    ? (bool) data_get($request->input('mass_reminders'), 'email')
+                    : (bool) ($existing?->mass_reminders_email ?? true),
                 'office_messages_push' => (bool) data_get($request->input('office_messages'), 'push'),
                 'office_messages_email' => (bool) data_get($request->input('office_messages'), 'email'),
                 'parish_approval_status_push' => (bool) data_get($request->input('parish_approval_status'), 'push'),

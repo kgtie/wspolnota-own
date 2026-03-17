@@ -6,8 +6,16 @@ Schedule::command('announcements:ai --limit=80')
     ->dailyAt('00:07')
     ->withoutOverlapping();
 
-Schedule::command('announcements:notify-current --limit=150')
-    ->dailyAt('00:12')
+Schedule::command('notifications:dispatch-delayed-content --limit=150')
+    ->everyFiveMinutes()
+    ->withoutOverlapping();
+
+Schedule::command('masses:dispatch-pending-reminders --limit=300')
+    ->everyFiveMinutes()
+    ->withoutOverlapping();
+
+Schedule::command('masses:dispatch-morning-email-reminders --limit=500')
+    ->dailyAt('05:00')
     ->withoutOverlapping();
 
 Schedule::command('news:publish-scheduled --limit=150')

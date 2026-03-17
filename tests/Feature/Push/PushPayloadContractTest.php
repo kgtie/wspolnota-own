@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Mass;
 use App\Models\OfficeConversation;
 use App\Models\OfficeMessage;
 use App\Models\Parish;
 use App\Models\User;
+use App\Notifications\MassPendingReminderNotification;
 use App\Notifications\OfficeMessageReceivedNotification;
 use App\Notifications\ParishApprovalStatusChangedNotification;
 use App\Support\Push\PushPayloadFactory;
@@ -67,4 +69,23 @@ it('normalizes bool values in push data to explicit strings', function (): void 
             'is_parish_approved' => 'true',
             'debug' => 'false',
         ]);
+});
+
+it('includes routing data for mass pending payloads', function (): void {
+    $parish = Parish::factory()->create();
+    $mass = Mass::query()->create([
+        'parish_id' => $parish->getKey(),
+        'intention_title' => 'Za parafian',
+        'celebration_at' => now()->addHours(8),
+        'mass_kind' => 'weekday',
+        'mass_type' => 'individual',
+        'status' => 'scheduled',
+    ]);
+
+    $payload = (new MassPendingReminderNotification($mass, '8h'))->toDatabase(new stdClass);
+
+    expect(data_get($payload, 'type'))->toBe('MASS_PENDING')
+        ->and(data_get($payload, 'data.mass_id'))->toBe((string) $mass->getKey())
+        ->and(data_get($payload, 'data.parish_id'))->toBe((string) $parish->getKey())
+        ->and(data_get($payload, 'data.reminder_key'))->toBe('8h');
 });

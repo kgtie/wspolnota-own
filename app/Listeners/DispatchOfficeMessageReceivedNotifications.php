@@ -4,10 +4,14 @@ namespace App\Listeners;
 
 use App\Events\OfficeMessageReceived;
 use App\Models\User;
+use App\Notifications\OfficeMessageReceivedMailNotification;
 use App\Notifications\OfficeMessageReceivedNotification;
+use App\Support\Notifications\NotificationPreferenceResolver;
 
 class DispatchOfficeMessageReceivedNotifications
 {
+    public function __construct(private readonly NotificationPreferenceResolver $preferences) {}
+
     public function handle(OfficeMessageReceived $event): void
     {
         $message = $event->message;
@@ -34,5 +38,9 @@ class DispatchOfficeMessageReceivedNotifications
         }
 
         $recipient->notify(new OfficeMessageReceivedNotification($message));
+
+        if (filled($recipient->email) && $this->preferences->wantsEmail($recipient, 'office_messages')) {
+            $recipient->notify(new OfficeMessageReceivedMailNotification($message));
+        }
     }
 }

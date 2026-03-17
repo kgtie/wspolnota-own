@@ -79,6 +79,7 @@ class PushPayloadFactory
         return match ($type) {
             'NEWS_CREATED' => 'news',
             'ANNOUNCEMENTS_PACKAGE_PUBLISHED' => 'announcements',
+            'MASS_PENDING' => 'mass_reminders',
             'OFFICE_MESSAGE_RECEIVED' => 'office_messages',
             'PARISH_APPROVAL_STATUS_CHANGED' => 'parish_approval_status',
             default => null,
@@ -124,6 +125,7 @@ class PushPayloadFactory
             'ANNOUNCEMENTS_PACKAGE_PUBLISHED' => $this->settings->announcements_collapsible
                 ? 'announcements-'.($data['parish_id'] ?? 'global')
                 : null,
+            'MASS_PENDING' => null,
             'OFFICE_MESSAGE_RECEIVED' => $this->settings->office_messages_collapsible
                 ? 'office-'.($data['chat_id'] ?? 'global')
                 : null,

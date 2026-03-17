@@ -23,7 +23,7 @@ class MassResource extends Resource
 {
     protected static ?string $model = Mass::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'msza święta';
 
@@ -31,9 +31,9 @@ class MassResource extends Resource
 
     protected static ?string $navigationLabel = 'Msze i intencje';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Liturgia';
+    protected static string|UnitEnum|null $navigationGroup = 'Tresci i liturgia';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 30;
 
     public static function form(Schema $schema): Schema
     {
@@ -54,7 +54,13 @@ class MassResource extends Resource
     {
         return parent::getEloquentQuery()
             ->with(['parish', 'createdBy', 'updatedBy'])
-            ->withCount('participants');
+            ->withCount([
+                'participants',
+                'participants as reminder_push_24h_count' => fn (Builder $query) => $query->whereNotNull('mass_user.reminder_push_24h_sent_at'),
+                'participants as reminder_push_8h_count' => fn (Builder $query) => $query->whereNotNull('mass_user.reminder_push_8h_sent_at'),
+                'participants as reminder_push_1h_count' => fn (Builder $query) => $query->whereNotNull('mass_user.reminder_push_1h_sent_at'),
+                'participants as reminder_email_count' => fn (Builder $query) => $query->whereNotNull('mass_user.reminder_email_sent_at'),
+            ]);
     }
 
     public static function getRelations(): array

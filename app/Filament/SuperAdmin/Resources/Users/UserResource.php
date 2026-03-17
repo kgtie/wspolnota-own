@@ -24,7 +24,7 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'uzytkownik';
 
@@ -32,9 +32,9 @@ class UserResource extends Resource
 
     protected static ?string $navigationLabel = 'Uzytkownicy';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Platforma';
+    protected static string|UnitEnum|null $navigationGroup = 'Podstawowe dane';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {

@@ -42,6 +42,27 @@ Pola:
 - `permission_status`: `authorized`, `provisional`, `denied`, `not_determined`
 - `parish_id`: opcjonalny aktualny kontekst parafii przypisany do urzadzenia
 
+Preferencje powiadomien zapisywane w backendzie:
+
+```http
+PATCH /api/v1/me/notification-preferences
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+Przyklad:
+
+```json
+{
+  "news": { "push": true, "email": false },
+  "announcements": { "push": true, "email": true },
+  "mass_reminders": { "push": true, "email": true },
+  "office_messages": { "push": true, "email": true },
+  "parish_approval_status": { "push": true, "email": true },
+  "auth_security": { "push": false, "email": true }
+}
+```
+
 Logout:
 
 ```http
@@ -211,7 +232,42 @@ Strategia dostarczania:
 - collapse: `office-{chat_id}` tylko gdy wlaczone w ustawieniach backendu
 - domyslnie tego typu nie nalezy agresywnie zwijac po stronie UX
 
-### 4.4 `PARISH_APPROVAL_STATUS_CHANGED`
+### 4.4 `MASS_PENDING`
+
+Przeznaczenie:
+
+- przypomnienie o zblizajacej sie mszy, na ktora uzytkownik zapisal uczestnictwo
+
+`data`:
+
+```json
+{
+  "notification_id": "<uuid>",
+  "type": "MASS_PENDING",
+  "mass_id": "<mass_id>",
+  "parish_id": "<parish_id>",
+  "reminder_key": "24h",
+  "celebration_at": "2026-03-17T13:00:00+01:00"
+}
+```
+
+Dozwolone `reminder_key`:
+
+- `24h`
+- `8h`
+- `1h`
+
+Routowanie mobile:
+
+- ekran szczegolow mszy lub ekran zapisanych mszy uzytkownika
+
+Strategia dostarczania:
+
+- priorytet: `high`
+- collapse: brak, kazde przypomnienie jest osobnym zdarzeniem
+- email jest osobna sciezka backendowa i nie wynika bezposrednio z payloadu push
+
+### 4.5 `PARISH_APPROVAL_STATUS_CHANGED`
 
 Przeznaczenie:
 
@@ -242,7 +298,7 @@ Strategia dostarczania:
 - priorytet: `high`
 - collapse: `parish-approval` gdy wlaczone w ustawieniach backendu
 
-### 4.5 `TEST_MESSAGE`
+### 4.6 `TEST_MESSAGE`
 
 Typ techniczny z panelu superadmina do testow integracyjnych.
 
@@ -275,6 +331,7 @@ Rekomendowane mapowanie:
 - `NEWS_CREATED` -> `NewsDetails(newsId, parishId)`
 - `ANNOUNCEMENTS_PACKAGE_PUBLISHED` -> `AnnouncementsDetails(announcementSetId, parishId)`
 - `OFFICE_MESSAGE_RECEIVED` -> `OfficeChat(chatId, messageId, parishId)`
+- `MASS_PENDING` -> `MassDetails(massId, parishId, reminderKey)`
 - `PARISH_APPROVAL_STATUS_CHANGED` -> `AccountApproval(parishId)`
 
 ## 6. Zachowanie iOS
@@ -291,6 +348,7 @@ Rekomendowane mapowanie:
 - `NEWS_CREATED` -> `NewsDetailsView(newsId, parishId)`
 - `ANNOUNCEMENTS_PACKAGE_PUBLISHED` -> `AnnouncementsView(announcementSetId, parishId)`
 - `OFFICE_MESSAGE_RECEIVED` -> `OfficeConversationView(chatId, messageId, parishId)`
+- `MASS_PENDING` -> `MassDetailView(massId, parishId, reminderKey)`
 - `PARISH_APPROVAL_STATUS_CHANGED` -> `AccountStatusView(parishId)`
 
 ## 7. Zasady kompatybilnosci
@@ -306,6 +364,7 @@ Wspierane typy produkcyjne:
 
 - `NEWS_CREATED`
 - `ANNOUNCEMENTS_PACKAGE_PUBLISHED`
+- `MASS_PENDING`
 - `OFFICE_MESSAGE_RECEIVED`
 - `PARISH_APPROVAL_STATUS_CHANGED`
 

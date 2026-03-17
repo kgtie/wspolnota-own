@@ -20,7 +20,7 @@ class ActivityLogResource extends Resource
 {
     protected static ?string $model = Activity::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|BackedEnum|null $navigationIcon = null;
 
     protected static ?string $modelLabel = 'wpis logu';
 
@@ -28,7 +28,7 @@ class ActivityLogResource extends Resource
 
     protected static ?string $navigationLabel = 'Logi aktywnosci';
 
-    protected static string|UnitEnum|null $navigationGroup = 'System';
+    protected static string|UnitEnum|null $navigationGroup = 'System i diagnostyka';
 
     protected static ?int $navigationSort = 20;
 
