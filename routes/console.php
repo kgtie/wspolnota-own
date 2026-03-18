@@ -22,6 +22,14 @@ Schedule::command('news:publish-scheduled --limit=150')
     ->everyFiveMinutes()
     ->withoutOverlapping();
 
+Schedule::command('parishes:send-weekly-priest-digest --copy-to-superadmin')
+    ->weeklyOn(6, '12:00')
+    ->withoutOverlapping();
+
+Schedule::command('superadmin:send-daily-operations-report')
+    ->dailyAt('06:00')
+    ->withoutOverlapping();
+
 Schedule::command('push:prune-dead-tokens --invalid-hours=24')
     ->hourlyAt(17)
     ->withoutOverlapping();

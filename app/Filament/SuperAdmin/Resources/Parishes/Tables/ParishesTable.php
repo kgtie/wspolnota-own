@@ -5,6 +5,7 @@ namespace App\Filament\SuperAdmin\Resources\Parishes\Tables;
 use App\Models\Parish;
 use App\Models\User;
 use App\Support\Notifications\ParishAudienceResolver;
+use App\Support\Reports\ParishPriestWeeklyDigestSender;
 use App\Support\SuperAdmin\InstantCommunicationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -15,6 +16,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -78,6 +80,7 @@ class ParishesTable
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
+                    self::sendPriestWeeklyDigestAction(),
                     self::sendInstantPushAction(),
                     self::sendInstantEmailAction(),
                     DeleteAction::make(),
@@ -88,11 +91,44 @@ class ParishesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    self::sendPriestWeeklyDigestBulkAction(),
                     self::sendInstantPushBulkAction(),
                     self::sendInstantEmailBulkAction(),
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected static function sendPriestWeeklyDigestAction(): Action
+    {
+        return Action::make('send_priest_weekly_digest')
+            ->label('Wyslij checklistę proboszcza')
+            ->icon('heroicon-o-document-text')
+            ->color('warning')
+            ->schema([
+                Checkbox::make('copy_to_superadmin')
+                    ->label('Wyslij kopie takze do superadmina')
+                    ->default(true),
+            ])
+            ->action(function (
+                Parish $record,
+                array $data,
+                ParishPriestWeeklyDigestSender $sender,
+            ): void {
+                $actor = Filament::auth()->user();
+                $result = $sender->sendForParish(
+                    parish: $record,
+                    generatedAt: now(),
+                    copyToSuperadmin: (bool) ($data['copy_to_superadmin'] ?? false),
+                    actor: $actor instanceof User ? $actor : null,
+                );
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano checklistę proboszcza.')
+                    ->body("Odbiorcy: {$result['recipients']} · kopie: {$result['copies']}")
+                    ->send();
+            });
     }
 
     protected static function sendInstantPushAction(): Action
@@ -243,6 +279,51 @@ class ParishesTable
                     ->success()
                     ->title('Zakolejkowano push dla zaznaczonych parafii.')
                     ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->send();
+            })
+            ->deselectRecordsAfterCompletion();
+    }
+
+    protected static function sendPriestWeeklyDigestBulkAction(): BulkAction
+    {
+        return BulkAction::make('send_priest_weekly_digest_bulk')
+            ->label('Wyslij checklisty proboszczow')
+            ->icon('heroicon-o-document-text')
+            ->color('warning')
+            ->schema([
+                Checkbox::make('copy_to_superadmin')
+                    ->label('Wyslij kopie takze do superadmina')
+                    ->default(true),
+            ])
+            ->action(function (
+                $records,
+                array $data,
+                ParishPriestWeeklyDigestSender $sender,
+            ): void {
+                $actor = Filament::auth()->user();
+                $recipients = 0;
+                $copies = 0;
+
+                foreach ($records as $record) {
+                    if (! $record instanceof Parish) {
+                        continue;
+                    }
+
+                    $result = $sender->sendForParish(
+                        parish: $record,
+                        generatedAt: now(),
+                        copyToSuperadmin: (bool) ($data['copy_to_superadmin'] ?? false),
+                        actor: $actor instanceof User ? $actor : null,
+                    );
+
+                    $recipients += $result['recipients'];
+                    $copies += $result['copies'];
+                }
+
+                Notification::make()
+                    ->success()
+                    ->title('Zakolejkowano checklisty proboszczow.')
+                    ->body("Odbiorcy: {$recipients} · kopie: {$copies}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();

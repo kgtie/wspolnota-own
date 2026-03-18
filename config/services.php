@@ -41,6 +41,14 @@ return [
             'WSPOLNOTA_SCHEDULER_REPORT_RECIPIENT',
             env('WSPOLNOTA_CONTACT_RECIPIENT', 'konrad@wspolnota.app')
         ),
+        'priest_weekly_digest_copy_recipient' => env(
+            'WSPOLNOTA_PRIEST_WEEKLY_DIGEST_COPY_RECIPIENT',
+            env('WSPOLNOTA_CONTACT_RECIPIENT', 'konrad@wspolnota.app')
+        ),
+        'daily_operations_recipient' => env(
+            'WSPOLNOTA_DAILY_OPERATIONS_RECIPIENT',
+            env('WSPOLNOTA_CONTACT_RECIPIENT', 'konrad@wspolnota.app')
+        ),
     ],
 
 ];
