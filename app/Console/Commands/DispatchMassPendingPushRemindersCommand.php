@@ -21,6 +21,16 @@ class DispatchMassPendingPushRemindersCommand extends Command
             ->with(['participants.notificationPreference'])
             ->where('status', 'scheduled')
             ->whereBetween('celebration_at', [now(), now()->addDay()])
+            ->whereHas('participants', function ($query): void {
+                $query
+                    ->where('users.status', 'active')
+                    ->where(function ($inner): void {
+                        $inner
+                            ->whereNull('mass_user.reminder_push_24h_sent_at')
+                            ->orWhereNull('mass_user.reminder_push_8h_sent_at')
+                            ->orWhereNull('mass_user.reminder_push_1h_sent_at');
+                    });
+            })
             ->orderBy('celebration_at')
             ->limit($limit)
             ->get();

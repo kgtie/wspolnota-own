@@ -5,6 +5,7 @@ namespace App\Filament\SuperAdmin\Resources\NewsPosts\Tables;
 use App\Models\NewsPost;
 use App\Models\Parish;
 use App\Models\User;
+use App\Support\Notifications\ParishAudienceResolver;
 use App\Support\SuperAdmin\InstantCommunicationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -256,13 +257,13 @@ class NewsPostsTable
                     ->maxLength(1000)
                     ->default(fn (NewsPost $record): string => 'Dodano nowa aktualnosc: '.$record->title),
             ])
-            ->action(function (NewsPost $record, array $data, InstantCommunicationService $service): void {
-                $users = User::query()
-                    ->with('devices')
-                    ->where('status', 'active')
-                    ->where('role', 0)
-                    ->where('home_parish_id', $record->parish_id)
-                    ->get();
+            ->action(function (
+                NewsPost $record,
+                array $data,
+                InstantCommunicationService $service,
+                ParishAudienceResolver $audiences,
+            ): void {
+                $users = $audiences->homeParishUsers((int) $record->parish_id, withDevices: true);
 
                 $result = $service->queuePushToUsers(
                     users: $users,
@@ -304,13 +305,14 @@ class NewsPostsTable
                     ->maxLength(12000)
                     ->default(fn (NewsPost $record): string => 'Opublikowano nowa aktualnosc w parafii: '.$record->title),
             ])
-            ->action(function (NewsPost $record, array $data, InstantCommunicationService $service): void {
+            ->action(function (
+                NewsPost $record,
+                array $data,
+                InstantCommunicationService $service,
+                ParishAudienceResolver $audiences,
+            ): void {
                 $actor = Filament::auth()->user();
-                $users = User::query()
-                    ->where('status', 'active')
-                    ->where('role', 0)
-                    ->where('home_parish_id', $record->parish_id)
-                    ->get();
+                $users = $audiences->homeParishUsers((int) $record->parish_id);
 
                 $result = $service->sendEmailToUsers(
                     users: $users,
@@ -380,19 +382,19 @@ class NewsPostsTable
                     ->rows(5)
                     ->maxLength(1000),
             ])
-            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+            ->action(function (
+                $records,
+                array $data,
+                InstantCommunicationService $service,
+                ParishAudienceResolver $audiences,
+            ): void {
                 $newsPosts = collect($records)
                     ->filter(fn ($record): bool => $record instanceof NewsPost && $record->status === 'published')
                     ->values();
 
                 $parishIds = $newsPosts->pluck('parish_id')->filter()->unique()->values();
 
-                $users = User::query()
-                    ->with('devices')
-                    ->where('status', 'active')
-                    ->where('role', 0)
-                    ->whereIn('home_parish_id', $parishIds->all())
-                    ->get();
+                $users = $audiences->homeParishUsers($parishIds, withDevices: true);
 
                 $result = $service->queuePushToUsers(
                     users: $users,
@@ -434,7 +436,12 @@ class NewsPostsTable
                     ->rows(8)
                     ->maxLength(12000),
             ])
-            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+            ->action(function (
+                $records,
+                array $data,
+                InstantCommunicationService $service,
+                ParishAudienceResolver $audiences,
+            ): void {
                 $actor = Filament::auth()->user();
                 $parishIds = collect($records)
                     ->filter(fn ($record): bool => $record instanceof NewsPost && $record->status === 'published')
@@ -443,11 +450,7 @@ class NewsPostsTable
                     ->unique()
                     ->values();
 
-                $users = User::query()
-                    ->where('status', 'active')
-                    ->where('role', 0)
-                    ->whereIn('home_parish_id', $parishIds->all())
-                    ->get();
+                $users = $audiences->homeParishUsers($parishIds);
 
                 $result = $service->sendEmailToUsers(
                     users: $users,

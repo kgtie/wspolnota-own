@@ -80,6 +80,9 @@ class SystemHealth extends Page
         $mailingCount = MailingMail::withTrashed()->count();
         $mailingConfirmed = MailingMail::withTrashed()->whereNotNull('confirmed_at')->count();
         $pushableDevices = $this->pushableDevicesCount();
+        $savedPushPreferences = $this->usersWithPushPreferencesCount();
+        $missingPushPreferences = $this->usersWithoutPushPreferencesCount();
+        $notDeterminedDevices = $this->notDeterminedDevicesCount();
         $pushSent24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_SENT, 24);
         $pushFailed24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_FAILED, 24);
 
@@ -119,7 +122,7 @@ class SystemHealth extends Page
             [
                 'label' => 'Push / FCM',
                 'value' => number_format($pushableDevices, 0, ',', ' '),
-                'hint' => "Aktywne urzadzenia · sent 24h: {$pushSent24h} · failed 24h: {$pushFailed24h}",
+                'hint' => "Pushable · zgody zapisane: {$savedPushPreferences} · brak zgod: {$missingPushPreferences} · not_determined: {$notDeterminedDevices} · sent 24h: {$pushSent24h} · failed 24h: {$pushFailed24h}",
                 'color' => $pushFailed24h > 0 ? 'warning' : 'success',
             ],
             [
@@ -206,6 +209,10 @@ class SystemHealth extends Page
         $pushableDevices = $this->pushableDevicesCount();
         $disabledDevices = $this->disabledDevicesCount();
         $deadTokens = $this->deadTokensCount();
+        $savedPushPreferences = $this->usersWithPushPreferencesCount();
+        $missingPushPreferences = $this->usersWithoutPushPreferencesCount();
+        $notDeterminedDevices = $this->notDeterminedDevicesCount();
+        $deniedDevices = $this->deniedDevicesCount();
         $sent24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_SENT, 24);
         $failed24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_FAILED, 24);
         $queued24h = $this->pushDeliveriesByStatus(PushDelivery::STATUS_QUEUED, 24);
@@ -217,8 +224,14 @@ class SystemHealth extends Page
             [
                 'label' => 'Urzadzenia',
                 'value' => number_format($allDevices, 0, ',', ' '),
-                'hint' => "Pushable: {$pushableDevices} · disabled: {$disabledDevices}",
+                'hint' => "Pushable: {$pushableDevices} · disabled: {$disabledDevices} · denied: {$deniedDevices} · not_determined: {$notDeterminedDevices}",
                 'color' => $pushableDevices > 0 ? 'info' : 'warning',
+            ],
+            [
+                'label' => 'Zgody backendowe',
+                'value' => number_format($savedPushPreferences, 0, ',', ' '),
+                'hint' => "Zapisane preferencje · brak rekordu zgod: {$missingPushPreferences}",
+                'color' => $missingPushPreferences > 0 ? 'warning' : 'success',
             ],
             [
                 'label' => 'Dostarczenia 24h',
@@ -458,6 +471,48 @@ class SystemHealth extends Page
         }
 
         return (int) UserDevice::query()->whereNotNull('disabled_at')->count();
+    }
+
+    protected function deniedDevicesCount(): int
+    {
+        if (! $this->tableExists('user_devices')) {
+            return 0;
+        }
+
+        return (int) UserDevice::query()->where('permission_status', 'denied')->count();
+    }
+
+    protected function notDeterminedDevicesCount(): int
+    {
+        if (! $this->tableExists('user_devices')) {
+            return 0;
+        }
+
+        return (int) UserDevice::query()
+            ->where(function ($query): void {
+                $query
+                    ->where('permission_status', 'not_determined')
+                    ->orWhereNull('permission_status');
+            })
+            ->count();
+    }
+
+    protected function usersWithPushPreferencesCount(): int
+    {
+        if (! $this->tableExists('user_notification_preferences')) {
+            return 0;
+        }
+
+        return (int) User::query()->whereHas('notificationPreference')->count();
+    }
+
+    protected function usersWithoutPushPreferencesCount(): int
+    {
+        if (! $this->tableExists('user_notification_preferences')) {
+            return 0;
+        }
+
+        return (int) User::query()->whereDoesntHave('notificationPreference')->count();
     }
 
     protected function deadTokensCount(): int

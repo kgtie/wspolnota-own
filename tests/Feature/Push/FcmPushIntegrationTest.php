@@ -136,3 +136,51 @@ it('dispatches push after database notification is stored', function (): void {
         ->and($delivery->type)->toBe('PARISH_APPROVAL_STATUS_CHANGED')
         ->and($delivery->message_id)->toContain('projects/firebase-test-project/messages/123');
 });
+
+it('does not dispatch push when the user has not explicitly saved push preferences', function (): void {
+    config()->set('queue.default', 'sync');
+
+    app(FcmSettings::class)->fill([
+        'enabled' => true,
+        'project_id' => 'firebase-test-project',
+        'service_account_json' => json_encode([
+            'project_id' => 'firebase-test-project',
+            'client_email' => 'firebase-adminsdk@example.test',
+            'private_key' => "-----BEGIN PRIVATE KEY-----\nTEST\n-----END PRIVATE KEY-----\n",
+            'token_uri' => 'https://oauth2.googleapis.com/token',
+        ], JSON_UNESCAPED_SLASHES),
+    ])->save();
+
+    app()->instance(PushSender::class, new class implements PushSender
+    {
+        public function send(PushMessage $message, bool $validateOnly = false): PushSendResult
+        {
+            return PushSendResult::success('projects/firebase-test-project/messages/123', [
+                'name' => 'projects/firebase-test-project/messages/123',
+                'type' => $message->type,
+            ]);
+        }
+    });
+
+    $user = User::factory()->verified()->create([
+        'email' => 'no-prefs-push@example.com',
+        'status' => 'active',
+    ]);
+
+    UserDevice::query()->create([
+        'user_id' => $user->getKey(),
+        'provider' => 'fcm',
+        'platform' => 'android',
+        'push_token' => 'device-token-no-prefs',
+        'device_id' => 'device-no-prefs-123456',
+        'device_name' => 'Pixel 9',
+        'app_version' => '1.0.0',
+        'permission_status' => 'authorized',
+        'push_token_updated_at' => now(),
+        'last_seen_at' => now(),
+    ]);
+
+    $user->notify(new ParishApprovalStatusChangedNotification(true));
+
+    expect(PushDelivery::query()->count())->toBe(0);
+});

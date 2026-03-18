@@ -69,7 +69,8 @@ it('registers and removes device', function (): void {
             'locale' => 'pl-PL',
             'timezone' => 'Europe/Warsaw',
         ])
-        ->assertOk();
+        ->assertOk()
+        ->assertJsonPath('data.permission_status', 'not_determined');
 
     $deviceId = $store->json('data.id');
 

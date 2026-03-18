@@ -47,7 +47,7 @@ class DeviceController extends ApiController
                 'app_version' => (string) $request->string('app_version'),
                 'locale' => $request->input('locale'),
                 'timezone' => $request->input('timezone'),
-                'permission_status' => $request->input('permission_status', 'authorized'),
+                'permission_status' => $request->input('permission_status', 'not_determined'),
                 'push_token_updated_at' => $tokenChanged ? now() : $existing?->push_token_updated_at,
                 'last_seen_at' => now(),
                 'disabled_at' => null,

@@ -4,6 +4,7 @@ namespace App\Filament\SuperAdmin\Resources\Parishes\Tables;
 
 use App\Models\Parish;
 use App\Models\User;
+use App\Support\Notifications\ParishAudienceResolver;
 use App\Support\SuperAdmin\InstantCommunicationService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -121,8 +122,13 @@ class ParishesTable
                     ->rows(5)
                     ->maxLength(1000),
             ])
-            ->action(function (Parish $record, array $data, InstantCommunicationService $service): void {
-                $users = self::resolveParishRecipients($record, (string) $data['audience']);
+            ->action(function (
+                Parish $record,
+                array $data,
+                InstantCommunicationService $service,
+                ParishAudienceResolver $audiences,
+            ): void {
+                $users = self::resolveParishRecipients($record, (string) $data['audience'], $audiences);
                 $result = $service->queuePushToUsers(
                     users: $users,
                     title: (string) $data['title'],
@@ -164,9 +170,14 @@ class ParishesTable
                     ->rows(8)
                     ->maxLength(12000),
             ])
-            ->action(function (Parish $record, array $data, InstantCommunicationService $service): void {
+            ->action(function (
+                Parish $record,
+                array $data,
+                InstantCommunicationService $service,
+                ParishAudienceResolver $audiences,
+            ): void {
                 $actor = Filament::auth()->user();
-                $users = self::resolveParishRecipients($record, (string) $data['audience']);
+                $users = self::resolveParishRecipients($record, (string) $data['audience'], $audiences);
                 $result = $service->sendEmailToUsers(
                     users: $users,
                     subjectLine: (string) $data['subject'],
@@ -209,8 +220,13 @@ class ParishesTable
                     ->rows(5)
                     ->maxLength(1000),
             ])
-            ->action(function ($records, array $data, InstantCommunicationService $service): void {
-                $users = self::resolveBulkParishRecipients($records, (string) $data['audience']);
+            ->action(function (
+                $records,
+                array $data,
+                InstantCommunicationService $service,
+                ParishAudienceResolver $audiences,
+            ): void {
+                $users = self::resolveBulkParishRecipients($records, (string) $data['audience'], $audiences);
                 $result = $service->queuePushToUsers(
                     users: $users,
                     title: (string) $data['title'],
@@ -259,9 +275,14 @@ class ParishesTable
                     ->rows(8)
                     ->maxLength(12000),
             ])
-            ->action(function ($records, array $data, InstantCommunicationService $service): void {
+            ->action(function (
+                $records,
+                array $data,
+                InstantCommunicationService $service,
+                ParishAudienceResolver $audiences,
+            ): void {
                 $actor = Filament::auth()->user();
-                $users = self::resolveBulkParishRecipients($records, (string) $data['audience']);
+                $users = self::resolveBulkParishRecipients($records, (string) $data['audience'], $audiences);
                 $result = $service->sendEmailToUsers(
                     users: $users,
                     subjectLine: (string) $data['subject'],
@@ -281,7 +302,7 @@ class ParishesTable
     /**
      * @return \Illuminate\Support\Collection<int,User>
      */
-    protected static function resolveParishRecipients(Parish $record, string $audience)
+    protected static function resolveParishRecipients(Parish $record, string $audience, ParishAudienceResolver $audiences)
     {
         $query = User::query()
             ->with('devices')
@@ -289,7 +310,7 @@ class ParishesTable
 
         return match ($audience) {
             'admins' => $query
-                ->where('role', 1)
+                ->whereIn('role', [1, 2])
                 ->where(function ($inner) use ($record): void {
                     $inner->where('home_parish_id', $record->getKey())
                         ->orWhereHas('managedParishes', fn ($managed) => $managed->where('parishes.id', $record->getKey()));
@@ -301,10 +322,7 @@ class ParishesTable
                         ->orWhereHas('managedParishes', fn ($managed) => $managed->where('parishes.id', $record->getKey()));
                 })
                 ->get(),
-            default => $query
-                ->where('role', 0)
-                ->where('home_parish_id', $record->getKey())
-                ->get(),
+            default => $audiences->homeParishUsers((int) $record->getKey(), withDevices: true),
         };
     }
 
@@ -312,7 +330,7 @@ class ParishesTable
      * @param  iterable<int,mixed>  $records
      * @return \Illuminate\Support\Collection<int,User>
      */
-    protected static function resolveBulkParishRecipients(iterable $records, string $audience)
+    protected static function resolveBulkParishRecipients(iterable $records, string $audience, ParishAudienceResolver $audiences)
     {
         $parishIds = collect($records)
             ->filter(fn ($record): bool => $record instanceof Parish)
@@ -330,7 +348,7 @@ class ParishesTable
 
         return match ($audience) {
             'admins' => $query
-                ->where('role', 1)
+                ->whereIn('role', [1, 2])
                 ->where(function ($inner) use ($parishIds): void {
                     $inner->whereIn('home_parish_id', $parishIds->all())
                         ->orWhereHas('managedParishes', fn ($managed) => $managed->whereIn('parishes.id', $parishIds->all()));
@@ -342,10 +360,7 @@ class ParishesTable
                         ->orWhereHas('managedParishes', fn ($managed) => $managed->whereIn('parishes.id', $parishIds->all()));
                 })
                 ->get(),
-            default => $query
-                ->where('role', 0)
-                ->whereIn('home_parish_id', $parishIds->all())
-                ->get(),
+            default => $audiences->homeParishUsers($parishIds, withDevices: true),
         };
     }
 }

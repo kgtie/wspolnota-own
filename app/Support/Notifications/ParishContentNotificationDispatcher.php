@@ -14,7 +14,10 @@ use Illuminate\Support\Facades\Notification;
 
 class ParishContentNotificationDispatcher
 {
-    public function __construct(private readonly NotificationPreferenceResolver $preferences) {}
+    public function __construct(
+        private readonly NotificationPreferenceResolver $preferences,
+        private readonly ParishAudienceResolver $audiences,
+    ) {}
 
     public function dispatchNews(NewsPost $news): int
     {
@@ -69,11 +72,6 @@ class ParishContentNotificationDispatcher
      */
     private function recipientsForParish(int $parishId): Collection
     {
-        return User::query()
-            ->with('notificationPreference')
-            ->where('role', 0)
-            ->where('status', 'active')
-            ->where('home_parish_id', $parishId)
-            ->get();
+        return $this->audiences->homeParishUsers($parishId);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Filament\SuperAdmin\Pages;
 
+use App\Filament\SuperAdmin\Resources\PushDeliveries\PushDeliveryResource;
+use App\Filament\SuperAdmin\Resources\UserDevices\UserDeviceResource;
 use App\Models\PushDelivery;
 use App\Models\User;
 use App\Models\UserDevice;
@@ -74,6 +76,12 @@ class FcmSettingsPage extends SettingsPage
                         Placeholder::make('active_devices')
                             ->label('Aktywne urzadzenia')
                             ->content(fn (): string => (string) UserDevice::query()->pushable()->count()),
+                        Placeholder::make('saved_preferences')
+                            ->label('Uzytkownicy ze zgodami')
+                            ->content(fn (): string => (string) User::query()->whereHas('notificationPreference')->count()),
+                        Placeholder::make('missing_preferences')
+                            ->label('Brak zapisanych zgod')
+                            ->content(fn (): string => (string) User::query()->whereDoesntHave('notificationPreference')->count()),
                         Placeholder::make('sent_24h')
                             ->label('Push sent 24h')
                             ->content(fn (): string => (string) PushDelivery::query()
@@ -86,6 +94,15 @@ class FcmSettingsPage extends SettingsPage
                                 ->where('status', PushDelivery::STATUS_FAILED)
                                 ->where('created_at', '>=', now()->subDay())
                                 ->count()),
+                        Placeholder::make('permission_status_mix')
+                            ->label('Permission status')
+                            ->content(fn (): string => sprintf(
+                                'auth: %d · provisional: %d · denied: %d · not_determined: %d',
+                                UserDevice::query()->where('permission_status', 'authorized')->count(),
+                                UserDevice::query()->where('permission_status', 'provisional')->count(),
+                                UserDevice::query()->where('permission_status', 'denied')->count(),
+                                UserDevice::query()->where('permission_status', 'not_determined')->orWhereNull('permission_status')->count(),
+                            )),
                     ]),
 
                 Section::make('Konfiguracja FCM')
@@ -289,6 +306,26 @@ class FcmSettingsPage extends SettingsPage
                         ->color($delivery->status === PushDelivery::STATUS_SENT ? 'success' : 'danger')
                         ->send();
                 }),
+            Action::make('open_user_devices')
+                ->label('Urzadzenia push')
+                ->icon('heroicon-o-device-phone-mobile')
+                ->color('gray')
+                ->url(UserDeviceResource::getUrl()),
+            Action::make('open_push_deliveries')
+                ->label('Dostarczenia push')
+                ->icon('heroicon-o-inbox-stack')
+                ->color('gray')
+                ->url(PushDeliveryResource::getUrl()),
+            Action::make('open_dispatch_center')
+                ->label('Centrum dispatchu')
+                ->icon('heroicon-o-bolt')
+                ->color('gray')
+                ->url(NotificationDispatchCenter::getUrl()),
+            Action::make('open_failed_jobs')
+                ->label('Failed jobs')
+                ->icon('heroicon-o-exclamation-triangle')
+                ->color('gray')
+                ->url(FailedJobsCenter::getUrl()),
         ];
     }
 

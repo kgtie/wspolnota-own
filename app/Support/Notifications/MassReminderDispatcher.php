@@ -4,8 +4,10 @@ namespace App\Support\Notifications;
 
 use App\Models\Mass;
 use App\Models\User;
+use App\Notifications\MassPendingDailyDigestMailNotification;
 use App\Notifications\MassPendingReminderMailNotification;
 use App\Notifications\MassPendingReminderNotification;
+use Illuminate\Support\Collection;
 
 class MassReminderDispatcher
 {
@@ -29,6 +31,20 @@ class MassReminderDispatcher
         }
 
         $user->notify(new MassPendingReminderMailNotification($mass));
+
+        return true;
+    }
+
+    /**
+     * @param  Collection<int,Mass>  $masses
+     */
+    public function dispatchMorningEmailDigest(User $user, Collection $masses): bool
+    {
+        if (! filled($user->email) || ! $this->preferences->wantsEmail($user, 'mass_reminders') || $masses->isEmpty()) {
+            return false;
+        }
+
+        $user->notify(new MassPendingDailyDigestMailNotification($masses->values()));
 
         return true;
     }

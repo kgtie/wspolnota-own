@@ -57,14 +57,6 @@ class NotificationPreferenceResolver
 
     private function defaultPush(string $topic): bool
     {
-        return match ($topic) {
-            'news' => true,
-            'announcements' => true,
-            'mass_reminders' => true,
-            'office_messages' => true,
-            'parish_approval_status' => true,
-            'auth_security' => false,
-            default => false,
-        };
+        return false;
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Mass;
 use App\Models\User;
 use App\Support\Notifications\MassReminderDispatcher;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 
 class DispatchMassPendingMorningEmailRemindersCommand extends Command
 {
@@ -22,11 +23,17 @@ class DispatchMassPendingMorningEmailRemindersCommand extends Command
             ->with(['participants.notificationPreference'])
             ->where('status', 'scheduled')
             ->whereDate('celebration_at', $today)
+            ->whereHas('participants', function ($query): void {
+                $query
+                    ->where('users.status', 'active')
+                    ->whereNull('mass_user.reminder_email_sent_at');
+            })
             ->orderBy('celebration_at')
             ->limit($limit)
             ->get();
 
         $sent = 0;
+        $pendingByUser = collect();
 
         foreach ($masses as $mass) {
             foreach ($mass->participants as $participant) {
@@ -38,16 +45,35 @@ class DispatchMassPendingMorningEmailRemindersCommand extends Command
                     continue;
                 }
 
-                if ($dispatcher->dispatchMorningEmailReminder($mass, $participant)) {
-                    $mass->participants()->updateExistingPivot($participant->getKey(), [
-                        'reminder_email_sent_at' => now(),
-                    ]);
-                    $sent++;
-                }
+                /** @var Collection<int,Mass> $bucket */
+                $bucket = $pendingByUser->get($participant->getKey(), collect());
+                $bucket->push($mass);
+                $pendingByUser->put($participant->getKey(), $bucket);
             }
         }
 
-        $this->info("Wyslano poranne emaile przypominajace: {$sent}");
+        foreach ($pendingByUser as $userId => $userMasses) {
+            $user = $userMasses->first()?->participants
+                ?->firstWhere('id', (int) $userId);
+
+            if (! $user instanceof User) {
+                continue;
+            }
+
+            if (! $dispatcher->dispatchMorningEmailDigest($user, $userMasses)) {
+                continue;
+            }
+
+            foreach ($userMasses as $mass) {
+                $mass->participants()->updateExistingPivot($user->getKey(), [
+                    'reminder_email_sent_at' => now(),
+                ]);
+            }
+
+            $sent++;
+        }
+
+        $this->info("Wyslano poranne digests przypominajace: {$sent}");
 
         return self::SUCCESS;
     }
