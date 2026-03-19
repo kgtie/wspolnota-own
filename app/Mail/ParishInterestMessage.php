@@ -4,18 +4,11 @@ namespace App\Mail;
 
 use App\Models\Parish;
 use Carbon\CarbonInterface;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class ParishInterestMessage extends Mailable implements ShouldQueue
+class ParishInterestMessage extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(
         public Parish $parish,
         public string $publicUrl,
@@ -34,10 +27,38 @@ class ParishInterestMessage extends Mailable implements ShouldQueue
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.parishes.interest-message',
-        );
+        return 'mail.html.parishes.interest-message';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.parishes.interest-message';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'parish' => $this->parish,
+            'publicUrl' => $this->publicUrl,
+            'requestedAt' => $this->requestedAt,
+            'requesterIp' => $this->requesterIp,
+            'userAgent' => $this->userAgent,
+        ];
+    }
+
+    protected function parishContext(): ?Parish
+    {
+        return $this->parish;
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Lead parafialny',
+            'preheader' => 'Nowe zainteresowanie uruchomieniem uslugi dla parafii.',
+            'mobile_note_variant' => 'parish',
+        ];
     }
 }

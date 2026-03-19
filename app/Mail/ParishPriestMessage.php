@@ -2,18 +2,12 @@
 
 namespace App\Mail;
 
+use App\Models\Parish;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class ParishPriestMessage extends Mailable implements ShouldQueue
+class ParishPriestMessage extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(
         public User $recipient,
         public User $sender,
@@ -29,10 +23,40 @@ class ParishPriestMessage extends Mailable implements ShouldQueue
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.users.priest-message',
-        );
+        return 'mail.html.users.priest-message';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.users.priest-message';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'recipient' => $this->recipient,
+            'sender' => $this->sender,
+            'subjectLine' => $this->subjectLine,
+            'messageBody' => $this->messageBody,
+            'parishName' => $this->parishName,
+        ];
+    }
+
+    protected function parishContext(): ?Parish
+    {
+        return $this->sender->homeParish()->first()
+            ?? $this->sender->currentParish()->first()
+            ?? $this->recipient->homeParish()->first();
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Wiadomosc od parafii',
+            'preheader' => $this->subjectLine,
+            'mobile_note_variant' => 'parish',
+        ];
     }
 }

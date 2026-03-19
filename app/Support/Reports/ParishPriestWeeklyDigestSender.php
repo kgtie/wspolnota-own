@@ -79,7 +79,7 @@ class ParishPriestWeeklyDigestSender
             return (string) $actor->email;
         }
 
-        $configured = 'konrad@wspolnota.app';
+        $configured = config('services.wspolnota.priest_weekly_digest_copy_recipient');
 
         return filled($configured) ? (string) $configured : null;
     }

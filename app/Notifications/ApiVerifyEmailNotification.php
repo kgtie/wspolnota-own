@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Parish;
+use App\Notifications\Concerns\RendersWspolnotaMailMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\URL;
 class ApiVerifyEmailNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use RendersWspolnotaMailMessage;
 
     public function via(object $notifiable): array
     {
@@ -21,13 +23,39 @@ class ApiVerifyEmailNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $verificationUrl = $this->verificationUrl($notifiable);
+        $verificationUrl = $this->actionUrlFor($notifiable);
+        $parish = $this->resolveParish($notifiable);
 
-        return (new MailMessage)
-            ->subject('Zweryfikuj adres e-mail')
-            ->line('Kliknij przycisk poniżej, aby zweryfikować adres e-mail używany w aplikacji.')
-            ->action('Zweryfikuj adres e-mail', $verificationUrl)
-            ->line('Jeśli nie zakładałeś konta, zignoruj tę wiadomość.');
+        return $this->wspolnotaMailMessage(
+            subject: 'Zweryfikuj adres e-mail',
+            htmlBodyView: 'mail.html.notifications.action-message',
+            textBodyView: 'mail.text.notifications.action-message',
+            bodyData: [
+                'eyebrow' => 'Bezpieczenstwo konta',
+                'title' => 'Zweryfikuj adres e-mail.',
+                'intro' => 'Kliknij ponizszy przycisk, aby potwierdzic adres e-mail uzywany w aplikacji i API Wspolnoty.',
+                'details' => [
+                    'Adres email' => (string) data_get($notifiable, 'email'),
+                    'Srodowisko' => $parish ? 'Parafia + API mobilne' : 'API mobilne',
+                ],
+                'actionLabel' => 'Zweryfikuj adres e-mail',
+                'actionUrl' => $verificationUrl,
+                'outro' => 'Jesli nie zakladales konta, zignoruj te wiadomosc.',
+                'secondaryText' => 'Link jest podpisany i czasowo ograniczony dla bezpiecznej aktywacji konta.',
+            ],
+            parish: $parish,
+            context: [
+                'category_label' => 'Weryfikacja email',
+                'preheader' => 'Potwierdz adres e-mail dla konta Wspolnota.',
+                'mobile_note_variant' => $parish ? 'parish' : 'default',
+                'footer_note' => 'To powiadomienie pomaga bezpiecznie aktywowac dostep do Wspolnoty.',
+            ],
+        );
+    }
+
+    public function actionUrlFor(object $notifiable): string
+    {
+        return $this->verificationUrl($notifiable);
     }
 
     private function verificationUrl(object $notifiable): string

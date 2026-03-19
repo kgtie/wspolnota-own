@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\NewsPostInlineMediaController;
+use App\Http\Controllers\Admin\CommunicationCampaignInlineMediaController;
 use App\Http\Controllers\Landing\HomeController;
 use App\Http\Controllers\Landing\MailingWaitlistController;
 use App\Http\Controllers\Office\OfficeAttachmentDownloadController;
@@ -28,6 +29,8 @@ Route::domain(env('APP_URL_APP'))->group(function () {
     Route::name('admin.')->prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::post('/news-posts/{newsPost}/inline-image', NewsPostInlineMediaController::class)
             ->name('news-posts.inline-image');
+        Route::post('/communication-campaigns/{campaign}/inline-image', CommunicationCampaignInlineMediaController::class)
+            ->name('communication-campaigns.inline-image');
     });
 
     Route::middleware(['auth', 'verified'])->group(function () {

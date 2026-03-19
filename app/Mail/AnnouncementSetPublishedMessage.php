@@ -3,17 +3,10 @@
 namespace App\Mail;
 
 use App\Models\AnnouncementSet;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class AnnouncementSetPublishedMessage extends Mailable implements ShouldQueue
+class AnnouncementSetPublishedMessage extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(
         public AnnouncementSet $announcementSet,
         public string $parishName,
@@ -28,10 +21,35 @@ class AnnouncementSetPublishedMessage extends Mailable implements ShouldQueue
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.announcements.published-message',
-        );
+        return 'mail.html.announcements.published-message';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.announcements.published-message';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'announcementSet' => $this->announcementSet,
+            'parishName' => $this->parishName,
+        ];
+    }
+
+    protected function parishContext(): ?\App\Models\Parish
+    {
+        return $this->announcementSet->parish()->first();
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Ogloszenia parafialne',
+            'preheader' => 'Nowy zestaw ogloszen parafialnych jest juz gotowy.',
+            'mobile_note_variant' => 'parish',
+        ];
     }
 }

@@ -233,11 +233,11 @@ it('resends verification email for authenticated user and verifies email through
         ->assertJsonPath('data.status', 'EMAIL_VERIFICATION_SENT');
 
     Notification::assertSentTo($user, ApiVerifyEmailNotification::class, function (ApiVerifyEmailNotification $notification, array $channels, User $notifiable) use ($parish): bool {
-        $mailMessage = $notification->toMail($notifiable);
+        $actionUrl = $notification->actionUrlFor($notifiable);
 
         return $notification instanceof ShouldQueue
-            && str_contains((string) $mailMessage->actionUrl, $parish->slug.'.')
-            && str_contains((string) $mailMessage->actionUrl, '/potwierdzenie-email/');
+            && str_contains($actionUrl, $parish->slug.'.')
+            && str_contains($actionUrl, '/potwierdzenie-email/');
     });
 
     $verificationUrl = URL::temporarySignedRoute(
@@ -271,10 +271,10 @@ it('uses api-friendly reset password notification links', function (): void {
         ->assertJsonPath('data.status', 'PASSWORD_RESET_EMAIL_SENT_IF_EXISTS');
 
     Notification::assertSentTo($user, ApiResetPasswordNotification::class, function (ApiResetPasswordNotification $notification, array $channels, User $notifiable): bool {
-        $mailMessage = $notification->toMail($notifiable);
+        $actionUrl = $notification->actionUrlFor($notifiable);
 
         return $notification instanceof ShouldQueue
-            && str_contains((string) $mailMessage->actionUrl, 'wspolnota://reset-password')
-            && str_contains((string) $mailMessage->actionUrl, 'email=');
+            && str_contains($actionUrl, 'wspolnota://reset-password')
+            && str_contains($actionUrl, 'email=');
     });
 });

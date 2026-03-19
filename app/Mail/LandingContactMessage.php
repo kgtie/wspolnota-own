@@ -2,18 +2,11 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class LandingContactMessage extends Mailable implements ShouldQueue
+class LandingContactMessage extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(
         public string $name,
         public string $email,
@@ -33,10 +26,33 @@ class LandingContactMessage extends Mailable implements ShouldQueue
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.landing.contact-message',
-        );
+        return 'mail.html.landing.contact-message';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.landing.contact-message';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'parish' => $this->parish,
+            'phone' => $this->phone,
+            'subjectLine' => $this->subjectLine,
+            'messageBody' => $this->messageBody,
+        ];
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Lead z landing page',
+            'preheader' => 'Nowa wiadomosc z formularza kontaktowego landing page.',
+        ];
     }
 }

@@ -2,17 +2,10 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class SuperAdminDailyOperationsReportMessage extends Mailable implements ShouldQueue
+class SuperAdminDailyOperationsReportMessage extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(
         public array $report,
     ) {}
@@ -24,10 +17,28 @@ class SuperAdminDailyOperationsReportMessage extends Mailable implements ShouldQ
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.superadmin.daily-operations-report',
-        );
+        return 'mail.html.superadmin.daily-operations-report';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.superadmin.daily-operations-report';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'report' => $this->report,
+        ];
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Raport operacyjny',
+            'preheader' => 'Dobowy raport operacyjny dla superadmina Wspolnoty.',
+        ];
     }
 }

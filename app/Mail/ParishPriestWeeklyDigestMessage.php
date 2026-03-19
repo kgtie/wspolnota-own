@@ -2,17 +2,10 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class ParishPriestWeeklyDigestMessage extends Mailable implements ShouldQueue
+class ParishPriestWeeklyDigestMessage extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(
         public array $report,
     ) {}
@@ -24,10 +17,36 @@ class ParishPriestWeeklyDigestMessage extends Mailable implements ShouldQueue
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.parishes.priest-weekly-digest',
-        );
+        return 'mail.html.parishes.priest-weekly-digest';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.parishes.priest-weekly-digest';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'report' => $this->report,
+        ];
+    }
+
+    protected function parishContext(): ?\App\Models\Parish
+    {
+        $parishId = $this->report['parish']['id'] ?? null;
+
+        return is_numeric($parishId) ? \App\Models\Parish::query()->find((int) $parishId) : null;
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Checklista parafii',
+            'preheader' => 'Cotygodniowa checklista dla administratora parafii.',
+            'mobile_note_variant' => 'parish',
+        ];
     }
 }

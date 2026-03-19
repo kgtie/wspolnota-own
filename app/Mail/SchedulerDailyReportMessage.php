@@ -2,17 +2,10 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class SchedulerDailyReportMessage extends Mailable implements ShouldQueue
+class SchedulerDailyReportMessage extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(
         public array $report,
     ) {}
@@ -24,10 +17,28 @@ class SchedulerDailyReportMessage extends Mailable implements ShouldQueue
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.scheduler.daily-report',
-        );
+        return 'mail.html.scheduler.daily-report';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.scheduler.daily-report';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'report' => $this->report,
+        ];
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Raport schedulera',
+            'preheader' => 'Dzienny raport wykonania zadan schedulera Wspolnota.',
+        ];
     }
 }

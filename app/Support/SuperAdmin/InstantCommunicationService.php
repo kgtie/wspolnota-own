@@ -4,6 +4,7 @@ namespace App\Support\SuperAdmin;
 
 use App\Jobs\SendManualPushToDeviceJob;
 use App\Mail\CommunicationBroadcastMessage;
+use App\Models\Parish;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
@@ -14,7 +15,7 @@ class InstantCommunicationService
      * @param  Collection<int,User>|array<int,User>  $users
      * @return array{users:int, queued:int, skipped:int}
      */
-    public function sendEmailToUsers(Collection|array $users, string $subjectLine, string $messageBody, ?User $actor = null): array
+    public function sendEmailToUsers(Collection|array $users, string $subjectLine, string $messageBody, ?User $actor = null, array $options = []): array
     {
         $rows = collect($users)
             ->filter(fn ($user): bool => $user instanceof User)
@@ -30,6 +31,15 @@ class InstantCommunicationService
                 messageBody: $messageBody,
                 senderName: $actor?->full_name ?: $actor?->name,
                 senderEmail: $actor?->email,
+                preheader: $options['preheader'] ?? null,
+                contentHtml: $options['content_html'] ?? null,
+                ctaLabel: $options['cta_label'] ?? null,
+                ctaUrl: $options['cta_url'] ?? null,
+                parish: $options['parish'] instanceof Parish ? $options['parish'] : null,
+                heroImageUrl: $options['hero_image_url'] ?? null,
+                campaignName: $options['campaign_name'] ?? null,
+                replyToEmail: $options['reply_to_email'] ?? null,
+                replyToName: $options['reply_to_name'] ?? null,
             ));
 
             $queued++;

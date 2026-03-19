@@ -3,18 +3,12 @@
 namespace App\Mail;
 
 use App\Models\Mass;
+use App\Models\Parish;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class MassParticipantsMessage extends Mailable implements ShouldQueue
+class MassParticipantsMessage extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(
         public Mass $mass,
         public User $sender,
@@ -30,10 +24,38 @@ class MassParticipantsMessage extends Mailable implements ShouldQueue
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.masses.participants-message',
-        );
+        return 'mail.html.masses.participants-message';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.masses.participants-message';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'mass' => $this->mass,
+            'sender' => $this->sender,
+            'subjectLine' => $this->subjectLine,
+            'messageBody' => $this->messageBody,
+            'parishName' => $this->parishName,
+        ];
+    }
+
+    protected function parishContext(): ?Parish
+    {
+        return $this->mass->parish()->first();
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Komunikacja parafialna',
+            'preheader' => $this->subjectLine,
+            'mobile_note_variant' => 'parish',
+        ];
     }
 }

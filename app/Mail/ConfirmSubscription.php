@@ -7,17 +7,10 @@ namespace App\Mail;
  */
 
 use App\Models\MailingMail;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class ConfirmSubscription extends Mailable implements ShouldQueue
+class ConfirmSubscription extends WspolnotaMailable
 {
-    use Queueable, SerializesModels;
-
     public function __construct(public MailingMail $subscriber)
     {}
 
@@ -28,10 +21,29 @@ class ConfirmSubscription extends Mailable implements ShouldQueue
         );
     }
 
-    public function content(): Content
+    protected function htmlBodyView(): string
     {
-        return new Content(
-            markdown: 'mail.subscription.confirm',
-        );
+        return 'mail.html.subscription.confirm';
+    }
+
+    protected function textBodyView(): string
+    {
+        return 'mail.text.subscription.confirm';
+    }
+
+    protected function bodyData(): array
+    {
+        return [
+            'subscriber' => $this->subscriber,
+        ];
+    }
+
+    protected function emailContext(): array
+    {
+        return [
+            'category_label' => 'Lista mailingowa',
+            'preheader' => 'Potwierdz zapis do newslettera Wspolnoty.',
+            'footer_note' => 'Ten email pomaga bezpiecznie potwierdzic zapis do listy mailingowej Wspolnoty.',
+        ];
     }
 }
