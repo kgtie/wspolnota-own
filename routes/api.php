@@ -43,6 +43,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/parishes/{parishId}/home-feed', [ParishController::class, 'homeFeed'])->whereNumber('parishId');
 
     Route::get('/parishes/{parishId}/masses', [MassController::class, 'index'])->whereNumber('parishId');
+    Route::get('/parishes/{parishId}/masses/recent-past', [MassController::class, 'recentPast'])->whereNumber('parishId');
+    Route::get('/parishes/{parishId}/masses/upcoming', [MassController::class, 'upcoming'])->whereNumber('parishId');
     Route::get('/parishes/{parishId}/masses/{massId}', [MassController::class, 'show'])->whereNumber('parishId')->whereNumber('massId');
 
     Route::get('/parishes/{parishId}/announcements/current', [AnnouncementController::class, 'current'])->whereNumber('parishId');
@@ -54,6 +56,8 @@ Route::prefix('v1')->group(function (): void {
 
     Route::get('/parishes/{parishId}/news', [NewsController::class, 'index'])->whereNumber('parishId');
     Route::get('/parishes/{parishId}/news/{newsId}', [NewsController::class, 'show'])->whereNumber('parishId')->whereNumber('newsId');
+    Route::get('/parishes/{parishId}/news/{newsId}/gallery', [NewsController::class, 'gallery'])->whereNumber('parishId')->whereNumber('newsId');
+    Route::get('/parishes/{parishId}/news/{newsId}/attachments', [NewsController::class, 'attachments'])->whereNumber('parishId')->whereNumber('newsId');
     Route::get('/parishes/{parishId}/news/{newsId}/comments', [NewsController::class, 'comments'])->whereNumber('parishId')->whereNumber('newsId');
 
     Route::middleware(['api.auth'])->group(function (): void {

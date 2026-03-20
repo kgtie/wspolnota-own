@@ -3,6 +3,7 @@
 namespace App\Support\Announcements;
 
 use App\Models\AnnouncementSet;
+use App\Support\Pdf\PdfBranding;
 use Illuminate\Support\Str;
 use Spatie\LaravelPdf\Enums\Format;
 use Spatie\LaravelPdf\Facades\Pdf;
@@ -20,6 +21,7 @@ class AnnouncementSetPdfExporter
     public function download(AnnouncementSet $set): StreamedResponse
     {
         $set->loadMissing('parish');
+        $branding = app(PdfBranding::class)->forParish($set->parish);
 
         $items = $set->items()
             ->where('is_active', true)
@@ -37,6 +39,7 @@ class AnnouncementSetPdfExporter
             'set' => $set,
             'items' => $items,
             'generatedAt' => now(),
+            ...$branding,
         ])
             ->format(Format::A4)
             ->portrait()

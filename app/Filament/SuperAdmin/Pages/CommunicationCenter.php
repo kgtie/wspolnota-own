@@ -75,7 +75,7 @@ class CommunicationCenter extends Page
 
     public bool $respectEmailPreferences = false;
 
-    public string $emailPreferenceTopic = 'announcements';
+    public string $emailPreferenceTopic = 'manual_messages';
 
     public string $customEmails = '';
 
@@ -216,6 +216,7 @@ class CommunicationCenter extends Page
     public function getEmailTopicOptionsProperty(): array
     {
         return [
+            'manual_messages' => 'Komunikaty reczne i kampanie',
             'announcements' => 'Ogloszenia',
             'news' => 'Aktualnosci',
             'mass_reminders' => 'Przypomnienia o mszach',
@@ -599,7 +600,7 @@ class CommunicationCenter extends Page
         $this->onlyEmailVerifiedUsers = false;
         $this->onlyUsersWithPushDevices = false;
         $this->respectEmailPreferences = false;
-        $this->emailPreferenceTopic = 'announcements';
+        $this->emailPreferenceTopic = 'manual_messages';
         $this->customEmails = '';
         $this->brandingParishId = null;
         $this->subjectLine = '';
@@ -859,6 +860,7 @@ class CommunicationCenter extends Page
             routingData: [
                 'source' => 'communication_center',
             ],
+            preferenceTopic: $this->emailPreferenceTopic,
         );
 
         Notification::make()
@@ -895,6 +897,7 @@ class CommunicationCenter extends Page
             'only_users_with_push_devices' => $this->onlyUsersWithPushDevices,
             'respect_email_preferences' => $this->respectEmailPreferences,
             'email_preference_topic' => $this->emailPreferenceTopic,
+            'notification_preference_topic' => $this->emailPreferenceTopic,
             'custom_emails' => trim($this->customEmails),
             'subject_line' => trim($this->subjectLine),
             'preheader' => trim($this->preheader),
@@ -992,7 +995,7 @@ class CommunicationCenter extends Page
         $this->onlyEmailVerifiedUsers = (bool) ($payload['only_email_verified_users'] ?? false);
         $this->onlyUsersWithPushDevices = (bool) ($payload['only_users_with_push_devices'] ?? false);
         $this->respectEmailPreferences = (bool) ($payload['respect_email_preferences'] ?? false);
-        $this->emailPreferenceTopic = (string) ($payload['email_preference_topic'] ?? 'announcements');
+        $this->emailPreferenceTopic = (string) ($payload['email_preference_topic'] ?? $payload['notification_preference_topic'] ?? 'manual_messages');
         $this->customEmails = (string) ($payload['custom_emails'] ?? '');
         $this->brandingParishId = is_numeric($payload['branding_parish_id'] ?? $campaign->parish_id) ? (int) ($payload['branding_parish_id'] ?? $campaign->parish_id) : null;
         $this->subjectLine = (string) ($payload['subject_line'] ?? $campaign->subject_line ?? '');

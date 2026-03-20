@@ -15,6 +15,7 @@ class StoreNewsCommentRequest extends FormRequest
     {
         return [
             'body' => ['required', 'string', 'min:1', 'max:2000'],
+            'parent_id' => ['nullable', 'integer'],
         ];
     }
 }

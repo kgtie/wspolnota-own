@@ -330,15 +330,20 @@ html.dark {
     }
 
     .parish-richtext h1 {
-        font-size: 2rem;
-    }
-
-    .parish-richtext h2 {
         font-size: 1.6rem;
     }
 
+    .parish-richtext h2 {
+        font-size: 1.35rem;
+    }
+
     .parish-richtext h3 {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
+    }
+
+    .parish-richtext > h1:first-child,
+    .parish-richtext > h2:first-child {
+        display: none;
     }
 
     .parish-richtext ul,
@@ -366,6 +371,38 @@ html.dark {
     .parish-richtext img {
         width: 100%;
         border-radius: 1.5rem;
+    }
+
+    .parish-store-card {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1.25rem;
+        background: #333333;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        transition:
+            transform 150ms ease,
+            opacity 150ms ease,
+            box-shadow 150ms ease;
+    }
+
+    .parish-store-card:hover {
+        transform: translateY(-1px);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.05),
+            0 10px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    .parish-store-icon {
+        display: inline-flex;
+        height: 2.7rem;
+        width: 2.7rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.9rem;
+        background: rgba(255, 255, 255, 0.04);
+        flex-shrink: 0;
     }
 
     .floating-orb {
@@ -449,6 +486,11 @@ html.dark {
 
     html.dark .parish-richtext blockquote {
         color: #e7e5e4;
+    }
+
+    html.dark .parish-store-card {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: #101010;
     }
 
     html.dark .bg-stone-50,

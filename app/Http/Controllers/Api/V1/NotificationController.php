@@ -35,6 +35,12 @@ class NotificationController extends ApiController
                 'parish_approval_status_email' => (bool) data_get($request->input('parish_approval_status'), 'email'),
                 'auth_security_push' => (bool) data_get($request->input('auth_security'), 'push'),
                 'auth_security_email' => (bool) data_get($request->input('auth_security'), 'email'),
+                'manual_messages_push' => $request->has('manual_messages')
+                    ? (bool) data_get($request->input('manual_messages'), 'push')
+                    : (bool) ($existing?->manual_messages_push ?? false),
+                'manual_messages_email' => $request->has('manual_messages')
+                    ? (bool) data_get($request->input('manual_messages'), 'email')
+                    : (bool) ($existing?->manual_messages_email ?? true),
             ],
         );
 

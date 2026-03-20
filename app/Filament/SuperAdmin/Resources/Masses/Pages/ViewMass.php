@@ -6,6 +6,7 @@ use App\Filament\SuperAdmin\Resources\Masses\MassResource;
 use App\Mail\MassParticipantsMessage;
 use App\Models\Mass;
 use App\Models\User;
+use App\Support\Notifications\NotificationPreferenceResolver;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -56,7 +57,7 @@ class ViewMass extends ViewRecord
                         ->rows(10)
                         ->maxLength(5000),
                 ])
-                ->action(function (array $data): void {
+                ->action(function (array $data, NotificationPreferenceResolver $preferences): void {
                     $record = $this->getRecord();
                     $admin = Filament::auth()->user();
 
@@ -65,9 +66,14 @@ class ViewMass extends ViewRecord
                     }
 
                     $participants = $record->participants()
+                        ->with('notificationPreference')
                         ->where('users.status', 'active')
                         ->whereNotNull('users.email')
                         ->get();
+
+                    $participants = $participants
+                        ->filter(fn (User $participant): bool => $preferences->wantsEmail($participant, 'manual_messages'))
+                        ->values();
 
                     if ($participants->isEmpty()) {
                         if ($admin instanceof User) {

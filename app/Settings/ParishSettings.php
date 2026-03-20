@@ -2,8 +2,6 @@
 
 namespace App\Settings;
 
-use Spatie\LaravelSettings\Settings;
-
 /**
  * Ustawienia konkretnej parafii.
  * Zarządzane przez Administratora parafii.
@@ -26,6 +24,15 @@ class ParishSettings
     public static function defaults(): array
     {
         return [
+            // Osoby widoczne publicznie przy parafii
+            'staff_members' => [],
+
+            // Widocznosc publiczna danych parafii
+            'public_email' => true,
+            'public_phone' => true,
+            'public_website' => true,
+            'public_address' => true,
+
             // Powiadomienia
             'notifications_enabled' => true,
             'mass_reminder_hours_before' => 2,       // Ile godzin przed mszą wysłać push
@@ -56,7 +63,10 @@ class ParishSettings
      */
     public static function resolve(?array $settings): array
     {
-        return array_merge(static::defaults(), $settings ?? []);
+        $resolved = array_merge(static::defaults(), $settings ?? []);
+        $resolved['staff_members'] = static::normalizeStaffMembers($resolved['staff_members'] ?? []);
+
+        return $resolved;
     }
 
     /**
@@ -67,5 +77,29 @@ class ParishSettings
         $resolved = static::resolve($settings);
 
         return $resolved[$key] ?? $default;
+    }
+
+    /**
+     * Normalizuje listę osób związanych z parafią do bezpiecznej struktury API/UI.
+     *
+     * @return array<int, array{name: string, title: string}>
+     */
+    public static function normalizeStaffMembers(mixed $members): array
+    {
+        if (! is_array($members)) {
+            return [];
+        }
+
+        return collect($members)
+            ->filter(fn ($member): bool => is_array($member))
+            ->map(function (array $member): array {
+                return [
+                    'name' => trim((string) ($member['name'] ?? '')),
+                    'title' => trim((string) ($member['title'] ?? '')),
+                ];
+            })
+            ->filter(fn (array $member): bool => $member['name'] !== '' && $member['title'] !== '')
+            ->values()
+            ->all();
     }
 }

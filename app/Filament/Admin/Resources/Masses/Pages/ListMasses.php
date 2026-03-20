@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Masses\Pages;
 use App\Filament\Admin\Resources\Masses\MassResource;
 use App\Models\Mass;
 use App\Models\User;
+use App\Support\Pdf\PdfBranding;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -71,11 +72,7 @@ class ListMasses extends ListRecords
                     ->get([
                         'celebration_at',
                         'intention_title',
-                        'mass_kind',
-                        'mass_type',
-                        'celebrant_name',
-                        'stipendium_amount',
-                        'status',
+                        'intention_details',
                     ]);
 
                 if ($masses->isEmpty()) {
@@ -94,15 +91,15 @@ class ListMasses extends ListRecords
                     $end->format('Ymd'),
                 );
 
+                $branding = app(PdfBranding::class)->forParish($tenant);
+
                 $pdfBase64 = Pdf::view('pdf.masses.intentions-period', [
-                    'parishName' => $tenant->name,
+                    'parish' => $tenant,
                     'dateFrom' => $start,
                     'dateTo' => $end,
                     'masses' => $masses,
                     'generatedAt' => now(),
-                    'kinds' => Mass::getMassKindOptions(),
-                    'types' => Mass::getMassTypeOptions(),
-                    'statuses' => Mass::getStatusOptions(),
+                    ...$branding,
                 ])
                     ->format(Format::A4)
                     ->portrait()

@@ -20,6 +20,7 @@ class NotificationPreferenceResolver
             'mass_reminders' => (bool) $preferences->mass_reminders_email,
             'office_messages' => (bool) $preferences->office_messages_email,
             'parish_approval_status' => (bool) $preferences->parish_approval_status_email,
+            'manual_messages' => (bool) $preferences->manual_messages_email,
             default => false,
         };
     }
@@ -39,6 +40,7 @@ class NotificationPreferenceResolver
             'office_messages' => (bool) $preferences->office_messages_push,
             'parish_approval_status' => (bool) $preferences->parish_approval_status_push,
             'auth_security' => (bool) $preferences->auth_security_push,
+            'manual_messages' => (bool) $preferences->manual_messages_push,
             default => false,
         };
     }
@@ -51,6 +53,7 @@ class NotificationPreferenceResolver
             'mass_reminders' => true,
             'office_messages' => true,
             'parish_approval_status' => true,
+            'manual_messages' => true,
             default => false,
         };
     }

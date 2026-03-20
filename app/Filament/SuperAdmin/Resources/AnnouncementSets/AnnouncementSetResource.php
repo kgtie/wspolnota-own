@@ -6,7 +6,6 @@ use App\Filament\SuperAdmin\Resources\AnnouncementSets\Pages\CreateAnnouncementS
 use App\Filament\SuperAdmin\Resources\AnnouncementSets\Pages\EditAnnouncementSet;
 use App\Filament\SuperAdmin\Resources\AnnouncementSets\Pages\ListAnnouncementSets;
 use App\Filament\SuperAdmin\Resources\AnnouncementSets\Pages\ViewAnnouncementSet;
-use App\Filament\SuperAdmin\Resources\AnnouncementSets\RelationManagers\ItemsRelationManager;
 use App\Filament\SuperAdmin\Resources\AnnouncementSets\Schemas\AnnouncementSetForm;
 use App\Filament\SuperAdmin\Resources\AnnouncementSets\Schemas\AnnouncementSetInfolist;
 use App\Filament\SuperAdmin\Resources\AnnouncementSets\Tables\AnnouncementSetsTable;
@@ -63,9 +62,7 @@ class AnnouncementSetResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            ItemsRelationManager::class,
-        ];
+        return [];
     }
 
     public static function getPages(): array

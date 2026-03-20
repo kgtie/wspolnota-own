@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AnnouncementSet;
 use App\Models\Mass;
+use App\Models\NewsComment;
 use App\Models\NewsPost;
 use App\Models\OfficeConversation;
 use App\Models\OfficeMessage;
@@ -136,12 +137,16 @@ class DatabaseSeeder extends Seeder
         $this->call(MassSeeder::class);
         $this->call(AnnouncementSeeder::class);
         $this->call(NewsPostSeeder::class);
+        $this->call(NewsCommentSeeder::class);
         $this->call(OfficeConversationSeeder::class);
 
         $massesCount = Mass::query()->count();
         $announcementSetsCount = AnnouncementSet::query()->count();
         $announcementItemsCount = (int) DB::table('announcement_items')->count();
         $newsPostsCount = NewsPost::query()->count();
+        $newsCommentsCount = NewsComment::withTrashed()->count();
+        $hiddenNewsCommentsCount = NewsComment::withTrashed()->where('is_hidden', true)->count();
+        $trashedNewsCommentsCount = NewsComment::query()->onlyTrashed()->count();
         $officeConversationsCount = OfficeConversation::query()->count();
         $officeMessagesCount = OfficeMessage::query()->count();
         $officeAttachmentsCount = (int) DB::table('media')
@@ -211,6 +216,7 @@ class DatabaseSeeder extends Seeder
                 ['Zestawy ogloszen', (string) $announcementSetsCount, 'przeszle + przyszle tygodnie'],
                 ['Pojedyncze ogloszenia', (string) $announcementItemsCount, 'z pozycjonowaniem i waznoscia'],
                 ['Aktualnosci parafialne', (string) $newsPostsCount, 'blog parafialny: szkice, publikacje, harmonogram'],
+                ['Komentarze do aktualnosci', (string) $newsCommentsCount, 'watki, odpowiedzi, ukrycia, soft delete'],
                 ['Kancelaria: konwersacje', (string) $officeConversationsCount, 'watki user-proboszcz'],
                 ['Kancelaria: wiadomosci', (string) $officeMessagesCount, 'tresc szyfrowana (encrypted cast)'],
                 ['Kancelaria: zalaczniki', (string) $officeAttachmentsCount, 'prywatny dysk office + Spatie Media Library'],
@@ -238,6 +244,8 @@ class DatabaseSeeder extends Seeder
                 ['Aktualnosci: zaplanowane', (string) $scheduledNewsPostsCount],
                 ['Aktualnosci: archiwalne', (string) $archivedNewsPostsCount],
                 ['Aktualnosci przypiete', (string) $pinnedNewsPostsCount],
+                ['Komentarze ukryte', (string) $hiddenNewsCommentsCount],
+                ['Komentarze soft deleted', (string) $trashedNewsCommentsCount],
             ]
         );
     }

@@ -160,6 +160,55 @@ components:
         requires_email_verification:
           type: boolean
 
+    ParishContactVisibility:
+      type: object
+      required: [email, phone, website, address]
+      properties:
+        email:
+          type: boolean
+        phone:
+          type: boolean
+        website:
+          type: boolean
+        address:
+          type: boolean
+
+    ParishPublicAddress:
+      type: object
+      required: [street, postal_code, city]
+      properties:
+        street:
+          type: [string, 'null']
+        postal_code:
+          type: [string, 'null']
+        city:
+          type: string
+
+    ParishPublicContact:
+      type: object
+      required: [email, phone, website, address]
+      properties:
+        email:
+          type: [string, 'null']
+          format: email
+        phone:
+          type: [string, 'null']
+        website:
+          type: [string, 'null']
+        address:
+          oneOf:
+            - $ref: '#/components/schemas/ParishPublicAddress'
+            - type: 'null'
+
+    ParishStaffMember:
+      type: object
+      required: [name, title]
+      properties:
+        name:
+          type: string
+        title:
+          type: string
+
     Parish:
       type: object
       required:
@@ -168,6 +217,9 @@ components:
         - short_name
         - slug
         - city
+        - contact_visibility
+        - public_contact
+        - staff_members
         - is_active
       properties:
         id:
@@ -195,6 +247,14 @@ components:
           type: [string, 'null']
         decanate:
           type: [string, 'null']
+        contact_visibility:
+          $ref: '#/components/schemas/ParishContactVisibility'
+        public_contact:
+          $ref: '#/components/schemas/ParishPublicContact'
+        staff_members:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParishStaffMember'
         is_active:
           type: boolean
         avatar_url:
@@ -317,6 +377,7 @@ components:
         - title
         - slug
         - is_pinned
+        - comments_enabled
         - comments_count
       properties:
         id:
@@ -333,6 +394,8 @@ components:
           type: [string, 'null']
         content:
           type: [string, 'null']
+        comments_enabled:
+          type: boolean
         comments_count:
           type: integer
         published_at:
@@ -357,18 +420,78 @@ components:
 
     NewsComment:
       type: object
-      required: [id, body, user]
+      required: [id, parent_id, depth, body, is_hidden, can_reply, user, replies_count, replies]
       properties:
         id:
           type: string
+        parent_id:
+          type: [string, 'null']
+        depth:
+          type: integer
         body:
-          type: string
+          type: [string, 'null']
+        is_hidden:
+          type: boolean
+        can_reply:
+          type: boolean
         user:
-          $ref: '#/components/schemas/NewsCommentUser'
+          oneOf:
+            - $ref: '#/components/schemas/NewsCommentUser'
+            - type: 'null'
         created_at:
           type: [string, 'null']
           format: date-time
         updated_at:
+          type: [string, 'null']
+          format: date-time
+        replies_count:
+          type: integer
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsComment'
+
+    NewsGalleryItem:
+      type: object
+      required: [id, file_name, mime_type, size, original_url, preview_url, thumb_url]
+      properties:
+        id:
+          type: string
+        file_name:
+          type: string
+        name:
+          type: [string, 'null']
+        mime_type:
+          type: [string, 'null']
+        size:
+          type: integer
+        original_url:
+          type: string
+        preview_url:
+          type: string
+        thumb_url:
+          type: string
+        created_at:
+          type: [string, 'null']
+          format: date-time
+
+    NewsAttachmentItem:
+      type: object
+      required: [id, file_name, mime_type, size, download_url]
+      properties:
+        id:
+          type: string
+        file_name:
+          type: string
+        name:
+          type: [string, 'null']
+        mime_type:
+          type: [string, 'null']
+        size:
+          type: integer
+        download_url:
+          type: string
+        created_at:
           type: [string, 'null']
           format: date-time
 
@@ -427,6 +550,8 @@ components:
         parish_approval_status:
           $ref: '#/components/schemas/PreferenceToggle'
         auth_security:
+          $ref: '#/components/schemas/PreferenceToggle'
+        manual_messages:
           $ref: '#/components/schemas/PreferenceToggle'
 
     PreferenceToggle:
@@ -1013,6 +1138,62 @@ paths:
         '422':
           $ref: '#/components/responses/ValidationError'
 
+  /parishes/{parishId}/masses/recent-past:
+    get:
+      tags: [Masses]
+      summary: Pięć ostatnich mszy z przeszłości
+      parameters:
+        - in: path
+          name: parishId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ostatnie msze z przeszłości
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      masses:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Mass'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /parishes/{parishId}/masses/upcoming:
+    get:
+      tags: [Masses]
+      summary: Dziesięć najbliższych nadchodzących mszy
+      parameters:
+        - in: path
+          name: parishId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Najbliższe msze
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      masses:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Mass'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /parishes/{parishId}/masses/{massId}:
     get:
       tags: [Masses]
@@ -1263,6 +1444,72 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /parishes/{parishId}/news/{newsId}/gallery:
+    get:
+      tags: [News]
+      summary: Galeria zdjęć aktualności
+      parameters:
+        - in: path
+          name: parishId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: newsId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Galeria zdjęć aktualności
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      gallery:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/NewsGalleryItem'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /parishes/{parishId}/news/{newsId}/attachments:
+    get:
+      tags: [News]
+      summary: Załączniki aktualności
+      parameters:
+        - in: path
+          name: parishId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: newsId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Załączniki aktualności
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      attachments:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/NewsAttachmentItem'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /parishes/{parishId}/news/{newsId}/comments:
     get:
       tags: [News]
@@ -1325,8 +1572,11 @@ paths:
               properties:
                 body:
                   type: string
-                  minLength: 2
+                  minLength: 1
                   maxLength: 2000
+                parent_id:
+                  type: [integer, 'null']
+                  description: ID komentarza rodzica. `null` tworzy komentarz główny.
       responses:
         '201':
           description: Komentarz dodany
@@ -1339,15 +1589,7 @@ paths:
                     type: object
                     properties:
                       comment:
-                        type: object
-                        properties:
-                          id:
-                            type: string
-                          body:
-                            type: string
-                          created_at:
-                            type: string
-                            format: date-time
+                        $ref: '#/components/schemas/NewsComment'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':

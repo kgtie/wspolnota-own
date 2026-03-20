@@ -15,6 +15,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class NewsPostForm
@@ -108,6 +109,22 @@ class NewsPostForm
                         Toggle::make('is_pinned')
                             ->label('Przypnij na gorze listy')
                             ->inline(false),
+
+                        Toggle::make('comments_enabled')
+                            ->label('Zezwol na komentarze')
+                            ->default(true)
+                            ->inline(false)
+                            ->helperText('Komentarze sa domyslnie wlaczone. Na froncie komentowac moga tylko zalogowani i zatwierdzeni uzytkownicy.'),
+
+                        Placeholder::make('comments_shortcut')
+                            ->label('Komentarze do wpisu')
+                            ->content(fn (?NewsPost $record): HtmlString => new HtmlString($record
+                                ? '<a href="'.e(\App\Filament\SuperAdmin\Resources\NewsComments\NewsCommentResource::getUrl('index', [
+                                    'filters' => [
+                                        'news_post_id' => ['value' => $record->getKey()],
+                                    ],
+                                ])).'" class="text-primary-600 underline">Otworz komentarze tego wpisu</a>'
+                                : 'Link do komentarzy pojawi sie po zapisaniu wpisu.')),
                     ]),
 
                 Section::make('Obraz wyrozniajacy')

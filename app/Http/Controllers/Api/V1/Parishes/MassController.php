@@ -50,6 +50,42 @@ class MassController extends ApiController
         );
     }
 
+    public function recentPast(int $parishId): JsonResponse
+    {
+        $parish = $this->activeParishOrFail($parishId);
+
+        $items = Mass::query()
+            ->where('parish_id', $parish->getKey())
+            ->where('celebration_at', '<', now())
+            ->where('status', '!=', 'cancelled')
+            ->orderByDesc('celebration_at')
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get();
+
+        return $this->success([
+            'masses' => $items->map(fn (Mass $mass) => $this->payload($mass))->all(),
+        ]);
+    }
+
+    public function upcoming(int $parishId): JsonResponse
+    {
+        $parish = $this->activeParishOrFail($parishId);
+
+        $items = Mass::query()
+            ->where('parish_id', $parish->getKey())
+            ->where('celebration_at', '>=', now())
+            ->where('status', 'scheduled')
+            ->orderBy('celebration_at')
+            ->orderBy('id')
+            ->limit(10)
+            ->get();
+
+        return $this->success([
+            'masses' => $items->map(fn (Mass $mass) => $this->payload($mass))->all(),
+        ]);
+    }
+
     public function show(int $parishId, int $massId): JsonResponse
     {
         $parish = $this->activeParishOrFail($parishId);

@@ -252,7 +252,7 @@ class MassesTable
             ->color('gray')
             ->action(function (Mass $record): void {
                 $admin = Filament::auth()->user();
-                $clone = $record->replicate();
+                $clone = $record->replicate(['participants_count']);
 
                 $clone->celebration_at = $record->celebration_at?->copy()->addWeek();
                 $clone->status = 'scheduled';
@@ -316,6 +316,7 @@ class MassesTable
                         'reminder_key' => 'manual',
                         'source' => 'superadmin_manual',
                     ],
+                    preferenceTopic: 'mass_reminders',
                 );
 
                 Notification::make()
@@ -355,6 +356,7 @@ class MassesTable
                     subjectLine: (string) $data['subject'],
                     messageBody: (string) $data['body'],
                     actor: $actor instanceof User ? $actor : null,
+                    options: ['preference_topic' => 'mass_reminders'],
                 );
 
                 Notification::make()
@@ -456,6 +458,7 @@ class MassesTable
                         'parish_ids' => json_encode($masses->pluck('parish_id')->filter()->unique()->values()->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                         'source' => 'superadmin_bulk',
                     ],
+                    preferenceTopic: 'mass_reminders',
                 );
 
                 Notification::make()
@@ -501,6 +504,7 @@ class MassesTable
                     subjectLine: (string) $data['subject'],
                     messageBody: (string) $data['body'],
                     actor: $actor instanceof User ? $actor : null,
+                    options: ['preference_topic' => 'mass_reminders'],
                 );
 
                 Notification::make()

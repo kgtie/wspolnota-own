@@ -208,7 +208,7 @@ class MassesTable
             ->color('gray')
             ->action(function (Mass $record): void {
                 $admin = Filament::auth()->user();
-                $clone = $record->replicate();
+                $clone = $record->replicate(['participants_count']);
 
                 $clone->celebration_at = $record->celebration_at?->copy()->addWeek();
                 $clone->status = 'scheduled';

@@ -52,7 +52,8 @@ class NewsPostResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['parish', 'createdBy', 'updatedBy', 'media']);
+            ->with(['parish', 'createdBy', 'updatedBy', 'media'])
+            ->withCount('visibleComments as comments_count');
     }
 
     public static function getRelations(): array

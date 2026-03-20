@@ -175,7 +175,6 @@ class EditUser extends EditRecord
     {
         $record = $this->getRecord();
 
-        $data['role'] = 0;
         $data['verification_code'] = filled($data['verification_code'] ?? null)
             ? $data['verification_code']
             : (($record instanceof User && filled($record->verification_code))
@@ -187,6 +186,7 @@ class EditUser extends EditRecord
             $data['full_name'] = $record->full_name;
             $data['name'] = $record->name;
             $data['email'] = $record->email;
+            $data['role'] = $record->role;
 
             // Weryfikacja użytkownika jest możliwa wyłącznie przez akcję z podaniem kodu.
             $data['is_user_verified'] = (bool) $record->is_user_verified;

@@ -2,6 +2,7 @@
 
 namespace App\Filament\SuperAdmin\Resources\NewsPosts\Tables;
 
+use App\Filament\SuperAdmin\Resources\NewsComments\NewsCommentResource;
 use App\Models\NewsPost;
 use App\Models\Parish;
 use App\Models\User;
@@ -20,9 +21,9 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
-use Filament\Notifications\Notification;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -89,6 +90,17 @@ class NewsPostsTable
                     ->placeholder('-')
                     ->sortable(),
 
+                TextColumn::make('comments_count')
+                    ->label('Komentarze')
+                    ->badge()
+                    ->state(fn (NewsPost $record): string => (string) ($record->comments_count ?? 0))
+                    ->color('info')
+                    ->url(fn (NewsPost $record): string => NewsCommentResource::getUrl('index', [
+                        'filters' => [
+                            'news_post_id' => ['value' => $record->getKey()],
+                        ],
+                    ])),
+
                 TextColumn::make('push_notification_sent_at')
                     ->label('Push dispatch')
                     ->state(fn (NewsPost $record): string => $record->push_notification_sent_at
@@ -154,6 +166,14 @@ class NewsPostsTable
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
+                    Action::make('comments')
+                        ->label('Komentarze')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->url(fn (NewsPost $record): string => NewsCommentResource::getUrl('index', [
+                            'filters' => [
+                                'news_post_id' => ['value' => $record->getKey()],
+                            ],
+                        ])),
                     self::sendInstantPushAction(),
                     self::sendInstantEmailAction(),
                     self::setStatusAction('published', 'Opublikuj', 'heroicon-o-check-circle', 'success'),
@@ -275,6 +295,7 @@ class NewsPostsTable
                         'parish_id' => (string) $record->parish_id,
                         'source' => 'superadmin_manual',
                     ],
+                    preferenceTopic: 'news',
                 );
 
                 Notification::make()
@@ -319,6 +340,7 @@ class NewsPostsTable
                     subjectLine: (string) $data['subject'],
                     messageBody: (string) $data['body'],
                     actor: $actor instanceof User ? $actor : null,
+                    options: ['preference_topic' => 'news'],
                 );
 
                 Notification::make()
@@ -407,6 +429,7 @@ class NewsPostsTable
                         'parish_ids' => json_encode($parishIds->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                         'source' => 'superadmin_bulk',
                     ],
+                    preferenceTopic: 'news',
                 );
 
                 Notification::make()
@@ -457,6 +480,7 @@ class NewsPostsTable
                     subjectLine: (string) $data['subject'],
                     messageBody: (string) $data['body'],
                     actor: $actor instanceof User ? $actor : null,
+                    options: ['preference_topic' => 'news'],
                 );
 
                 Notification::make()

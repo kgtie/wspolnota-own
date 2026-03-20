@@ -37,6 +37,7 @@ class NewsPost extends Model implements HasMedia
         'email_notification_sent_at',
         'scheduled_for',
         'is_pinned',
+        'comments_enabled',
         'created_by_user_id',
         'updated_by_user_id',
     ];
@@ -49,13 +50,27 @@ class NewsPost extends Model implements HasMedia
             'email_notification_sent_at' => 'datetime',
             'scheduled_for' => 'datetime',
             'is_pinned' => 'boolean',
+            'comments_enabled' => 'boolean',
         ];
     }
 
     protected static function booted(): void
     {
         static::saving(function (self $post): void {
-            if (blank($post->slug)) {
+            $post->title = self::normalizeTextColumn($post->title);
+            $post->content = self::normalizeLongTextColumn($post->content);
+
+            $hasDraftPlaceholderSlug = str_starts_with((string) $post->slug, 'draft-');
+
+            if (blank(trim((string) $post->title))) {
+                if (blank($post->slug)) {
+                    $post->slug = 'draft-'.Str::lower(Str::random(12));
+                }
+
+                return;
+            }
+
+            if (blank($post->slug) || $hasDraftPlaceholderSlug || ($post->isDirty('title') && ($post->status === 'draft'))) {
                 $post->slug = $post->generateUniqueSlug();
             }
         });
@@ -85,6 +100,7 @@ class NewsPost extends Model implements HasMedia
                 'published_at',
                 'scheduled_for',
                 'is_pinned',
+                'comments_enabled',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
@@ -153,7 +169,19 @@ class NewsPost extends Model implements HasMedia
 
     public function comments(): HasMany
     {
-        return $this->hasMany(NewsComment::class)->latest('id');
+        return $this->hasMany(NewsComment::class)
+            ->orderBy('created_at')
+            ->orderBy('id');
+    }
+
+    public function rootComments(): HasMany
+    {
+        return $this->comments()->whereNull('parent_id');
+    }
+
+    public function visibleComments(): HasMany
+    {
+        return $this->comments()->where('is_hidden', false);
     }
 
     public function scopePublished($query)
@@ -193,6 +221,34 @@ class NewsPost extends Model implements HasMedia
         }
 
         return $this->published_at->lte(now());
+    }
+
+    public function getDisplayTitle(): string
+    {
+        $title = trim((string) $this->title);
+
+        return $title !== '' ? $title : 'Nowy szkic bez tytulu';
+    }
+
+    public function allowsComments(): bool
+    {
+        return (bool) $this->comments_enabled
+            && (bool) $this->parish?->getSetting('news_comments_enabled', true);
+    }
+
+    public function requiresVerifiedCommenter(): bool
+    {
+        return (bool) $this->parish?->getSetting('news_comments_require_verification', true);
+    }
+
+    public static function normalizeTextColumn(mixed $value): string
+    {
+        return trim((string) ($value ?? ''));
+    }
+
+    public static function normalizeLongTextColumn(mixed $value): string
+    {
+        return trim((string) ($value ?? ''));
     }
 
     public function generateUniqueSlug(): string

@@ -55,7 +55,6 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('role', 0)
             ->with(['homeParish', 'verifiedBy', 'media']);
     }
 
@@ -97,7 +96,6 @@ class UserResource extends Resource
         }
 
         $pendingCount = User::query()
-            ->where('role', 0)
             ->where('home_parish_id', $tenantId)
             ->where('is_user_verified', false)
             ->count();
@@ -114,7 +112,6 @@ class UserResource extends Resource
         }
 
         return User::query()
-            ->where('role', 0)
             ->where('home_parish_id', $tenantId)
             ->where('is_user_verified', false)
             ->exists()

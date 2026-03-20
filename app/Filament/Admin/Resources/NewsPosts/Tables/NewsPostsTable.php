@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\NewsPosts\Tables;
 
+use App\Filament\Admin\Resources\NewsComments\NewsCommentResource;
+use App\Filament\Admin\Resources\NewsPosts\NewsPostResource;
 use App\Models\NewsPost;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -15,7 +17,6 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Actions\ViewAction;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
@@ -36,18 +37,21 @@ class NewsPostsTable
             ->defaultSort('created_at', 'desc')
             ->persistSearchInSession()
             ->persistFiltersInSession()
+            ->recordUrl(fn (NewsPost $record): string => NewsPostResource::getUrl('edit', ['record' => $record]))
             ->columns([
                 SpatieMediaLibraryImageColumn::make('featured_image')
                     ->label('Okladka')
                     ->collection('featured_image')
                     ->conversion('thumb')
-                    ->height(52)
-                    ->width(80),
+                    ->height(64)
+                    ->width(104),
 
                 TextColumn::make('title')
                     ->label('Tytul')
                     ->searchable()
                     ->sortable()
+                    ->wrap()
+                    ->formatStateUsing(fn (?string $state, NewsPost $record): string => $record->getDisplayTitle())
                     ->description(fn (NewsPost $record): ?string => filled($record->content)
                         ? (string) str(strip_tags((string) $record->content))->squish()->limit(90)
                         : null),
@@ -78,6 +82,17 @@ class NewsPostsTable
                     ->dateTime('d.m.Y H:i')
                     ->placeholder('-')
                     ->sortable(),
+
+                TextColumn::make('comments_count')
+                    ->label('Komentarze')
+                    ->badge()
+                    ->state(fn (NewsPost $record): string => (string) ($record->comments_count ?? 0))
+                    ->color('info')
+                    ->url(fn (NewsPost $record): string => NewsCommentResource::getUrl('index', [
+                        'filters' => [
+                            'news_post_id' => ['value' => $record->getKey()],
+                        ],
+                    ])),
 
                 TextColumn::make('updatedBy.full_name')
                     ->label('Edytowal')
@@ -117,8 +132,15 @@ class NewsPostsTable
             ])
             ->recordActions([
                 ActionGroup::make([
-                    ViewAction::make(),
                     EditAction::make(),
+                    Action::make('comments')
+                        ->label('Komentarze')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->url(fn (NewsPost $record): string => NewsCommentResource::getUrl('index', [
+                            'filters' => [
+                                'news_post_id' => ['value' => $record->getKey()],
+                            ],
+                        ])),
                     self::setStatusAction('published', 'Opublikuj', 'heroicon-o-check-circle', 'success'),
                     self::setStatusAction('scheduled', 'Zaplanuj', 'heroicon-o-clock', 'warning'),
                     self::setStatusAction('draft', 'Ustaw jako szkic', 'heroicon-o-document-text', 'info'),

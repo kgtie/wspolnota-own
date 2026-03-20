@@ -36,3 +36,61 @@ it('lists masses in chronological order within requested range', function (): vo
 
     expect($first <= $second)->toBeTrue();
 });
+
+it('returns the five latest past masses for a parish', function (): void {
+    $parish = Parish::factory()->create();
+
+    foreach (range(1, 7) as $offset) {
+        Mass::factory()->create([
+            'parish_id' => $parish->getKey(),
+            'celebration_at' => now()->subDays($offset),
+            'status' => 'completed',
+        ]);
+    }
+
+    $response = $this->getJson('/api/v1/parishes/'.$parish->getKey().'/masses/recent-past');
+
+    $response
+        ->assertOk()
+        ->assertJsonCount(5, 'data.masses');
+
+    $celebrationDates = collect($response->json('data.masses'))
+        ->pluck('celebration_at')
+        ->values()
+        ->all();
+
+    expect($celebrationDates)->toBe(array_values($celebrationDates))
+        ->and($celebrationDates[0] >= $celebrationDates[1])->toBeTrue();
+});
+
+it('returns the ten nearest upcoming masses for a parish', function (): void {
+    $parish = Parish::factory()->create();
+
+    foreach (range(1, 12) as $offset) {
+        Mass::factory()->create([
+            'parish_id' => $parish->getKey(),
+            'celebration_at' => now()->addHours($offset),
+            'status' => 'scheduled',
+        ]);
+    }
+
+    Mass::factory()->create([
+        'parish_id' => $parish->getKey(),
+        'celebration_at' => now()->addHours(2),
+        'status' => 'cancelled',
+    ]);
+
+    $response = $this->getJson('/api/v1/parishes/'.$parish->getKey().'/masses/upcoming');
+
+    $response
+        ->assertOk()
+        ->assertJsonCount(10, 'data.masses');
+
+    $celebrationDates = collect($response->json('data.masses'))
+        ->pluck('celebration_at')
+        ->values()
+        ->all();
+
+    expect($celebrationDates[0] <= $celebrationDates[1])->toBeTrue()
+        ->and(collect($response->json('data.masses'))->contains(fn (array $mass): bool => $mass['status'] === 'cancelled'))->toBeFalse();
+});

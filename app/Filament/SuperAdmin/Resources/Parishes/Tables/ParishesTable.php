@@ -169,6 +169,7 @@ class ParishesTable
                     users: $users,
                     title: (string) $data['title'],
                     body: (string) $data['body'],
+                    preferenceTopic: 'manual_messages',
                 );
 
                 Notification::make()
@@ -219,6 +220,7 @@ class ParishesTable
                     subjectLine: (string) $data['subject'],
                     messageBody: (string) $data['body'],
                     actor: $actor instanceof User ? $actor : null,
+                    options: ['preference_topic' => 'manual_messages'],
                 );
 
                 Notification::make()
@@ -273,6 +275,7 @@ class ParishesTable
                         'parish_ids' => json_encode($users->pluck('home_parish_id')->filter()->unique()->values()->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                         'source' => 'superadmin_bulk',
                     ],
+                    preferenceTopic: 'manual_messages',
                 );
 
                 Notification::make()
@@ -369,6 +372,7 @@ class ParishesTable
                     subjectLine: (string) $data['subject'],
                     messageBody: (string) $data['body'],
                     actor: $actor instanceof User ? $actor : null,
+                    options: ['preference_topic' => 'manual_messages'],
                 );
 
                 Notification::make()

@@ -81,19 +81,30 @@ class ParishController extends ApiController
 
     private function parishPayload(Parish $parish): array
     {
+        $contactVisibility = $parish->publicContactVisibility();
+        $publicContact = $parish->publicContactData();
+
         return [
             'id' => (string) $parish->getKey(),
             'name' => $parish->name,
             'short_name' => $parish->short_name,
             'slug' => $parish->slug,
-            'email' => $parish->email,
-            'phone' => $parish->phone,
-            'website' => $parish->website,
-            'street' => $parish->street,
-            'postal_code' => $parish->postal_code,
+            'email' => $publicContact['email'],
+            'phone' => $publicContact['phone'],
+            'website' => $publicContact['website'],
+            'street' => $publicContact['address']['street'] ?? null,
+            'postal_code' => $publicContact['address']['postal_code'] ?? null,
             'city' => $parish->city,
             'diocese' => $parish->diocese,
             'decanate' => $parish->decanate,
+            'contact_visibility' => $contactVisibility,
+            'public_contact' => [
+                'email' => $publicContact['email'],
+                'phone' => $publicContact['phone'],
+                'website' => $publicContact['website'],
+                'address' => $publicContact['address'],
+            ],
+            'staff_members' => $parish->staff_members_list,
             'is_active' => (bool) $parish->is_active,
             'avatar_url' => $parish->avatar_url,
             'cover_url' => $parish->cover_url,

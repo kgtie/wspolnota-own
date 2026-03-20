@@ -61,8 +61,8 @@
                         Zobacz ogłoszenia
                     </a>
 
-                    @if ($parish->email)
-                        <a href="mailto:{{ $parish->email }}" class="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/16">
+                    @if ($publicEmail)
+                        <a href="mailto:{{ $publicEmail }}" class="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/16">
                             Kontakt z parafią
                         </a>
                     @endif
@@ -98,10 +98,10 @@
                     </div>
 
                     <dl class="mt-6 space-y-4 text-sm">
-                        @if ($addressLines->isNotEmpty())
+                        @if ($publicAddressLines->isNotEmpty())
                             <div>
                                 <dt class="text-white/60">Adres</dt>
-                                <dd class="mt-1 leading-7">{{ $addressLines->implode(', ') }}</dd>
+                                <dd class="mt-1 leading-7">{{ $publicAddressLines->implode(', ') }}</dd>
                             </div>
                         @endif
 
@@ -314,10 +314,10 @@
                     <div
                         x-show="open"
                         x-transition.scale.duration.200ms
-                        class="parish-surface relative z-10 max-h-[88vh] w-full max-w-4xl overflow-hidden"
+                        class="parish-surface relative z-10 max-h-[84vh] w-full max-w-3xl overflow-hidden"
                     >
                         <template x-for="postId in [selected]" :key="postId">
-                            <div class="max-h-[88vh] overflow-y-auto">
+                            <div class="max-h-[84vh] overflow-y-auto">
                                 @foreach ($latestNews as $post)
                                     @php
                                         $newsImageUrl = $post->getFirstMediaUrl('featured_image', 'preview') ?: null;
@@ -326,18 +326,18 @@
 
                                     <article x-show="postId === {{ (int) $post->getKey() }}" class="p-0">
                                         @if ($newsImageUrl)
-                                            <div class="h-64 overflow-hidden sm:h-80">
+                                            <div class="h-48 overflow-hidden sm:h-60">
                                                 <img src="{{ $newsImageUrl }}" alt="{{ $post->title }}" class="h-full w-full object-cover">
                                             </div>
                                         @endif
 
-                                        <div class="p-6 sm:p-8">
+                                        <div class="p-5 sm:p-6">
                                             <div class="flex items-start justify-between gap-4">
                                                 <div>
                                                     <p class="text-xs font-semibold tracking-[0.18em] text-stone-500 uppercase">
                                                         Aktualność parafii • {{ $publishedAt?->translatedFormat('j F Y') }}
                                                     </p>
-                                                    <h3 class="mt-3 font-display text-3xl text-stone-950 sm:text-4xl">{{ $post->title }}</h3>
+                                                    <h3 class="mt-2 font-display text-2xl leading-tight text-stone-950 sm:text-3xl">{{ $post->title }}</h3>
                                                 </div>
 
                                                 <button type="button" @click="open = false" class="rounded-full border border-stone-300 bg-white/80 px-3 py-2 text-sm font-semibold text-stone-700 transition hover:border-stone-950 hover:text-stone-950">
@@ -345,8 +345,23 @@
                                                 </button>
                                             </div>
 
-                                            <div class="parish-richtext mt-8 text-base">
+                                            <div class="parish-richtext mt-6 text-[0.98rem]">
                                                 {!! $post->content !!}
+                                            </div>
+
+                                            <div class="parish-accent-panel mt-6 rounded-[1.5rem] p-4">
+                                                <p class="text-sm font-semibold text-stone-900">
+                                                    Komentarze i galeria do tej aktualności są dostępne w aplikacji mobilnej Wspólnota.
+                                                </p>
+                                                <p class="mt-1.5 text-sm leading-7 text-stone-600">
+                                                    Na stronie publicznej pokazujemy samą treść wpisu, a pełniejsze doświadczenie parafii jest dostępne w aplikacji.
+                                                </p>
+                                                <div class="mt-3">
+                                                    @include('parish.partials.store-badges', [
+                                                        'wrapperClass' => 'grid gap-2 sm:grid-cols-2',
+                                                        'compact' => true,
+                                                    ])
+                                                </div>
                                             </div>
                                         </div>
                                     </article>
@@ -359,6 +374,62 @@
         </div>
 
         <aside class="space-y-8">
+            <section class="parish-surface p-6">
+                <p class="text-xs font-semibold tracking-[0.22em] text-stone-500 uppercase">Informacje parafialne</p>
+                <h2 class="mt-2 font-display text-2xl text-stone-950">Kontakt i podstawowe dane</h2>
+
+                <dl class="mt-6 space-y-5 text-sm">
+
+                    @if ($publicEmail)
+                        <div>
+                            <dt class="font-semibold text-stone-900">Email</dt>
+                            <dd class="mt-1 text-stone-600">
+                                <a href="mailto:{{ $publicEmail }}" class="transition hover:text-stone-950">{{ $publicEmail }}</a>
+                            </dd>
+                        </div>
+                    @endif
+
+                    @if ($publicPhone)
+                        <div>
+                            <dt class="font-semibold text-stone-900">Telefon</dt>
+                            <dd class="mt-1 text-stone-600">
+                                <a href="tel:{{ preg_replace('/\s+/', '', $publicPhone) }}" class="transition hover:text-stone-950">{{ $publicPhone }}</a>
+                            </dd>
+                        </div>
+                    @endif
+
+                    @if ($publicWebsiteUrl)
+                        <div>
+                            <dt class="font-semibold text-stone-900">Strona WWW</dt>
+                            <dd class="mt-1 text-stone-600">
+                                <a href="{{ $publicWebsiteUrl }}" target="_blank" rel="noreferrer" class="transition hover:text-stone-950">
+                                    {{ preg_replace('#^https?://#', '', $publicWebsiteUrl) }}
+                                </a>
+                            </dd>
+                        </div>
+                    @endif
+                </dl>
+            </section>
+
+            @if (! empty($parish->staff_members_list))
+                <section class="parish-surface p-6">
+                    <p class="text-xs font-semibold tracking-[0.22em] text-stone-500 uppercase">Osoby w parafii</p>
+                    <h2 class="mt-2 font-display text-2xl text-stone-950">Duszpasterze i posługa</h2>
+                    <p class="mt-4 text-sm leading-7 text-stone-600">
+                        Publicznie wskazane osoby pełniące konkretne role w parafii.
+                    </p>
+
+                    <div class="mt-5 space-y-3">
+                        @foreach ($parish->staff_members_list as $member)
+                            <article class="rounded-[1.6rem] border border-stone-200/80 bg-white/80 px-4 py-4 shadow-[0_16px_36px_rgba(58,40,24,0.05)]">
+                                <p class="text-base font-semibold text-stone-950">{{ $member['name'] }}</p>
+                                <p class="mt-1 text-sm text-stone-600">{{ $member['title'] }}</p>
+                            </article>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
             <section class="parish-surface p-6">
                 <div class="flex items-center justify-between gap-4 border-b border-stone-200/80 pb-5">
                     <div>
@@ -414,55 +485,26 @@
                 @endif
             </section>
 
-            <section class="parish-surface p-6">
-                <p class="text-xs font-semibold tracking-[0.22em] text-stone-500 uppercase">Informacje parafialne</p>
-                <h2 class="mt-2 font-display text-2xl text-stone-950">Kontakt i podstawowe dane</h2>
-
-                <dl class="mt-6 space-y-5 text-sm">
-                    @if ($addressLines->isNotEmpty())
-                        <div>
-                            <dt class="font-semibold text-stone-900">Adres</dt>
-                            <dd class="mt-1 leading-7 text-stone-600">{{ $addressLines->implode(', ') }}</dd>
-                        </div>
-                    @endif
-
-                    @if ($parish->email)
-                        <div>
-                            <dt class="font-semibold text-stone-900">Email</dt>
-                            <dd class="mt-1 text-stone-600">
-                                <a href="mailto:{{ $parish->email }}" class="transition hover:text-stone-950">{{ $parish->email }}</a>
-                            </dd>
-                        </div>
-                    @endif
-
-                    @if ($parish->phone)
-                        <div>
-                            <dt class="font-semibold text-stone-900">Telefon</dt>
-                            <dd class="mt-1 text-stone-600">
-                                <a href="tel:{{ preg_replace('/\s+/', '', $parish->phone) }}" class="transition hover:text-stone-950">{{ $parish->phone }}</a>
-                            </dd>
-                        </div>
-                    @endif
-
-                    @if ($websiteUrl)
-                        <div>
-                            <dt class="font-semibold text-stone-900">Strona WWW</dt>
-                            <dd class="mt-1 text-stone-600">
-                                <a href="{{ $websiteUrl }}" target="_blank" rel="noreferrer" class="transition hover:text-stone-950">
-                                    {{ preg_replace('#^https?://#', '', $websiteUrl) }}
-                                </a>
-                            </dd>
-                        </div>
-                    @endif
-                </dl>
-            </section>
-
             <section class="parish-accent-panel overflow-hidden rounded-[2rem] p-6 shadow-[0_20px_60px_rgba(58,40,24,0.08)]">
                 <p class="text-xs font-semibold tracking-[0.22em] text-[color:var(--parish-accent)] uppercase">Usługa Wspólnota</p>
                 <h2 class="mt-2 font-display text-2xl text-stone-950">Jedna parafia, jeden spokojny kanał informacji</h2>
                 <p class="mt-4 text-sm leading-7 text-stone-700">
                     Ta strona pokazuje publiczną warstwę obecności parafii w usłudze Wspólnota: aktualne komunikaty, najbliższe wydarzenia i podstawowy kontakt w lekkiej, czytelnej formie.
                 </p>
+            </section>
+
+            <section class="parish-surface p-6">
+                <p class="text-xs font-semibold tracking-[0.22em] text-stone-500 uppercase">Aplikacja mobilna</p>
+                <h2 class="mt-2 font-display text-2xl text-stone-950">Wspólnota jest dostępna także w sklepach mobilnych</h2>
+                <p class="mt-4 text-sm leading-7 text-stone-600">
+                    W aplikacji parafianie zobaczą dodatkowe elementy doświadczenia, takie jak komentarze pod aktualnościami czy galerie zdjęć.
+                </p>
+
+                <div class="mt-5">
+                    @include('parish.partials.store-badges', [
+                        'wrapperClass' => 'grid gap-2 sm:grid-cols-2',
+                    ])
+                </div>
             </section>
         </aside>
     </div>
@@ -479,10 +521,10 @@
                     'name' => $parish->name,
                     'url' => route('parish.home', ['subdomain' => $parish]),
                     'description' => 'Publiczna strona parafii z aktualnymi ogłoszeniami, mszami świętymi i aktualnościami.',
-                    'email' => $parish->email,
-                    'telephone' => $parish->phone,
+                    'email' => $publicEmail,
+                    'telephone' => $publicPhone,
                     'image' => array_values(array_filter([$coverImageUrl ?: null, $avatarUrl ?: null])),
-                    'address' => ($addressLines->isNotEmpty() || $parish->city)
+                    'address' => $publicAddressLines->isNotEmpty()
                         ? [
                             '@type' => 'PostalAddress',
                             'streetAddress' => $parish->street,

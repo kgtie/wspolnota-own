@@ -15,11 +15,22 @@
 
     <style>
         .wsp-quill-editor {
-            border: 1px solid rgba(15, 23, 42, 0.12);
-            border-radius: 14px;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 20px;
             overflow: hidden;
-            background: linear-gradient(180deg, #fcfdff 0%, #ffffff 24%);
-            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+            background:
+                radial-gradient(circle at top left, rgba(191, 219, 254, 0.22), transparent 22%),
+                linear-gradient(180deg, #fbfdff 0%, #ffffff 26%);
+            box-shadow:
+                0 18px 40px rgba(15, 23, 42, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+
+        .wsp-quill-editor:focus-within {
+            border-color: rgba(14, 116, 144, 0.35);
+            box-shadow:
+                0 22px 48px rgba(14, 116, 144, 0.12),
+                0 0 0 4px rgba(125, 211, 252, 0.16);
         }
 
         .wsp-quill-editor .ql-toolbar.ql-snow {
@@ -27,9 +38,44 @@
             top: 0;
             z-index: 20;
             border: 0;
-            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-            padding: 10px 12px;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            background:
+                linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.96) 100%);
+            backdrop-filter: blur(10px);
+            padding: 0.85rem 1rem;
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .wsp-quill-editor .ql-toolbar.ql-snow .ql-formats {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+            margin-right: 0.35rem;
+            padding-right: 0.45rem;
+            border-right: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .wsp-quill-editor .ql-toolbar.ql-snow .ql-formats:last-child {
+            margin-right: 0;
+            padding-right: 0;
+            border-right: 0;
+        }
+
+        .wsp-quill-editor .ql-toolbar button,
+        .wsp-quill-editor .ql-toolbar .ql-picker-label {
+            border-radius: 10px;
+            transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+        }
+
+        .wsp-quill-editor .ql-toolbar button:hover,
+        .wsp-quill-editor .ql-toolbar .ql-picker-label:hover,
+        .wsp-quill-editor .ql-toolbar button.ql-active,
+        .wsp-quill-editor .ql-toolbar .ql-picker-label.ql-active {
+            background: rgba(14, 116, 144, 0.08);
+            color: #0f172a;
+            box-shadow: inset 0 0 0 1px rgba(14, 116, 144, 0.12);
         }
 
         .wsp-quill-editor .ql-container.ql-snow {
@@ -37,30 +83,112 @@
         }
 
         .wsp-quill-editor .ql-editor {
-            font-size: 1rem;
-            line-height: 1.7;
+            font-size: 1.05rem;
+            line-height: 1.8;
             color: #0f172a;
-            padding: 1.35rem 1.25rem 1.5rem;
+            padding: 2rem 2.1rem 2.4rem;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 250, 251, 0.5) 100%);
+        }
+
+        .wsp-quill-editor .ql-editor > *:first-child {
+            margin-top: 0;
+        }
+
+        .wsp-quill-editor .ql-editor p {
+            margin: 0 0 1.05rem;
         }
 
         .wsp-quill-editor .ql-editor h1,
         .wsp-quill-editor .ql-editor h2,
         .wsp-quill-editor .ql-editor h3 {
-            line-height: 1.3;
-            margin-top: 1rem;
-            margin-bottom: .5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.18;
+            color: #0f172a;
+        }
+
+        .wsp-quill-editor .ql-editor h1 {
+            font-size: 2rem;
+            margin: 1.65rem 0 0.9rem;
+        }
+
+        .wsp-quill-editor .ql-editor h2 {
+            font-size: 1.55rem;
+            margin: 1.5rem 0 0.8rem;
+        }
+
+        .wsp-quill-editor .ql-editor h3 {
+            font-size: 1.25rem;
+            margin: 1.35rem 0 0.7rem;
+        }
+
+        .wsp-quill-editor .ql-editor ul,
+        .wsp-quill-editor .ql-editor ol {
+            margin: 0 0 1.15rem;
+            padding-left: 1.55rem;
+        }
+
+        .wsp-quill-editor .ql-editor li {
+            margin-bottom: 0.4rem;
+        }
+
+        .wsp-quill-editor .ql-editor blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.2rem;
+            border-left: 4px solid #0f766e;
+            border-radius: 0 16px 16px 0;
+            background: linear-gradient(90deg, rgba(204, 251, 241, 0.7) 0%, rgba(240, 253, 250, 0.92) 100%);
+            color: #134e4a;
+            font-style: normal;
+        }
+
+        .wsp-quill-editor .ql-editor a {
+            color: #0f766e;
+            text-decoration: underline;
+            text-decoration-thickness: 0.08em;
+            text-underline-offset: 0.16em;
+        }
+
+        .wsp-quill-editor .ql-editor code {
+            font-family: "SFMono-Regular", ui-monospace, monospace;
+            font-size: 0.9em;
+            background: rgba(226, 232, 240, 0.85);
+            border-radius: 8px;
+            padding: 0.15rem 0.35rem;
+        }
+
+        .wsp-quill-editor .ql-editor pre.ql-syntax {
+            margin: 1.4rem 0;
+            padding: 1rem 1.15rem;
+            border-radius: 18px;
+            background: #0f172a;
+            color: #e2e8f0;
+            overflow-x: auto;
         }
 
         .wsp-quill-editor .ql-editor img {
-            border-radius: 10px;
-            margin: 1rem 0;
+            display: block;
+            border-radius: 18px;
+            margin: 1.35rem auto;
             max-width: 100%;
             height: auto;
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+        }
+
+        .wsp-quill-editor .ql-editor .ql-align-center img {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .wsp-quill-editor .ql-editor .ql-align-right img {
+            margin-left: auto;
+            margin-right: 0;
         }
 
         .wsp-quill-status {
-            margin-top: .45rem;
-            font-size: .82rem;
+            margin-top: 0.6rem;
+            font-size: 0.83rem;
             color: #334155;
         }
 
@@ -189,6 +317,7 @@
 
                 const html = this.quill.root.innerHTML;
                 this.state = html === '<p><br></p>' ? null : html;
+                this.announceChange();
             },
 
             async selectAndUploadImage(config) {
@@ -314,6 +443,12 @@
                 this.statusTimeout = setTimeout(() => {
                     this.statusMessage = null;
                 }, 5000);
+            },
+
+            announceChange() {
+                this.$root.dispatchEvent(new CustomEvent('news-post-editor-dirty', {
+                    bubbles: true,
+                }));
             },
         });
     </script>

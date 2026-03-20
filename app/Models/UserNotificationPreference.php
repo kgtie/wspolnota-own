@@ -24,6 +24,8 @@ class UserNotificationPreference extends Model
         'parish_approval_status_email',
         'auth_security_push',
         'auth_security_email',
+        'manual_messages_push',
+        'manual_messages_email',
     ];
 
     protected function casts(): array
@@ -41,6 +43,8 @@ class UserNotificationPreference extends Model
             'parish_approval_status_email' => 'boolean',
             'auth_security_push' => 'boolean',
             'auth_security_email' => 'boolean',
+            'manual_messages_push' => 'boolean',
+            'manual_messages_email' => 'boolean',
         ];
     }
 

@@ -5,6 +5,7 @@ namespace App\Support\Reports;
 use App\Mail\ParishPriestWeeklyDigestMessage;
 use App\Models\Parish;
 use App\Models\User;
+use App\Support\Notifications\NotificationPreferenceResolver;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Mail;
 
@@ -12,6 +13,7 @@ class ParishPriestWeeklyDigestSender
 {
     public function __construct(
         private readonly ParishPriestWeeklyDigestBuilder $builder,
+        private readonly NotificationPreferenceResolver $preferences,
     ) {}
 
     /**
@@ -25,10 +27,12 @@ class ParishPriestWeeklyDigestSender
         ?User $actor = null,
     ): array {
         $recipients = $parish->admins()
+            ->with('notificationPreference')
             ->where('users.status', 'active')
             ->where('users.role', '>=', 1)
             ->whereNotNull('users.email')
             ->get()
+            ->filter(fn (User $user): bool => $this->preferences->wantsEmail($user, 'manual_messages'))
             ->unique(fn (User $user): string => mb_strtolower((string) $user->email))
             ->values();
 

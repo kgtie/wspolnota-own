@@ -32,6 +32,9 @@ class UpdateNotificationPreferencesRequest extends FormRequest
             'auth_security' => ['required', 'array'],
             'auth_security.push' => ['required', 'boolean'],
             'auth_security.email' => ['required', 'boolean'],
+            'manual_messages' => ['sometimes', 'array'],
+            'manual_messages.push' => ['required_with:manual_messages', 'boolean'],
+            'manual_messages.email' => ['required_with:manual_messages', 'boolean'],
         ];
     }
 }

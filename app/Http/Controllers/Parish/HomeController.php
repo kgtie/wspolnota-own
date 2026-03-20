@@ -7,7 +7,6 @@ use App\Models\AnnouncementSet;
 use App\Models\Parish;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -15,17 +14,22 @@ class HomeController extends Controller
     public function index(Parish $subdomain): View
     {
         $parish = $subdomain;
+        $publicContactVisibility = $parish->publicContactVisibility();
+        $publicContact = $parish->publicContactData();
+        $addressLines = $this->buildAddressLines($parish);
 
         $sharedViewData = [
             'parish' => $parish,
             'accentColor' => $this->normalizeAccentColor((string) $parish->getSetting('primary_color', '#b87333')),
             'avatarUrl' => $this->resolveParishMediaUrl($parish, 'avatar', 'thumb', 'avatar'),
             'coverImageUrl' => $this->resolveParishMediaUrl($parish, 'cover', 'preview', 'cover_image'),
-            'websiteUrl' => $this->normalizeWebsiteUrl($parish->website),
-            'addressLines' => collect([
-                $parish->street,
-                trim(collect([$parish->postal_code, $parish->city])->filter()->implode(' ')),
-            ])->filter()->values(),
+            'publicContactVisibility' => $publicContactVisibility,
+            'publicEmail' => $publicContact['email'],
+            'publicPhone' => $publicContact['phone'],
+            'publicWebsiteUrl' => $publicContact['website'],
+            'publicAddressLines' => $publicContact['address'] ? $addressLines : collect(),
+            'websiteUrl' => $publicContact['website'],
+            'addressLines' => $publicContactVisibility['address'] ? $addressLines : collect(),
         ];
 
         if ($parish->is_active) {
@@ -39,8 +43,16 @@ class HomeController extends Controller
 
         return view('parish.home.inactive', [
             ...$sharedViewData,
-            'suggestionMailtoUrl' => $this->buildSuggestionMailtoUrl($parish),
+            'suggestionMailtoUrl' => $this->buildSuggestionMailtoUrl($parish, $sharedViewData['publicEmail']),
         ]);
+    }
+
+    private function buildAddressLines(Parish $parish): Collection
+    {
+        return collect([
+            $parish->street,
+            trim(collect([$parish->postal_code, $parish->city])->filter()->implode(' ')),
+        ])->filter()->values();
     }
 
     private function currentAnnouncement(Parish $parish): ?AnnouncementSet
@@ -71,7 +83,7 @@ class HomeController extends Controller
     {
         return $parish->newsPosts()
             ->published()
-            ->withCount('comments')
+            ->withCount('visibleComments as comments_count')
             ->orderByDesc('is_pinned')
             ->orderByRaw('COALESCE(published_at, created_at) desc')
             ->limit(4)
@@ -103,17 +115,6 @@ class HomeController extends Controller
         return Storage::disk('profiles')->url($legacyPath);
     }
 
-    private function normalizeWebsiteUrl(?string $website): ?string
-    {
-        if (blank($website)) {
-            return null;
-        }
-
-        return Str::startsWith($website, ['http://', 'https://'])
-            ? $website
-            : "https://{$website}";
-    }
-
     private function normalizeAccentColor(string $color): string
     {
         return preg_match('/^#(?:[0-9a-fA-F]{3}){1,2}$/', $color)
@@ -121,9 +122,9 @@ class HomeController extends Controller
             : '#b87333';
     }
 
-    private function buildSuggestionMailtoUrl(Parish $parish): ?string
+    private function buildSuggestionMailtoUrl(Parish $parish, ?string $recipientEmail): ?string
     {
-        if (blank($parish->email)) {
+        if (blank($recipientEmail)) {
             return null;
         }
 
@@ -139,6 +140,6 @@ class HomeController extends Controller
             'Z modlitwą i pozdrowieniami.',
         ]));
 
-        return "mailto:{$parish->email}?subject={$subject}&body={$body}";
+        return "mailto:{$recipientEmail}?subject={$subject}&body={$body}";
     }
 }

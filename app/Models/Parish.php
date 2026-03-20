@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Settings\ParishSettings;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
@@ -126,7 +128,7 @@ class Parish extends Model implements HasMedia
      */
     public function getSetting(string $key, mixed $default = null): mixed
     {
-        return \App\Settings\ParishSettings::get($this->settings, $key, $default);
+        return ParishSettings::get($this->settings, $key, $default);
     }
 
     /**
@@ -137,6 +139,45 @@ class Parish extends Model implements HasMedia
         $settings = $this->settings ?? [];
         $settings[$key] = $value;
         $this->update(['settings' => $settings]);
+    }
+
+    public function publicContactVisibility(): array
+    {
+        return [
+            'email' => (bool) $this->getSetting('public_email', true),
+            'phone' => (bool) $this->getSetting('public_phone', true),
+            'website' => (bool) $this->getSetting('public_website', true),
+            'address' => (bool) $this->getSetting('public_address', true),
+        ];
+    }
+
+    public function publicContactData(): array
+    {
+        $visibility = $this->publicContactVisibility();
+
+        return [
+            'email' => $visibility['email'] ? $this->email : null,
+            'phone' => $visibility['phone'] ? $this->phone : null,
+            'website' => $visibility['website'] ? $this->normalizedWebsiteUrl() : null,
+            'address' => $visibility['address']
+                ? [
+                    'street' => $this->street,
+                    'postal_code' => $this->postal_code,
+                    'city' => $this->city,
+                ]
+                : null,
+        ];
+    }
+
+    public function normalizedWebsiteUrl(): ?string
+    {
+        if (blank($this->website)) {
+            return null;
+        }
+
+        return Str::startsWith($this->website, ['http://', 'https://'])
+            ? $this->website
+            : "https://{$this->website}";
     }
 
     // =========================================
@@ -224,6 +265,16 @@ class Parish extends Model implements HasMedia
             ->where('is_user_verified', false)
             ->whereNotNull('email_verified_at')
             ->count();
+    }
+
+    /**
+     * Ręcznie wpisywane osoby związane z parafią, widoczne publicznie i w API.
+     *
+     * @return array<int, array{name: string, title: string}>
+     */
+    public function getStaffMembersListAttribute(): array
+    {
+        return ParishSettings::normalizeStaffMembers($this->getSetting('staff_members', []));
     }
 
     /**

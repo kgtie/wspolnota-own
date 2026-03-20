@@ -2,10 +2,13 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Admin\Resources\AnnouncementSets\AnnouncementSetResource;
+use App\Filament\Admin\Resources\Masses\MassResource;
+use App\Filament\Admin\Resources\NewsPosts\NewsPostResource;
 use App\Models\Parish;
 use App\Settings\ParishSettings;
-use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -18,7 +21,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\HtmlString;
 
 class EditParishProfile extends EditTenantProfile
 {
@@ -39,8 +42,7 @@ class EditParishProfile extends EditTenantProfile
                         $this->basicInfoTab(),
                         $this->contactAndAddressTab(),
                         $this->mediaTab(),
-                        $this->notificationsTab(),
-                        $this->appSettingsTab(),
+                        $this->servicesStatusTab(),
                     ]),
             ]);
     }
@@ -142,12 +144,10 @@ class EditParishProfile extends EditTenantProfile
 
                         TextInput::make('slug')
                             ->label('Adres URL (slug)')
-                            ->required()
                             ->maxLength(100)
-                            ->unique(Parish::class, 'slug', ignoreRecord: true)
-                            ->alphaDash()
-                            ->helperText('Slug parafii wykorzystywany jest jako publiczny identyfikator parafii.')
-                            ->dehydrateStateUsing(fn (string $state): string => Str::lower($state)),
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->helperText('Slug jest ustalany przy wdrożeniu parafii i nie podlega edycji z poziomu panelu proboszcza.'),
                     ]),
 
                 Section::make('Przynależność kościelna')
@@ -166,6 +166,46 @@ class EditParishProfile extends EditTenantProfile
                             ->placeholder('np. Dekanat Wiskitki')
                             ->maxLength(255),
                     ]),
+
+                Section::make('Osoby w parafii')
+                    ->description('Lista osób widocznych publicznie przy parafii. Nie musi być powiązana z kontami użytkowników.')
+                    ->icon('heroicon-o-user-group')
+                    ->schema([
+                        Repeater::make('ps_staff_members')
+                            ->label('Skład duszpasterski')
+                            ->default([])
+                            ->addActionLabel('Dodaj osobę')
+                            ->reorderableWithButtons()
+                            ->collapsible()
+                            ->itemLabel(function (array $state): ?string {
+                                $name = trim((string) ($state['name'] ?? ''));
+                                $title = trim((string) ($state['title'] ?? ''));
+
+                                if ($name === '' && $title === '') {
+                                    return null;
+                                }
+
+                                if ($name !== '' && $title !== '') {
+                                    return "{$name} - {$title}";
+                                }
+
+                                return $name !== '' ? $name : $title;
+                            })
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('Imię i nazwisko')
+                                    ->placeholder('np. ks. Piotr Nowak')
+                                    ->required()
+                                    ->maxLength(120),
+
+                                TextInput::make('title')
+                                    ->label('Tytuł / rola')
+                                    ->placeholder('np. wikariusz')
+                                    ->required()
+                                    ->maxLength(120),
+                            ])
+                            ->columns(2),
+                    ]),
             ]);
     }
 
@@ -179,7 +219,7 @@ class EditParishProfile extends EditTenantProfile
             ->icon('heroicon-o-map-pin')
             ->schema([
                 Section::make('Dane kontaktowe')
-                    ->description('Telefon, email i strona internetowa parafii.')
+                    ->description('Te dane są wymagane dla pełnego profilu parafii. Widoczność publiczną ustawisz osobno poniżej.')
                     ->icon('heroicon-o-phone')
                     ->columns(3)
                     ->schema([
@@ -187,30 +227,60 @@ class EditParishProfile extends EditTenantProfile
                             ->label('Email parafii')
                             ->email()
                             ->placeholder('parafia@example.pl')
+                            ->required()
                             ->maxLength(255),
 
                         TextInput::make('phone')
                             ->label('Telefon')
                             ->tel()
                             ->placeholder('+48 123 456 789')
+                            ->required()
                             ->maxLength(20),
 
                         TextInput::make('website')
                             ->label('Strona internetowa')
                             ->url()
                             ->placeholder('https://www.parafia-wiskitki.pl')
+                            ->required()
                             ->maxLength(255)
                             ->suffixIcon('heroicon-m-globe-alt'),
                     ]),
 
+                Section::make('Widoczność danych na stronie publicznej')
+                    ->description('Każdy element możesz udostępnić publicznie albo zostawić wyłącznie do użytku wewnętrznego.')
+                    ->icon('heroicon-o-eye')
+                    ->columns(2)
+                    ->schema([
+                        Toggle::make('ps_public_email')
+                            ->label('Email publiczny')
+                            ->default(true)
+                            ->helperText('Pozwala pokazywać adres email na publicznej stronie parafii.'),
+
+                        Toggle::make('ps_public_phone')
+                            ->label('Telefon publiczny')
+                            ->default(true)
+                            ->helperText('Pozwala pokazywać numer telefonu na publicznej stronie parafii.'),
+
+                        Toggle::make('ps_public_website')
+                            ->label('Strona WWW publiczna')
+                            ->default(true)
+                            ->helperText('Pozwala pokazywać link do zewnętrznej strony internetowej parafii.'),
+
+                        Toggle::make('ps_public_address')
+                            ->label('Adres publiczny')
+                            ->default(true)
+                            ->helperText('Pozwala pokazywać ulicę i kod pocztowy parafii na stronie publicznej.'),
+                    ]),
+
                 Section::make('Adres')
-                    ->description('Adres fizyczny parafii.')
+                    ->description('Adres fizyczny parafii. Dane są wymagane, ale ich publikację kontroluje przełącznik powyżej.')
                     ->icon('heroicon-o-map-pin')
                     ->columns(3)
                     ->schema([
                         TextInput::make('street')
                             ->label('Ulica i numer')
                             ->placeholder('ul. Kościelna 1')
+                            ->required()
                             ->maxLength(255)
                             ->columnSpan(2),
 
@@ -218,6 +288,7 @@ class EditParishProfile extends EditTenantProfile
                             ->label('Kod pocztowy')
                             ->placeholder('96-315')
                             ->mask('99-999')
+                            ->required()
                             ->maxLength(10),
 
                         TextInput::make('city')
@@ -270,128 +341,99 @@ class EditParishProfile extends EditTenantProfile
     }
 
     // =========================================
-    // TAB 4: POWIADOMIENIA
+    // TAB 4: STAN USŁUG
     // =========================================
 
-    protected function notificationsTab(): Tab
+    protected function servicesStatusTab(): Tab
     {
-        return Tab::make('Powiadomienia')
-            ->icon('heroicon-o-bell-alert')
+        return Tab::make('Stan usług')
+            ->icon('heroicon-o-bolt')
             ->schema([
-                Section::make('Powiadomienia push')
-                    ->description('Ustawienia powiadomień wysyłanych do parafian.')
-                    ->icon('heroicon-o-device-phone-mobile')
-                    ->columns(2)
+                Section::make('Jak działa usługa dla tej parafii')
+                    ->description('To jest ekran informacyjny. Konkretne działania wykonujesz w odpowiednich modułach panelu.')
+                    ->icon('heroicon-o-information-circle')
                     ->schema([
-                        Toggle::make('ps_notifications_enabled')
-                            ->label('Powiadomienia włączone')
-                            ->helperText('Główny przełącznik powiadomień push dla tej parafii.')
-                            ->columnSpanFull(),
-
-                        TextInput::make('ps_mass_reminder_hours_before')
-                            ->label('Przypomnienie o mszy (godziny przed)')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(24)
-                            ->suffix('godz.')
-                            ->helperText('Na ile godzin przed mszą wysłać push do zapisanych parafian.'),
-
-                        Toggle::make('ps_announcements_push_on_publish')
-                            ->label('Push po publikacji ogłoszeń')
-                            ->helperText('Wyślij powiadomienie do parafian po opublikowaniu nowych ogłoszeń.'),
+                        Placeholder::make('service_status_intro')
+                            ->hiddenLabel()
+                            ->content(fn (): HtmlString => new HtmlString(
+                                '<div class="rounded-2xl border border-primary-200/70 bg-primary-50/70 px-4 py-4 text-sm leading-7 text-gray-700">'.
+                                '<p class="font-semibold text-gray-950">Usługa Wspólnota działa tutaj warstwowo.</p>'.
+                                '<p class="mt-2">Publikacje, przypomnienia i automaty uruchamiają się z harmonogramu systemowego, a proboszcz zarządza treściami bezpośrednio w modułach: ogłoszenia, msze, aktualności i kancelaria online.</p>'.
+                                '</div>'
+                            )),
                     ]),
 
-                Section::make('Cotygodniowe przypomnienie')
-                    ->description('Automatyczny email przypominający o uzupełnieniu mszy i ogłoszeń.')
-                    ->icon('heroicon-o-calendar-days')
-                    ->columns(2)
-                    ->collapsible()
-                    ->schema([
-                        Toggle::make('ps_weekly_reminder_enabled')
-                            ->label('Włącz cotygodniowe przypomnienie')
-                            ->columnSpanFull(),
-
-                        Select::make('ps_weekly_reminder_day')
-                            ->label('Dzień wysyłki')
-                            ->options([
-                                'monday' => 'Poniedziałek',
-                                'tuesday' => 'Wtorek',
-                                'wednesday' => 'Środa',
-                                'thursday' => 'Czwartek',
-                                'friday' => 'Piątek',
-                                'saturday' => 'Sobota',
-                                'sunday' => 'Niedziela',
-                            ]),
-
-                        TextInput::make('ps_weekly_reminder_hour')
-                            ->label('Godzina wysyłki')
-                            ->placeholder('17:00')
-                            ->maxLength(5),
-                    ]),
-            ]);
-    }
-
-    // =========================================
-    // TAB 5: USTAWIENIA APLIKACJI
-    // =========================================
-
-    protected function appSettingsTab(): Tab
-    {
-        return Tab::make('Ustawienia aplikacji')
-            ->icon('heroicon-o-cog-6-tooth')
-            ->schema([
-                Section::make('Aktualności i komentarze')
-                    ->description('Jak działają aktualności i komentarze w aplikacji.')
-                    ->icon('heroicon-o-newspaper')
+                Section::make('Automatyczny harmonogram')
+                    ->description('Najważniejsze procesy zaplanowane dla parafii oraz ich rzeczywiste godziny działania.')
+                    ->icon('heroicon-o-clock')
                     ->columns(2)
                     ->schema([
-                        Toggle::make('ps_news_comments_enabled')
-                            ->label('Komentarze pod aktualnościami')
-                            ->helperText('Pozwól parafianom komentować wpisy.'),
+                        Placeholder::make('service_push_and_email')
+                            ->label('Push i email do parafian')
+                            ->content(fn (): HtmlString => $this->renderBulletList([
+                                'Przypomnienia o zapisanych mszach wychodzą automatycznie 24h, 8h i 1h przed celebracją.',
+                                'Poranny email z dzisiejszymi mszami wychodzi codziennie o 05:00.',
+                                'Po publikacji ogłoszeń i aktualności system czeka około 1 godziny, a następnie uruchamia powiadomienia push i email.',
+                            ])),
 
-                        Toggle::make('ps_news_comments_require_verification')
-                            ->label('Tylko zatwierdzeni mogą komentować')
-                            ->helperText('Wymaga zatwierdzenia konta przez proboszcza.'),
+                        Placeholder::make('service_editorial_schedule')
+                            ->label('Publikacje i automaty redakcyjne')
+                            ->content(function (): HtmlString {
+                                $record = $this->tenant;
+
+                                return $this->renderBulletList([
+                                    'Zaplanowane aktualności publikują się automatycznie co 5 minut.',
+                                    'Streszczenia AI dla opublikowanych ogłoszeń bez podsumowania są generowane codziennie o 00:07.'
+                                        .($record->getSetting('announcements_ai_summary', true) ? '' : ' W tej parafii automatyczne streszczenia AI są obecnie wyłączone.'),
+                                    'Cotygodniowa checklista dla proboszcza jest wysyłana w sobotę o 12:00.',
+                                ]);
+                            }),
                     ]),
 
-                Section::make('Ogłoszenia')
-                    ->description('Ustawienia związane z ogłoszeniami mszalnymi.')
-                    ->icon('heroicon-o-megaphone')
-                    ->schema([
-                        Toggle::make('ps_announcements_ai_summary')
-                            ->label('Streszczenie AI')
-                            ->helperText('Automatycznie generuj streszczenie ogłoszeń za pomocą AI.'),
-                    ]),
-
-                Section::make('Kancelaria online')
-                    ->description('Ustawienia modułu kancelarii.')
-                    ->icon('heroicon-o-chat-bubble-left-right')
+                Section::make('Bieżący stan funkcji')
+                    ->description('Najważniejsze przełączniki działania usługi dla tej parafii, bez warstwy edycji.')
+                    ->icon('heroicon-o-signal')
                     ->columns(2)
                     ->schema([
-                        Toggle::make('ps_office_enabled')
-                            ->label('Kancelaria włączona')
-                            ->helperText('Udostępnij moduł kancelarii online parafianom.'),
+                        Placeholder::make('service_feature_flags')
+                            ->label('Aktywne moduły')
+                            ->content(function (): HtmlString {
+                                $record = $this->tenant;
 
-                        Toggle::make('ps_office_file_upload_enabled')
-                            ->label('Wysyłanie plików w kancelarii')
-                            ->helperText('Pozwól na wymianę plików w rozmowach kancelarii.'),
-                    ]),
+                                return $this->renderBulletList([
+                                    'Komentarze pod aktualnościami: '.$this->formatStatusLabel((bool) $record->getSetting('news_comments_enabled', true), 'aktywne', 'wyłączone').'.',
+                                    'Komentowanie tylko przez zatwierdzonych parafian: '.$this->formatStatusLabel((bool) $record->getSetting('news_comments_require_verification', true), 'tak', 'nie').'.',
+                                    'Kancelaria online: '.$this->formatStatusLabel((bool) $record->getSetting('office_enabled', true), 'aktywna', 'wyłączona').'.',
+                                    'Załączniki w kancelarii: '.$this->formatStatusLabel((bool) $record->getSetting('office_file_upload_enabled', true), 'aktywne', 'wyłączone').'.',
+                                ]);
+                            }),
 
-                Section::make('Wygląd aplikacji')
-                    ->description('Personalizacja wyglądu aplikacji dla parafian.')
-                    ->icon('heroicon-o-paint-brush')
-                    ->columns(2)
-                    ->collapsible()
-                    ->schema([
-                        ColorPicker::make('ps_primary_color')
-                            ->label('Kolor główny'),
-
-                        Select::make('ps_theme')
-                            ->label('Motyw')
-                            ->options([
-                                'light' => 'Jasny',
-                                'dark' => 'Ciemny',
-                            ]),
+                        Placeholder::make('service_where_to_manage')
+                            ->label('Gdzie zarządzać poszczególnymi obszarami')
+                            ->content(fn (): HtmlString => new HtmlString(
+                                '<div class="space-y-3 text-sm leading-7">'.
+                                $this->renderAdminLinkRow(
+                                    AnnouncementSetResource::getUrl('index'),
+                                    'Ogłoszenia duszpasterskie',
+                                    'tutaj przygotowujesz, publikujesz i poprawiasz zestawy ogłoszeń.'
+                                ).
+                                $this->renderAdminLinkRow(
+                                    MassResource::getUrl('index'),
+                                    'Msze święte',
+                                    'tutaj uzupełniasz kalendarz celebracji i intencji.'
+                                ).
+                                $this->renderAdminLinkRow(
+                                    NewsPostResource::getUrl('index'),
+                                    'Aktualności parafii',
+                                    'tutaj publikujesz wpisy, planujesz publikację i zarządzasz komentarzami.'
+                                ).
+                                $this->renderAdminLinkRow(
+                                    OfficeInbox::getUrl(),
+                                    'Kancelaria online',
+                                    'tutaj odpowiadasz parafianom i prowadzisz rozmowy kancelaryjne.'
+                                ).
+                                '</div>'
+                            )),
                     ]),
             ]);
     }
@@ -437,7 +479,9 @@ class EditParishProfile extends EditTenantProfile
             $formKey = self::SETTINGS_PREFIX . $settingKey;
 
             if (array_key_exists($formKey, $data)) {
-                $newSettings[$settingKey] = $data[$formKey];
+                $newSettings[$settingKey] = $settingKey === 'staff_members'
+                    ? ParishSettings::normalizeStaffMembers($data[$formKey])
+                    : $data[$formKey];
                 unset($data[$formKey]);
             }
         }
@@ -461,5 +505,32 @@ class EditParishProfile extends EditTenantProfile
             ->success()
             ->title('Zapisano')
             ->body('Dane parafii zostały zaktualizowane.');
+    }
+
+    private function renderBulletList(array $items): HtmlString
+    {
+        $itemsHtml = collect($items)
+            ->map(function (string $item): string {
+                return '<li class="flex items-start gap-3">'.
+                    '<span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary-500"></span>'.
+                    '<span>'.e($item).'</span>'.
+                    '</li>';
+            })
+            ->implode('');
+
+        return new HtmlString('<ul class="space-y-3 text-sm leading-7 text-gray-700">'.$itemsHtml.'</ul>');
+    }
+
+    private function formatStatusLabel(bool $enabled, string $enabledLabel, string $disabledLabel): string
+    {
+        return $enabled ? $enabledLabel : $disabledLabel;
+    }
+
+    private function renderAdminLinkRow(string $url, string $label, string $description): string
+    {
+        return '<div class="rounded-2xl border border-gray-200 bg-white px-4 py-3">'.
+            '<a href="'.e($url).'" class="font-semibold text-primary-700 hover:text-primary-600">'.e($label).'</a>'.
+            '<p class="mt-1 text-gray-600">'.e(ucfirst($description)).'</p>'.
+            '</div>';
     }
 }

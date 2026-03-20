@@ -331,6 +331,7 @@ class AnnouncementSetsTable
                         'parish_id' => (string) $record->parish_id,
                         'source' => 'superadmin_manual',
                     ],
+                    preferenceTopic: 'announcements',
                 );
 
                 Notification::make()
@@ -375,6 +376,7 @@ class AnnouncementSetsTable
                     subjectLine: (string) $data['subject'],
                     messageBody: (string) $data['body'],
                     actor: $actor instanceof User ? $actor : null,
+                    options: ['preference_topic' => 'announcements'],
                 );
 
                 Notification::make()
@@ -619,6 +621,7 @@ class AnnouncementSetsTable
                         'parish_ids' => json_encode($parishIds->all(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                         'source' => 'superadmin_bulk',
                     ],
+                    preferenceTopic: 'announcements',
                 );
 
                 Notification::make()
@@ -669,6 +672,7 @@ class AnnouncementSetsTable
                     subjectLine: (string) $data['subject'],
                     messageBody: (string) $data['body'],
                     actor: $actor instanceof User ? $actor : null,
+                    options: ['preference_topic' => 'announcements'],
                 );
 
                 Notification::make()

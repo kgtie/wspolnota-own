@@ -5,9 +5,7 @@ namespace App\Filament\Admin\Resources\NewsPosts;
 use App\Filament\Admin\Resources\NewsPosts\Pages\CreateNewsPost;
 use App\Filament\Admin\Resources\NewsPosts\Pages\EditNewsPost;
 use App\Filament\Admin\Resources\NewsPosts\Pages\ListNewsPosts;
-use App\Filament\Admin\Resources\NewsPosts\Pages\ViewNewsPost;
 use App\Filament\Admin\Resources\NewsPosts\Schemas\NewsPostForm;
-use App\Filament\Admin\Resources\NewsPosts\Schemas\NewsPostInfolist;
 use App\Filament\Admin\Resources\NewsPosts\Tables\NewsPostsTable;
 use App\Models\NewsPost;
 use BackedEnum;
@@ -42,11 +40,6 @@ class NewsPostResource extends Resource
         return NewsPostForm::configure($schema);
     }
 
-    public static function infolist(Schema $schema): Schema
-    {
-        return NewsPostInfolist::configure($schema);
-    }
-
     public static function table(Table $table): Table
     {
         return NewsPostsTable::configure($table);
@@ -55,7 +48,8 @@ class NewsPostResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['createdBy', 'updatedBy', 'media']);
+            ->with(['createdBy', 'updatedBy', 'media'])
+            ->withCount('visibleComments as comments_count');
     }
 
     public static function getRelations(): array
@@ -70,7 +64,6 @@ class NewsPostResource extends Resource
         return [
             'index' => ListNewsPosts::route('/'),
             'create' => CreateNewsPost::route('/create'),
-            'view' => ViewNewsPost::route('/{record}'),
             'edit' => EditNewsPost::route('/{record}/edit'),
         ];
     }

@@ -24,7 +24,8 @@
             ],
         ]);
 
-        $priestInterestModalOpen = $errors->priestInterest->isNotEmpty();
+        $errorBag = $errors ?? new \Illuminate\Support\ViewErrorBag();
+        $priestInterestModalOpen = $errorBag->getBag('priestInterest')->isNotEmpty();
     @endphp
 
     <section class="relative overflow-hidden rounded-[2.2rem] border border-white/60 shadow-[0_36px_100px_rgba(58,40,24,0.14)]">
@@ -89,28 +90,28 @@
                     </div>
 
                     <dl class="mt-6 space-y-4 text-sm">
-                        @if ($addressLines->isNotEmpty())
+                        @if ($publicAddressLines->isNotEmpty())
                             <div>
                                 <dt class="font-semibold text-stone-900">Adres</dt>
-                                <dd class="mt-1 leading-7 text-stone-600">{{ $addressLines->implode(', ') }}</dd>
+                                <dd class="mt-1 leading-7 text-stone-600">{{ $publicAddressLines->implode(', ') }}</dd>
                             </div>
                         @endif
 
-                        @if ($parish->email)
+                        @if ($publicEmail)
                             <div>
                                 <dt class="font-semibold text-stone-900">Email kontaktowy</dt>
                                 <dd class="mt-1 text-stone-600">
-                                    <a href="mailto:{{ $parish->email }}" class="transition hover:text-stone-950">{{ $parish->email }}</a>
+                                    <a href="mailto:{{ $publicEmail }}" class="transition hover:text-stone-950">{{ $publicEmail }}</a>
                                 </dd>
                             </div>
                         @endif
 
-                        @if ($websiteUrl)
+                        @if ($publicWebsiteUrl)
                             <div>
                                 <dt class="font-semibold text-stone-900">Dotychczasowa strona</dt>
                                 <dd class="mt-1 text-stone-600">
-                                    <a href="{{ $websiteUrl }}" target="_blank" rel="noreferrer" class="transition hover:text-stone-950">
-                                        {{ preg_replace('#^https?://#', '', $websiteUrl) }}
+                                    <a href="{{ $publicWebsiteUrl }}" target="_blank" rel="noreferrer" class="transition hover:text-stone-950">
+                                        {{ preg_replace('#^https?://#', '', $publicWebsiteUrl) }}
                                     </a>
                                 </dd>
                             </div>
@@ -194,24 +195,57 @@
                         </div>
                     @endif
 
-                    @if ($parish->phone)
+                    @if ($publicPhone)
                         <div>
                             <dt class="font-semibold text-stone-900">Telefon</dt>
                             <dd class="mt-1 text-stone-600">
-                                <a href="tel:{{ preg_replace('/\s+/', '', $parish->phone) }}" class="transition hover:text-stone-950">{{ $parish->phone }}</a>
+                                <a href="tel:{{ preg_replace('/\s+/', '', $publicPhone) }}" class="transition hover:text-stone-950">{{ $publicPhone }}</a>
                             </dd>
                         </div>
                     @endif
 
-                    @if ($parish->email)
+                    @if ($publicEmail)
                         <div>
                             <dt class="font-semibold text-stone-900">Email</dt>
                             <dd class="mt-1 text-stone-600">
-                                <a href="mailto:{{ $parish->email }}" class="transition hover:text-stone-950">{{ $parish->email }}</a>
+                                <a href="mailto:{{ $publicEmail }}" class="transition hover:text-stone-950">{{ $publicEmail }}</a>
                             </dd>
                         </div>
                     @endif
                 </dl>
+            </section>
+
+            @if (! empty($parish->staff_members_list))
+                <section class="parish-surface p-6">
+                    <p class="text-xs font-semibold tracking-[0.22em] text-stone-500 uppercase">Osoby w parafii</p>
+                    <h2 class="mt-2 font-display text-2xl text-stone-950">Duszpasterze i posługa</h2>
+                    <p class="mt-4 text-sm leading-7 text-stone-600">
+                        Nawet przed pełnym uruchomieniem strony parafia może pokazać podstawowy skład duszpasterski.
+                    </p>
+
+                    <div class="mt-5 space-y-3">
+                        @foreach ($parish->staff_members_list as $member)
+                            <article class="rounded-[1.6rem] border border-stone-200/80 bg-white/80 px-4 py-4 shadow-[0_16px_36px_rgba(58,40,24,0.05)]">
+                                <p class="text-base font-semibold text-stone-950">{{ $member['name'] }}</p>
+                                <p class="mt-1 text-sm text-stone-600">{{ $member['title'] }}</p>
+                            </article>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            <section class="parish-surface p-6">
+                <p class="text-xs font-semibold tracking-[0.22em] text-stone-500 uppercase">Aplikacja mobilna</p>
+                <h2 class="mt-2 font-display text-2xl text-stone-950">Wspólnota jest dostępna także w sklepach mobilnych</h2>
+                <p class="mt-4 text-sm leading-7 text-stone-600">
+                    Nawet jeśli ta parafia nie uruchomiła jeszcze pełnej strony publicznej, sama usługa Wspólnota jest przygotowana także jako aplikacja mobilna dla wiernych.
+                </p>
+
+                <div class="mt-5">
+                    @include('parish.partials.store-badges', [
+                        'wrapperClass' => 'grid gap-2 sm:grid-cols-2',
+                    ])
+                </div>
             </section>
         </aside>
     </div>
@@ -227,16 +261,18 @@
                     '@id' => route('parish.home', ['subdomain' => $parish]).'#church',
                     'name' => $parish->name,
                     'url' => route('parish.home', ['subdomain' => $parish]),
-                    'email' => $parish->email,
-                    'telephone' => $parish->phone,
+                    'email' => $publicEmail,
+                    'telephone' => $publicPhone,
                     'image' => array_values(array_filter([$coverImageUrl ?: null, $avatarUrl ?: null])),
-                    'address' => [
-                        '@type' => 'PostalAddress',
-                        'streetAddress' => $parish->street,
-                        'postalCode' => $parish->postal_code,
-                        'addressLocality' => $parish->city,
-                        'addressCountry' => 'PL',
-                    ],
+                    'address' => $publicAddressLines->isNotEmpty()
+                        ? [
+                            '@type' => 'PostalAddress',
+                            'streetAddress' => $parish->street,
+                            'postalCode' => $parish->postal_code,
+                            'addressLocality' => $parish->city,
+                            'addressCountry' => 'PL',
+                        ]
+                        : null,
                 ],
                 [
                     '@type' => 'WebPage',
@@ -303,8 +339,8 @@
                 @csrf
                 <input type="hidden" name="confirmation" value="1">
 
-                @if ($errors->priestInterest->has('confirmation'))
-                    <p class="landing-error">{{ $errors->priestInterest->first('confirmation') }}</p>
+                @if ($errorBag->getBag('priestInterest')->has('confirmation'))
+                    <p class="landing-error">{{ $errorBag->getBag('priestInterest')->first('confirmation') }}</p>
                 @endif
 
                 <div class="rounded-[1.6rem] border border-stone-200/80 bg-stone-50 p-5">
@@ -318,16 +354,16 @@
                             <dt class="font-semibold text-stone-900">Miejscowość</dt>
                             <dd class="mt-1">{{ $parish->city }}</dd>
                         </div>
-                        @if ($parish->email)
+                        @if ($publicEmail)
                             <div>
                                 <dt class="font-semibold text-stone-900">Email</dt>
-                                <dd class="mt-1">{{ $parish->email }}</dd>
+                                <dd class="mt-1">{{ $publicEmail }}</dd>
                             </div>
                         @endif
-                        @if ($parish->phone)
+                        @if ($publicPhone)
                             <div>
                                 <dt class="font-semibold text-stone-900">Telefon</dt>
-                                <dd class="mt-1">{{ $parish->phone }}</dd>
+                                <dd class="mt-1">{{ $publicPhone }}</dd>
                             </div>
                         @endif
                     </dl>

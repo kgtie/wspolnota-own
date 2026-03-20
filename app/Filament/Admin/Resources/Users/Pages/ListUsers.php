@@ -348,9 +348,7 @@ class ListUsers extends ListRecords
             return $query->whereRaw('1 = 0');
         }
 
-        return $query
-            ->where('users.role', 0)
-            ->where('users.home_parish_id', $tenantId);
+        return $query->where('users.home_parish_id', $tenantId);
     }
 
     protected static function scopeParishAdminsQuery(Builder $query): Builder

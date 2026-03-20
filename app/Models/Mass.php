@@ -62,6 +62,17 @@ class Mass extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (self $mass): void {
+            foreach (array_keys($mass->attributes) as $attribute) {
+                if (str_ends_with($attribute, '_count')) {
+                    unset($mass->attributes[$attribute]);
+                }
+            }
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

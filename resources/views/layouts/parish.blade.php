@@ -150,11 +150,11 @@
                         <p>{{ $addressLines->implode(', ') }}</p>
                     @endif
                     <div class="flex flex-wrap gap-x-4 gap-y-2">
-                        @if ($parish->email)
-                            <a href="mailto:{{ $parish->email }}" class="transition hover:text-stone-950">{{ $parish->email }}</a>
+                        @if ($publicEmail)
+                            <a href="mailto:{{ $publicEmail }}" class="transition hover:text-stone-950">{{ $publicEmail }}</a>
                         @endif
-                        @if ($parish->phone)
-                            <a href="tel:{{ preg_replace('/\s+/', '', $parish->phone) }}" class="transition hover:text-stone-950">{{ $parish->phone }}</a>
+                        @if ($publicPhone)
+                            <a href="tel:{{ preg_replace('/\s+/', '', $publicPhone) }}" class="transition hover:text-stone-950">{{ $publicPhone }}</a>
                         @endif
                     </div>
                 </div>

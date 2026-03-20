@@ -9,13 +9,18 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class EmailVerificationController extends Controller
 {
     public function __invoke(Request $request, Parish $subdomain, int $id, string $hash): Response
     {
         $parish = $subdomain;
+        $publicContactVisibility = $parish->publicContactVisibility();
+        $publicContact = $parish->publicContactData();
+        $addressLines = collect([
+            $parish->street,
+            trim(collect([$parish->postal_code, $parish->city])->filter()->implode(' ')),
+        ])->filter()->values();
         $user = User::query()
             ->whereKey($id)
             ->where('home_parish_id', $parish->getKey())
@@ -40,11 +45,12 @@ class EmailVerificationController extends Controller
             'accentColor' => $this->normalizeAccentColor((string) $parish->getSetting('primary_color', '#b87333')),
             'avatarUrl' => $this->resolveParishMediaUrl($parish, 'avatar', 'thumb', 'avatar'),
             'coverImageUrl' => $this->resolveParishMediaUrl($parish, 'cover', 'preview', 'cover_image'),
-            'websiteUrl' => $this->normalizeWebsiteUrl($parish->website),
-            'addressLines' => collect([
-                $parish->street,
-                trim(collect([$parish->postal_code, $parish->city])->filter()->implode(' ')),
-            ])->filter()->values(),
+            'publicEmail' => $publicContact['email'],
+            'publicPhone' => $publicContact['phone'],
+            'publicWebsiteUrl' => $publicContact['website'],
+            'publicAddressLines' => $publicContact['address'] ? $addressLines : collect(),
+            'websiteUrl' => $publicContact['website'],
+            'addressLines' => $publicContactVisibility['address'] ? $addressLines : collect(),
             'status' => $status,
             'user' => $user->fresh(),
         ], $httpStatus);
@@ -73,17 +79,6 @@ class EmailVerificationController extends Controller
         }
 
         return Storage::disk('profiles')->url($legacyPath);
-    }
-
-    private function normalizeWebsiteUrl(?string $website): ?string
-    {
-        if (blank($website)) {
-            return null;
-        }
-
-        return Str::startsWith($website, ['http://', 'https://'])
-            ? $website
-            : "https://{$website}";
     }
 
     private function normalizeAccentColor(string $color): string

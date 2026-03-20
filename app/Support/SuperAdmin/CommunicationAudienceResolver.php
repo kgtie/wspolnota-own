@@ -5,6 +5,7 @@ namespace App\Support\SuperAdmin;
 use App\Models\MailingMail;
 use App\Models\User;
 use App\Support\Notifications\NotificationPreferenceResolver;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class CommunicationAudienceResolver
@@ -14,66 +15,16 @@ class CommunicationAudienceResolver
     public function resolveEmailRecipients(array $payload): Collection
     {
         $scope = (string) ($payload['recipient_scope'] ?? 'single_users');
-        $usersQuery = User::query()
-            ->with('notificationPreference')
-            ->select(['id', 'email', 'full_name', 'name', 'status', 'role', 'is_user_verified', 'email_verified_at', 'home_parish_id']);
-
-        if (! (bool) ($payload['include_inactive_users'] ?? false)) {
-            $usersQuery->where('status', 'active');
-        }
-
-        if ((bool) ($payload['only_verified_users'] ?? false)) {
-            $usersQuery->where('is_user_verified', true);
-        }
-
-        if ((bool) ($payload['only_email_verified_users'] ?? false)) {
-            $usersQuery->whereNotNull('email_verified_at');
-        }
-
-        if ((bool) ($payload['only_users_with_push_devices'] ?? false)) {
-            $usersQuery->whereHas('devices', fn ($query) => $query->pushable());
-        }
-
         $rows = match ($scope) {
-            'single_users' => $this->singleUsersRecipients($usersQuery, (array) ($payload['selected_user_ids'] ?? [])),
-            'parishioners_all' => $this->usersByRoleRecipients($usersQuery, 0),
-            'admins_all' => $this->usersByRoleRecipients($usersQuery, 1),
-            'admins_and_superadmins' => $this->adminsAndSuperadminsRecipients($usersQuery),
-            'users_by_parish' => $this->usersByParishRecipients($usersQuery, $payload['target_parish_id'] ?? null),
-            'verified_users' => $this->verifiedUsersRecipients($usersQuery),
             'mailing_list' => $this->mailingListRecipients(
                 $payload['target_mailing_list_id'] ?? null,
                 (bool) ($payload['mailing_only_confirmed'] ?? true),
             ),
-            'users_with_push_devices' => $this->usersWithPushDevicesRecipients($usersQuery),
-            'email_topic_opt_in' => $this->emailTopicRecipients(
-                $usersQuery,
-                (string) ($payload['email_preference_topic'] ?? 'announcements'),
-            ),
-            'all_users' => $this->allUsersRecipients($usersQuery),
             'custom_emails' => $this->customEmailRecipients((string) ($payload['custom_emails'] ?? '')),
-            default => collect(),
+            default => $this->resolveUserRecipients($payload)
+                ->filter(fn (User $user): bool => filled($user->email) && $this->preferences->wantsEmail($user, $this->resolvePreferenceTopic($payload)))
+                ->map(fn (User $user): array => $this->mapUserRecipient($user)),
         };
-
-        if ((bool) ($payload['respect_email_preferences'] ?? false)) {
-            $topic = (string) ($payload['email_preference_topic'] ?? 'announcements');
-
-            $rows = $rows->filter(function (array $recipient) use ($topic): bool {
-                $userId = $recipient['user_id'] ?? null;
-
-                if (! is_int($userId)) {
-                    return true;
-                }
-
-                $user = User::query()
-                    ->with('notificationPreference')
-                    ->find($userId);
-
-                return $user instanceof User
-                    ? $this->preferences->wantsEmail($user, $topic)
-                    : true;
-            });
-        }
 
         return $rows
             ->filter(fn (array $recipient): bool => filled($recipient['email']))
@@ -83,28 +34,56 @@ class CommunicationAudienceResolver
 
     public function resolvePushRecipients(array $payload): Collection
     {
-        $emailRecipients = $this->resolveEmailRecipients([
-            ...$payload,
-            'only_users_with_push_devices' => true,
-            'custom_emails' => '',
-        ]);
-
-        $userIds = $emailRecipients
-            ->pluck('user_id')
-            ->filter(fn ($id): bool => is_int($id))
+        return $this->resolveUserRecipients($payload, withDevices: true)
+            ->filter(fn (User $user): bool => $this->preferences->wantsPush($user, $this->resolvePreferenceTopic($payload)))
+            ->filter(fn (User $user): bool => $this->userHasPushableDevice($user))
             ->values();
-
-        if ($userIds->isEmpty()) {
-            return collect();
-        }
-
-        return User::query()
-            ->with('devices')
-            ->whereIn('id', $userIds)
-            ->get();
     }
 
-    private function singleUsersRecipients($usersQuery, array $selectedUserIds): Collection
+    private function resolveUserRecipients(array $payload, bool $withDevices = false): Collection
+    {
+        $scope = (string) ($payload['recipient_scope'] ?? 'single_users');
+        $usersQuery = $this->baseUsersQuery($payload, $withDevices);
+
+        return match ($scope) {
+            'single_users' => $this->singleUsers($usersQuery, (array) ($payload['selected_user_ids'] ?? [])),
+            'parishioners_all' => $this->usersByRole($usersQuery, 0),
+            'admins_all' => $this->usersByRole($usersQuery, 1),
+            'admins_and_superadmins' => $this->adminsAndSuperadmins($usersQuery),
+            'users_by_parish' => $this->usersByParish($usersQuery, $payload['target_parish_id'] ?? null),
+            'verified_users' => $this->verifiedUsers($usersQuery),
+            'users_with_push_devices' => $this->usersWithPushDevices($usersQuery),
+            'email_topic_opt_in', 'all_users' => $this->allUsers($usersQuery),
+            default => collect(),
+        };
+    }
+
+    private function baseUsersQuery(array $payload, bool $withDevices = false): Builder
+    {
+        $query = User::query()
+            ->with($withDevices ? ['notificationPreference', 'devices'] : ['notificationPreference'])
+            ->select(['id', 'email', 'full_name', 'name', 'status', 'role', 'is_user_verified', 'email_verified_at', 'home_parish_id']);
+
+        if (! (bool) ($payload['include_inactive_users'] ?? false)) {
+            $query->where('status', 'active');
+        }
+
+        if ((bool) ($payload['only_verified_users'] ?? false)) {
+            $query->where('is_user_verified', true);
+        }
+
+        if ((bool) ($payload['only_email_verified_users'] ?? false)) {
+            $query->whereNotNull('email_verified_at');
+        }
+
+        if ((bool) ($payload['only_users_with_push_devices'] ?? false)) {
+            $query->whereHas('devices', fn ($deviceQuery) => $deviceQuery->pushable());
+        }
+
+        return $query;
+    }
+
+    private function singleUsers(Builder $usersQuery, array $selectedUserIds): Collection
     {
         if ($selectedUserIds === []) {
             return collect();
@@ -112,30 +91,24 @@ class CommunicationAudienceResolver
 
         return $usersQuery
             ->whereIn('id', $selectedUserIds)
-            ->whereNotNull('email')
-            ->get()
-            ->map(fn (User $user): array => $this->mapUserRecipient($user));
+            ->get();
     }
 
-    private function usersByRoleRecipients($usersQuery, int $role): Collection
+    private function usersByRole(Builder $usersQuery, int $role): Collection
     {
         return $usersQuery
             ->where('role', $role)
-            ->whereNotNull('email')
-            ->get()
-            ->map(fn (User $user): array => $this->mapUserRecipient($user));
+            ->get();
     }
 
-    private function adminsAndSuperadminsRecipients($usersQuery): Collection
+    private function adminsAndSuperadmins(Builder $usersQuery): Collection
     {
         return $usersQuery
             ->where('role', '>=', 1)
-            ->whereNotNull('email')
-            ->get()
-            ->map(fn (User $user): array => $this->mapUserRecipient($user));
+            ->get();
     }
 
-    private function usersByParishRecipients($usersQuery, mixed $parishId): Collection
+    private function usersByParish(Builder $usersQuery, mixed $parishId): Collection
     {
         if (! is_numeric($parishId)) {
             return collect();
@@ -143,18 +116,14 @@ class CommunicationAudienceResolver
 
         return $usersQuery
             ->where('home_parish_id', (int) $parishId)
-            ->whereNotNull('email')
-            ->get()
-            ->map(fn (User $user): array => $this->mapUserRecipient($user));
+            ->get();
     }
 
-    private function verifiedUsersRecipients($usersQuery): Collection
+    private function verifiedUsers(Builder $usersQuery): Collection
     {
         return $usersQuery
             ->where('is_user_verified', true)
-            ->whereNotNull('email')
-            ->get()
-            ->map(fn (User $user): array => $this->mapUserRecipient($user));
+            ->get();
     }
 
     private function mailingListRecipients(mixed $listId, bool $confirmedOnly): Collection
@@ -175,31 +144,34 @@ class CommunicationAudienceResolver
             ]);
     }
 
-    private function usersWithPushDevicesRecipients($usersQuery): Collection
+    private function usersWithPushDevices(Builder $usersQuery): Collection
     {
         return $usersQuery
             ->whereHas('devices', fn ($query) => $query->pushable())
-            ->whereNotNull('email')
-            ->get()
-            ->map(fn (User $user): array => $this->mapUserRecipient($user));
+            ->get();
     }
 
-    private function emailTopicRecipients($usersQuery, string $topic): Collection
+    private function allUsers(Builder $usersQuery): Collection
     {
-        return $usersQuery
-            ->whereNotNull('email')
-            ->get()
-            ->filter(fn (User $user): bool => $this->preferences->wantsEmail($user, $topic))
-            ->values()
-            ->map(fn (User $user): array => $this->mapUserRecipient($user));
+        return $usersQuery->get();
     }
 
-    private function allUsersRecipients($usersQuery): Collection
+    private function resolvePreferenceTopic(array $payload): string
     {
-        return $usersQuery
-            ->whereNotNull('email')
-            ->get()
-            ->map(fn (User $user): array => $this->mapUserRecipient($user));
+        return (string) ($payload['notification_preference_topic'] ?? $payload['email_preference_topic'] ?? 'manual_messages');
+    }
+
+    private function userHasPushableDevice(User $user): bool
+    {
+        if (! $user->relationLoaded('devices')) {
+            return $user->devices()->pushable()->exists();
+        }
+
+        return $user->devices->contains(
+            fn ($device): bool => $device->disabled_at === null
+                && in_array($device->permission_status, ['authorized', 'provisional'], true)
+                && filled($device->push_token),
+        );
     }
 
     private function customEmailRecipients(string $raw): Collection

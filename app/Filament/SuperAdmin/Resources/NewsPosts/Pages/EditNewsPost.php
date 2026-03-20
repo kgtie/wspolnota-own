@@ -2,6 +2,7 @@
 
 namespace App\Filament\SuperAdmin\Resources\NewsPosts\Pages;
 
+use App\Filament\SuperAdmin\Resources\NewsComments\NewsCommentResource;
 use App\Filament\SuperAdmin\Resources\NewsPosts\NewsPostResource;
 use App\Models\NewsPost;
 use App\Models\User;
@@ -23,6 +24,14 @@ class EditNewsPost extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('comments')
+                ->label('Komentarze')
+                ->icon('heroicon-o-chat-bubble-left-right')
+                ->url(fn (): string => NewsCommentResource::getUrl('index', [
+                    'filters' => [
+                        'news_post_id' => ['value' => $this->getRecord()->getKey()],
+                    ],
+                ])),
             ViewAction::make(),
             $this->statusAction('published', 'Opublikuj', 'heroicon-o-check-circle', 'success'),
             $this->statusAction('scheduled', 'Zaplanuj', 'heroicon-o-clock', 'warning'),

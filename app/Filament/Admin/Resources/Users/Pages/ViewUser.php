@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Users\Pages;
 use App\Mail\ParishPriestMessage;
 use App\Filament\Admin\Resources\Users\UserResource;
 use App\Models\User;
+use App\Support\Notifications\NotificationPreferenceResolver;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Facades\Filament;
@@ -179,11 +180,23 @@ class ViewUser extends ViewRecord
                         ->rows(10)
                         ->maxLength(5000),
                 ])
-                ->action(function (array $data): void {
+                ->action(function (array $data, NotificationPreferenceResolver $preferences): void {
                     $record = $this->getRecord();
                     $admin = Filament::auth()->user();
 
                     if (! $record instanceof User || ! $admin instanceof User) {
+                        return;
+                    }
+
+                    $record->loadMissing('notificationPreference');
+
+                    if (! filled($record->email) || ! $preferences->wantsEmail($record, 'manual_messages')) {
+                        Notification::make()
+                            ->warning()
+                            ->title('Wysylka zablokowana przez preferencje uzytkownika.')
+                            ->body('Ten uzytkownik ma wylaczone reczne komunikaty email.')
+                            ->send();
+
                         return;
                     }
 

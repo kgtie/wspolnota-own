@@ -35,11 +35,11 @@ class QuillEditor extends Field implements CanBeLengthConstrainedContract
 
         $this->default('');
 
-        $this->dehydrateStateUsing(static function ($state): ?string {
+        $this->dehydrateStateUsing(static function ($state): string {
             $normalized = trim((string) ($state ?? ''));
 
             if (($normalized === '') || ($normalized === '<p><br></p>')) {
-                return null;
+                return '';
             }
 
             return $normalized;
