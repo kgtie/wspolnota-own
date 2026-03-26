@@ -20,6 +20,12 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+/**
+ * Centralna definicja panelu /superadmin.
+ *
+ * To miejsce spina routing, middleware, grupy nawigacji oraz discovery
+ * zasobow i stron Filament dla globalnego panelu operatorskiego.
+ */
 class SuperAdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel

@@ -12,6 +12,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\WithFileUploads;
 
+/**
+ * Globalna skrzynka kancelarii online dla superadministratora.
+ *
+ * Superadmin widzi wszystkie konwersacje wszystkich parafii, moze filtrowac je
+ * po parafii i proboszczu oraz interweniowac bez ograniczen tenantowych.
+ */
 class OfficeInbox extends Page
 {
     use WithFileUploads;
@@ -235,6 +241,8 @@ class OfficeInbox extends Page
             return;
         }
 
+        // Nawet superadmin respektuje flagi parafii dla uploadu plikow, zeby
+        // nie obchodzic swiadomie ograniczen ustawionych w usludze kancelarii.
         $uploadsEnabled = (bool) $conversation->parish->getSetting('office_file_upload_enabled', true);
 
         if (! $uploadsEnabled && count($this->attachments) > 0) {

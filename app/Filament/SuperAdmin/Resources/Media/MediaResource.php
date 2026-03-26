@@ -22,6 +22,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use UnitEnum;
 
+/**
+ * Globalny CRUD dla mediow w obrebie calej uslugi.
+ *
+ * Superadmin moze przegladac, edytowac i dopinac pliki do wybranych modeli,
+ * dlatego resource jawnie ogranicza liste wspieranych modeli docelowych.
+ */
 class MediaResource extends Resource
 {
     protected static ?string $model = Media::class;

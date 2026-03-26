@@ -30,6 +30,13 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Konfiguracja tabeli parafian dla panelu parafialnego.
+ *
+ * Tabela działa w dwóch kontekstach zakładek. Dlatego część akcji jest
+ * dostępna wyłącznie dla zwykłych parafian, a część rekordów służy tylko do
+ * przeglądu aktywnych administratorów przypisanych do parafii.
+ */
 class UsersTable
 {
     public static function configure(Table $table): Table
@@ -360,6 +367,8 @@ class UsersTable
     {
         $activeTab = data_get($livewire, 'activeTab');
 
+        // Zakładka "admins" jest jedynym wyjątkiem; każdy inny stan traktujemy
+        // jako domyślny widok parafian, żeby akcje nie znikały przez brak stanu.
         return $activeTab !== 'admins';
     }
 }

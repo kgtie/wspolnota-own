@@ -27,6 +27,14 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Illuminate\Contracts\Support\Htmlable;
 
+/**
+ * Główny dashboard proboszcza.
+ *
+ * Strona nie jest tylko zbiorem widgetów. Buduje przekrojowy obraz parafii:
+ * wspólnoty, liturgii, newsroomu, kancelarii i kompletności profilu tenanta.
+ * Dzięki temu priorytety administracyjne są liczone w jednym miejscu i
+ * podawane dalej do widoku jako gotowe, proste struktury danych.
+ */
 class Dashboard extends BaseDashboard
 {
     protected static ?string $title = 'Panel parafii';
@@ -90,6 +98,8 @@ class Dashboard extends BaseDashboard
      */
     protected function getDashboardViewData(): array
     {
+        // Dashboard liczy metryki samodzielnie, aby wszystkie sekcje strony
+        // korzystały z tych samych, spójnych danych dla aktualnego tenanta.
         $tenant = Filament::getTenant();
         $user = Filament::auth()->user();
 

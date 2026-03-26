@@ -22,6 +22,13 @@ use Filament\Schemas\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Globalna konfiguracja FCM i diagnostyka push.
+ *
+ * Strona laczy ustawienia integracji Firebase z szybkimi metrykami oraz
+ * recznym smoke-testem push, zeby superadmin mogl obsluzyc caly obszar
+ * mobilnych notyfikacji z jednego miejsca.
+ */
 class FcmSettingsPage extends SettingsPage
 {
     protected static string $settings = FcmSettings::class;
@@ -172,6 +179,7 @@ class FcmSettingsPage extends SettingsPage
     {
         $serviceAccountJson = trim((string) ($data['service_account_json'] ?? ''));
 
+        // Walidujemy JSON przed zapisem, bo blad w tym polu rozwala caly sender FCM.
         if ($serviceAccountJson !== '') {
             $decoded = json_decode($serviceAccountJson, true);
 

@@ -29,14 +29,16 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
-        if ($user && $user->isRegularUser()) {
+        if ($user && (! $user->isAdmin() || $user->status !== 'active')) {
             Auth::guard('web')->logout();
 
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
             return redirect('/')
-                ->with('status', 'Panel webowy jest dostepny wylacznie dla administratorow.');
+                ->with('status', $user->isAdmin()
+                    ? 'Panel webowy jest dostepny wylacznie dla aktywnych administratorow.'
+                    : 'Panel webowy jest dostepny wylacznie dla administratorow.');
         }
 
         return redirect()->route('dashboard');

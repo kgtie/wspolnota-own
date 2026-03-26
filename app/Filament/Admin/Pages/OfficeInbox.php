@@ -12,6 +12,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\WithFileUploads;
 
+/**
+ * Wewnętrzny inbox kancelarii online dla konkretnego administratora parafii.
+ *
+ * Komponent działa w kontekście aktualnego tenanta i zalogowanego kapłana.
+ * Sam pilnuje dostępnych rozmów, oznaczania wiadomości jako przeczytanych,
+ * zamykania wątków oraz bezpiecznego uploadu załączników.
+ */
 class OfficeInbox extends Page
 {
     use WithFileUploads;
@@ -209,7 +216,9 @@ class OfficeInbox extends Page
         $this->validate([
             'body' => ['nullable', 'string', 'max:12000'],
             'attachments' => ['array', 'max:5'],
-            'attachments.*' => ['file', 'max:10240'],
+            // Zachowujemy whitelistę plików spójną z API, żeby panel webowy
+            // nie pozwalał na szerszy zestaw uploadów niż aplikacja kliencka.
+            'attachments.*' => ['file', 'max:10240', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx'],
         ]);
 
         $trimmedBody = trim($this->body);
@@ -341,6 +350,8 @@ class OfficeInbox extends Page
     {
         $tenant = Filament::getTenant();
 
+        // Rozmowy są widoczne tylko w zakresie aktualnej parafii i wyłącznie
+        // dla administratora przypisanego jako obsługujący dany wątek.
         return OfficeConversation::query()
             ->when($tenant instanceof Parish, fn (Builder $query) => $query->where('parish_id', $tenant->getKey()))
             ->where('priest_user_id', $this->getPriestId());
@@ -395,6 +406,8 @@ class OfficeInbox extends Page
             return;
         }
 
+        // Aktualizacja idzie zbiorczo po SQL, żeby odczyt wątku nie wykonywał
+        // zbędnych zapisów model po modelu przy większej liczbie wiadomości.
         OfficeMessage::query()
             ->where('office_conversation_id', $this->selectedConversationId)
             ->where('sender_user_id', '!=', $this->getPriestId())

@@ -15,6 +15,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Lista parafian i administratorów parafii w jednym ekranie.
+ *
+ * Strona rozdziela dwa tryby pracy:
+ * - obsługę zwykłych parafian z tenant scope po `home_parish_id`,
+ * - zarządzanie aktywnymi przypisaniami administratorów w tabeli `parish_user`.
+ */
 class ListUsers extends ListRecords
 {
     protected static string $resource = UserResource::class;
@@ -153,7 +160,9 @@ class ListUsers extends ListRecords
                             ]);
                         }
 
-                        $activeAdminsCount = static::getCurrentParishAdminsQuery()->count();
+                        $activeAdminsCount = static::getCurrentParishAdminsQuery()
+                            ->where('users.status', 'active')
+                            ->count();
 
                         if (($target->id === $actor->id) && ($activeAdminsCount <= 1)) {
                             throw ValidationException::withMessages([
@@ -255,6 +264,9 @@ class ListUsers extends ListRecords
     {
         $query = User::query()->with(['homeParish', 'verifiedBy', 'media']);
 
+        // Bazowa tabela działa na pełnym modelu User, a tenant scope i podział
+        // na zakładki dokładamy ręcznie, bo "parafianie" i "administratorzy"
+        // korzystają z innych relacji do tej samej encji.
         if ($tenancyScope = Filament::getCurrentPanel()?->getTenancyScopeName()) {
             $query->withoutGlobalScope($tenancyScope);
         }
@@ -267,6 +279,7 @@ class ListUsers extends ListRecords
         return User::query()
             ->withoutGlobalScopes()
             ->whereNull('users.deleted_at')
+            ->where('users.status', 'active')
             ->whereNotNull('email_verified_at');
     }
 
@@ -359,6 +372,8 @@ class ListUsers extends ListRecords
             return $query->whereRaw('1 = 0');
         }
 
+        // Administrator parafii nie jest wyznaczany przez `home_parish_id`,
+        // tylko przez aktywny pivot w relacji managedParishes.
         return $query
             ->whereHas('managedParishes', fn (Builder $query): Builder => $query
                 ->where('parishes.id', $tenantId)

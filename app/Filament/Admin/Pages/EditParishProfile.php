@@ -23,6 +23,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 
+/**
+ * Ekran profilu tenanta dla panelu /admin.
+ *
+ * Proboszcz zarządza tu wyłącznie własną parafią, dlatego strona skupia
+ * wszystkie ustawienia operacyjne w jednym formularzu: dane identyfikacyjne,
+ * kontakt, media oraz przełączniki usług publicznych i kancelaryjnych.
+ */
 class EditParishProfile extends EditTenantProfile
 {
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-library';

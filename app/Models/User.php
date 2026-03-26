@@ -28,6 +28,15 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Throwable;
 
+/**
+ * Centralny model użytkownika dla całej platformy.
+ *
+ * Oprócz standardowego auth model obsługuje:
+ * - role i statusy kont używane przez panel webowy i API,
+ * - tenant access dla Filament (`HasTenants`, `HasDefaultTenant`),
+ * - weryfikację parafialną opartą o 9-cyfrowy kod,
+ * - media profilu oraz audit log najważniejszych zmian.
+ */
 class User extends Authenticatable implements FilamentUser, HasDefaultTenant, HasMedia, HasTenants, MustVerifyEmail
 {
     use HasFactory, InteractsWithMedia, LogsActivity, Notifiable, SoftDeletes;
@@ -210,6 +219,13 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
     // FILAMENT: FilamentUser
     // =========================================
 
+    /**
+     * Spina role aplikacyjne z fizycznymi panelami Filament.
+     *
+     * Dostęp do panelu wymaga nie tylko odpowiedniej roli, ale również
+     * aktywnego statusu konta. Dzięki temu zablokowane lub wygaszone konta
+     * nie przejdą dalej nawet wtedy, gdy nadal mają wpisaną rolę admina.
+     */
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
@@ -223,6 +239,9 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
     // FILAMENT: HasTenants (multi-tenancy)
     // =========================================
 
+    /**
+     * Zwraca wyłącznie aktywne parafie, którymi użytkownik może zarządzać.
+     */
     public function getTenants(Panel $panel): Collection
     {
         return $this->managedParishes()
@@ -230,6 +249,9 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
             ->get();
     }
 
+    /**
+     * Dodatkowa ochrona tenant scope dla adresów /admin/{tenant}/...
+     */
     public function canAccessTenant(Model $tenant): bool
     {
         return $this->managedParishes()
@@ -242,6 +264,9 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
     // FILAMENT: HasDefaultTenant
     // =========================================
 
+    /**
+     * Preferuje ostatnio zarządzaną parafię, ale tylko jeśli nadal jest aktywna.
+     */
     public function getDefaultTenant(Panel $panel): ?Model
     {
         if ($this->last_managed_parish_id) {

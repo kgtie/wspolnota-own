@@ -18,6 +18,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use stdClass;
 
+/**
+ * Operacyjny cockpit dla automatycznych dispatchy.
+ *
+ * Widok pokazuje backlog contentu, opoznienia, remindery mszalne i failed maile
+ * oraz pozwala recznie uruchamiac krytyczne komendy bez pracy w terminalu.
+ */
 class NotificationDispatchCenter extends Page
 {
     protected static ?string $title = 'Centrum dispatchu';

@@ -7,7 +7,15 @@ use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
+/**
+ * Odczyt wpisu w panelu superadmina.
+ *
+ * Widok ma byc redakcyjny, ale nie moze renderowac surowego HTML z bazy bez
+ * sanizacji, bo wpisy pochodza z edytora rich text i moga stac sie nosnikiem XSS.
+ */
 class NewsPostInfolist
 {
     public static function configure(Schema $schema): Schema
@@ -70,6 +78,7 @@ class NewsPostInfolist
 
                         TextEntry::make('content')
                             ->label('Pelna tresc')
+                            ->state(fn (NewsPost $record): string => static::sanitizeRenderedContent($record->content))
                             ->html()
                             ->columnSpanFull(),
                     ]),
@@ -117,5 +126,24 @@ class NewsPostInfolist
                             ->since(),
                     ]),
             ]);
+    }
+
+    /**
+     * Sanityzuje HTML tylko na potrzeby panelu administracyjnego.
+     * Front redakcyjny nadal moze korzystac z bogatszego renderu, ale w Filamencie
+     * odcinamy potencjalnie wykonywalny markup i zostawiamy bezpieczne elementy.
+     */
+    protected static function sanitizeRenderedContent(?string $html): string
+    {
+        if (blank($html)) {
+            return '';
+        }
+
+        $config = (new HtmlSanitizerConfig())
+            ->allowSafeElements()
+            ->allowRelativeLinks()
+            ->allowRelativeMedias();
+
+        return (new HtmlSanitizer($config))->sanitize((string) $html);
     }
 }

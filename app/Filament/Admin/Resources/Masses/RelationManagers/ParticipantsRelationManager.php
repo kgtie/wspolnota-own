@@ -19,6 +19,12 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
+/**
+ * Relation manager uczestników zapisanych na konkretną mszę.
+ *
+ * W panelu parafialnym zapis musi pozostać tenant-aware, dlatego opcje
+ * dołączania uczestników są filtrowane po bieżącej parafii administratora.
+ */
 class ParticipantsRelationManager extends RelationManager
 {
     protected static string $relationship = 'participants';
@@ -70,9 +76,7 @@ class ParticipantsRelationManager extends RelationManager
                     ->label('Dodaj uczestnika')
                     ->preloadRecordSelect()
                     ->recordSelectSearchColumns(['full_name', 'name', 'email'])
-                    ->recordSelectOptionsQuery(fn (Builder $query): Builder => $query
-                        ->where('role', 0)
-                        ->where('status', 'active'))
+                    ->recordSelectOptionsQuery(fn (Builder $query): Builder => static::scopeAssignableParticipantsQuery($query))
                     ->form(fn (AttachAction $action): array => [
                         $action->getRecordSelect(),
                         DateTimePicker::make('registered_at')
@@ -160,5 +164,23 @@ class ParticipantsRelationManager extends RelationManager
                         }),
                 ]),
             ]);
+    }
+
+    /**
+     * Ogranicza ręczny dobór uczestników do aktywnych parafian bieżącego tenanta.
+     * Bez tego administrator mógł dopisać do mszy konto z innej parafii.
+     */
+    protected static function scopeAssignableParticipantsQuery(Builder $query): Builder
+    {
+        $tenantId = Filament::getTenant()?->getKey();
+
+        if (! $tenantId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query
+            ->where('role', 0)
+            ->where('status', 'active')
+            ->where('home_parish_id', $tenantId);
     }
 }

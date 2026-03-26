@@ -33,6 +33,12 @@ use App\Support\Push\PushDispatchService;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
+/**
+ * Operacyjny resource do zarzadzania rejestrem urzadzen push.
+ *
+ * Pokazuje stan zgód, tokenów i bledów dostarczenia oraz pozwala superadminowi
+ * wykonywac masowe akcje naprawcze bez edycji samego modelu UserDevice.
+ */
 class UserDeviceResource extends Resource
 {
     protected static ?string $model = UserDevice::class;

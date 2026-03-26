@@ -9,13 +9,14 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureUserIsAdmin
 {
     /**
-     * Handle an incoming request.
+     * Pilnuje, aby pomocnicze endpointy pod /admin byly dostepne wyłącznie
+     * dla aktywnych kont administracyjnych, spójnie z regułami Filament panelu.
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Sprawdzamy, czy użytkownik jest zalogowany i ma rolę >= 1 (Admin lub SuperAdmin)
-        // Metodę isAdmin() masz już w modelu User
-        if (! $request->user() || ! $request->user()->isAdmin()) {
+        $user = $request->user();
+
+        if (! $user || ! $user->isAdmin() || $user->status !== 'active') {
             abort(403, 'Brak uprawnień do panelu administratora.');
         }
 

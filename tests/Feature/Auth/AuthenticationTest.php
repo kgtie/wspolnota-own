@@ -32,6 +32,20 @@ test('regular users can not keep a web session after login', function () {
     $response->assertRedirect('/');
 });
 
+test('inactive admins can not keep a web session after login', function () {
+    $user = User::factory()->admin()->create([
+        'status' => 'inactive',
+    ]);
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertGuest();
+    $response->assertRedirect('/');
+});
+
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 

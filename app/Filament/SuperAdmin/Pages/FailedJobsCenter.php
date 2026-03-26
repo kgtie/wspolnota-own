@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use stdClass;
 
+/**
+ * Operacyjny widok tabeli failed_jobs.
+ *
+ * Strona sluzy do triage'u awarii kolejki: podgladu, klasyfikacji, retry i
+ * czyszczenia nieudanych jobow bez schodzenia do CLI.
+ */
 class FailedJobsCenter extends Page
 {
     protected static ?string $title = 'Failed Jobs';

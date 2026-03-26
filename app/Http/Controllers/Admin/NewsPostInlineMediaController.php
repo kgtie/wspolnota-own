@@ -7,13 +7,19 @@ use App\Models\NewsPost;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Obsługuje upload obrazów osadzanych bezpośrednio w treści aktualności.
+ *
+ * Endpoint nie polega wyłącznie na middleware. Dodatkowo weryfikuje aktywny
+ * status konta i realne prawo zarządzania parafią, do której należy wpis.
+ */
 class NewsPostInlineMediaController extends Controller
 {
     public function __invoke(Request $request, NewsPost $newsPost): JsonResponse
     {
         $user = $request->user();
 
-        if (! $user || ! $user->isAdmin()) {
+        if (! $user || ! $user->isAdmin() || $user->status !== 'active') {
             abort(403);
         }
 

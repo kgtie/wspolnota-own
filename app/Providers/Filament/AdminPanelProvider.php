@@ -19,6 +19,14 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+/**
+ * Konfiguruje główny panel parafialny Filament pod adresem /admin.
+ *
+ * Ten provider scala trzy obszary odpowiedzialności:
+ * - dostęp wyłącznie dla kont webowych z guardem `web`,
+ * - multi-tenancy oparte o model `Parish`,
+ * - auto-discovery zasobów, stron i widgetów panelu proboszcza.
+ */
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel

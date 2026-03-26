@@ -26,6 +26,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
+/**
+ * Tabela parafii jest glownym wejściem do operacji globalnych na tenantach.
+ *
+ * Poza standardowym CRUD-em agreguje tez akcje komunikacyjne i raportowe
+ * uruchamiane z poziomu jednego lub wielu rekordow parafii.
+ */
 class ParishesTable
 {
     public static function configure(Table $table): Table
@@ -116,6 +122,9 @@ class ParishesTable
                 ParishPriestWeeklyDigestSender $sender,
             ): void {
                 $actor = Filament::auth()->user();
+
+                // Kopia do superadmina przy recznej wysylce trafia do aktualnego
+                // operatora, zeby nie mieszac manualnych prob z cykliczna kopia.
                 $result = $sender->sendForParish(
                     parish: $record,
                     generatedAt: now(),

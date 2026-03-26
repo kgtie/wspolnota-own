@@ -19,6 +19,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
+/**
+ * Zasób parafian w panelu administratora.
+ *
+ * Resource jest świadomie osadzony w multi-tenancy parafii, ale poza
+ * standardowym CRUD-em pełni też rolę warstwy usługowej dla operacji
+ * weryfikacji, regeneracji kodów i audytu działań administratorów.
+ */
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
@@ -128,6 +135,9 @@ class UserResource extends Resource
         return $code;
     }
 
+    /**
+     * Nadaje zatwierdzenie parafialne i gwarantuje istnienie kodu weryfikacji.
+     */
     public static function verifyRecord(User $record, ?User $verifiedBy = null): void
     {
         $hadVerificationCode = filled($record->verification_code);
@@ -152,6 +162,9 @@ class UserResource extends Resource
         );
     }
 
+    /**
+     * Waliduje kod podany przez parafianina i zapisuje audyt niezależnie od wyniku.
+     */
     public static function verifyRecordWithCode(User $record, string $providedCode, ?User $verifiedBy = null): bool
     {
         $expectedCode = (string) ($record->verification_code ?? '');
@@ -229,6 +242,9 @@ class UserResource extends Resource
         return $authUser instanceof User ? $authUser : null;
     }
 
+    /**
+     * Wspólny punkt logowania zdarzeń administratorskich dla operacji na parafianach.
+     */
     private static function logAdminUserManagementEvent(
         string $event,
         User $record,

@@ -23,6 +23,12 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Throwable;
 
+/**
+ * Globalne centrum komunikacji superadministratora.
+ *
+ * Strona scala listy mailingowe, subskrybentow, szkice kampanii oraz reczna
+ * wysylke email/push w jeden workflow operatorski bez ograniczen tenantowych.
+ */
 class CommunicationCenter extends Page
 {
     protected static ?string $title = 'Centrum komunikacji';
@@ -135,6 +141,10 @@ class CommunicationCenter extends Page
         }
     }
 
+    /**
+     * Czyści pola zalezne od wybranego scope, aby stan formularza nie "przeciekał"
+     * miedzy trybami wysylki i nie wysylał kampanii do niezamierzonych odbiorcow.
+     */
     public function updatedRecipientScope(): void
     {
         if ($this->recipientScope !== 'mailing_list') {

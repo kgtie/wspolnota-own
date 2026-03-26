@@ -20,6 +20,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
+/**
+ * Globalny resource uzytkownikow dla panelu superadmina.
+ *
+ * Oprocz standardowego CRUD-u zawiera pomocnicze metody do operacji
+ * administracyjnych, takich jak weryfikacja parafialna i synchronizacja avatara.
+ */
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
@@ -193,6 +199,8 @@ class UserResource extends Resource
 
     public static function syncRecordAvatar(User $record): void
     {
+        // Media Library i legacy pole users.avatar musza pozostac zgodne, bo
+        // panel Filament i API korzystaja z obu mechanizmow odczytu.
         $record->refresh();
         $record->load('media');
         $record->syncAvatarAttributeFromMedia();

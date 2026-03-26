@@ -18,6 +18,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
+/**
+ * Przekrojowy pulpit kondycji calej platformy.
+ *
+ * Metryki sa policzone globalnie, bez tenantowych ograniczen, i maja pomagac w
+ * szybkim wykrywaniu problemow z tresciami, kolejka, FCM, mediami i ruchem.
+ */
 class SystemHealth extends Page
 {
     protected static ?string $title = 'Globalne metryki';

@@ -30,6 +30,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Startowy pulpit operacyjny superadministratora.
+ *
+ * Dashboard zbiera w jednym miejscu KPI, alerty, trendy i skroty do
+ * najwazniejszych modulow, zeby /superadmin pelnil role control tower.
+ */
 class Dashboard extends BaseDashboard
 {
     protected static bool $isDiscovered = false;

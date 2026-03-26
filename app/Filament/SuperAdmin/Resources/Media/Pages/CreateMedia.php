@@ -9,6 +9,12 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Rzeczywiste tworzenie wpisu media odbywa sie przez model docelowy.
+ *
+ * Spatie Media Library zapisuje plik wzgledem rekordu wlasciciela, dlatego
+ * strona waliduje model, rekord i kolekcje zanim utworzy obiekt Media.
+ */
 class CreateMedia extends CreateRecord
 {
     protected static string $resource = MediaResource::class;
@@ -48,6 +54,8 @@ class CreateMedia extends CreateRecord
             ]);
         }
 
+        // Filament moze zwrocic pojedynczy plik lub jednopunktowa tablice;
+        // normalizujemy ten stan zanim przekażemy go do Media Library.
         $uploaded = $this->resolveUploadedFile($data['uploaded_file'] ?? null);
 
         $mediaAdder = $targetRecord->addMedia($uploaded);
