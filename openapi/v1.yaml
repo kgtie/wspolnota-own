@@ -48,6 +48,14 @@ components:
         error:
           $ref: '#/components/schemas/ErrorBody'
 
+    ServiceVersion:
+      type: object
+      required: [service_version]
+      properties:
+        service_version:
+          type: string
+          example: '0.9'
+
     CursorMeta:
       type: object
       required: [next_cursor, has_more]
@@ -63,6 +71,8 @@ components:
       required:
         - id
         - login
+        - role
+        - role_key
         - first_name
         - last_name
         - email
@@ -77,6 +87,14 @@ components:
         login:
           type: string
           description: Techniczny login użytkownika. Widoczny, ale niemodyfikowalny przez użytkownika.
+        role:
+          type: integer
+          enum: [0, 1, 2]
+          description: Znormalizowana rola użytkownika z `users.role`, gdzie `0` lub `null` oznacza zwykłego użytkownika, `1` administratora/proboszcza, a `2` superadmina.
+        role_key:
+          type: string
+          enum: [user, admin, superadmin]
+          description: Uproszczony klucz roli pod klienta mobilnego.
         first_name:
           type: string
         last_name:
@@ -158,6 +176,84 @@ components:
           type: string
           enum: [AUTHENTICATED_LIMITED, AUTHENTICATED, PARISH_APPROVED]
         requires_email_verification:
+          type: boolean
+
+    ParishApprovalLookupUser:
+      type: object
+      required:
+        - id
+        - login
+        - first_name
+        - last_name
+        - email
+        - is_email_verified
+        - is_parish_approved
+        - can_operator_approve
+      properties:
+        id:
+          type: string
+        login:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar_url:
+          type: [string, 'null']
+          format: uri
+        default_parish_id:
+          type: [string, 'null']
+        default_parish_name:
+          type: [string, 'null']
+        is_email_verified:
+          type: boolean
+        is_parish_approved:
+          type: boolean
+        parish_approval_code:
+          type: [string, 'null']
+        can_operator_approve:
+          type: boolean
+          description: Informacja, czy zalogowany operator może zatwierdzić tego użytkownika w jego parafii domyślnej.
+
+    ParishApprovalPendingUser:
+      type: object
+      required:
+        - id
+        - first_name
+        - last_name
+        - login
+        - email
+        - is_email_verified
+        - is_parish_approved
+        - created_at
+      properties:
+        id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        login:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar_url:
+          type: [string, 'null']
+          format: uri
+        default_parish_id:
+          type: [string, 'null']
+        default_parish_name:
+          type: [string, 'null']
+        created_at:
+          type: [string, 'null']
+          format: date-time
+        is_email_verified:
+          type: boolean
+        is_parish_approved:
           type: boolean
 
     ParishContactVisibility:
@@ -606,6 +702,11 @@ components:
         status:
           type: string
           enum: [open, closed]
+        recipient_user_id:
+          type: [string, 'null']
+        recipient:
+          type: [object, 'null']
+          $ref: '#/components/schemas/OfficeRecipient'
         last_message_at:
           type: [string, 'null']
           format: date-time
@@ -615,6 +716,57 @@ components:
           type: [string, 'null']
           format: date-time
         updated_at:
+          type: [string, 'null']
+          format: date-time
+
+    OfficeRecipient:
+      type: object
+      required: [id, display_name, role_key, role_label, priority]
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        avatar_url:
+          type: [string, 'null']
+          format: uri
+        role_key:
+          type: string
+          enum: [pastor, moderator, assistant_admin, superadmin, admin, custom]
+        role_label:
+          type: string
+        priority:
+          type: integer
+
+    OfficeStaffMember:
+      allOf:
+        - $ref: '#/components/schemas/OfficeRecipient'
+        - type: object
+          required: [is_default_recipient]
+          properties:
+            assignment_note:
+              type: [string, 'null']
+            is_default_recipient:
+              type: boolean
+
+    OfficeDirectoryUser:
+      type: object
+      required: [id, display_name, is_email_verified, is_parish_approved]
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        avatar_url:
+          type: [string, 'null']
+          format: uri
+        default_parish_id:
+          type: [string, 'null']
+        is_email_verified:
+          type: boolean
+        is_parish_approved:
+          type: boolean
+        created_at:
           type: [string, 'null']
           format: date-time
 
@@ -684,6 +836,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
 paths:
   /openapi.yaml:
@@ -693,6 +851,19 @@ paths:
       responses:
         '200':
           description: YAML spec
+
+  /meta/service-version:
+    get:
+      tags: [Meta]
+      summary: Zwraca numer wersji uslugi Wspolnota
+      operationId: getServiceVersion
+      responses:
+        '200':
+          description: Aktualny numer wersji uslugi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceVersion'
 
   /auth/register:
     post:
@@ -2014,6 +2185,236 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /parish-approvals/by-code/{code}:
+    get:
+      tags: [ParishApprovals]
+      summary: Pobierz parafianina po 9-cyfrowym kodzie zatwierdzenia
+      description: |
+        Wymaga `BearerAuth` oraz `email_verified`.
+        Dostępne wyłącznie dla administratora parafii lub superadministratora.
+        Administrator parafii może pobrać wyłącznie użytkownika przypisanego do jednej z jego aktywnych parafii.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{9}$'
+      responses:
+        '200':
+          description: Użytkownik znaleziony po kodzie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/ParishApprovalLookupUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /parish-approvals/{userId}/approve:
+    post:
+      tags: [ParishApprovals]
+      summary: Zatwierdź użytkownika kodem parafialnym
+      description: |
+        Wymaga `BearerAuth` oraz `email_verified`.
+        Administrator parafii może zatwierdzać wyłącznie użytkowników swojej aktywnej parafii.
+        Superadministrator może zatwierdzać użytkowników dowolnej aktywnej parafii.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [approval_code, parish_id]
+              properties:
+                approval_code:
+                  type: string
+                  pattern: '^\d{9}$'
+                parish_id:
+                  type: integer
+      responses:
+        '200':
+          description: Użytkownik zatwierdzony
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [PARISHIONER_APPROVED]
+                      user:
+                        $ref: '#/components/schemas/ParishApprovalLookupUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /parish-approvals/pending:
+    get:
+      tags: [ParishApprovals]
+      summary: Lista oczekujących parafian z wyszukiwaniem
+      description: |
+        Wymaga `BearerAuth` oraz `email_verified`.
+        Administrator parafii może przeglądać wyłącznie użytkowników swoich aktywnych parafii.
+        `search` działa jako prosty live search po imieniu, loginie i emailu.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: parish_id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: search
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista użytkowników oczekujących na zatwierdzenie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      parish_id:
+                        type: string
+                      parish_name:
+                        type: [string, 'null']
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ParishApprovalPendingUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /office/parishes/{parishId}/staff:
+    get:
+      tags: [Office]
+      summary: Lista osób obsługujących kancelarię parafii
+      description: |
+        Wymaga `email_verified` oraz `parish_approved`.
+        Endpoint jest ograniczony do własnej parafii użytkownika i zwraca priorytety odbiorców.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: parishId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista odbiorców kancelarii dla parafii użytkownika
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      parish_id:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OfficeStaffMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /office/parishes/{parishId}/users:
+    get:
+      tags: [Office]
+      summary: Katalog użytkowników własnej parafii do przyszłych scenariuszy czatu
+      description: |
+        Wymaga `email_verified` oraz `parish_approved`.
+        Endpoint testowy, ograniczony do własnej parafii użytkownika.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: parishId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: scope
+          description: Zakres filtrowania użytkowników.
+          schema:
+            type: string
+            enum: [all, email_verified, parish_approved]
+            default: all
+      responses:
+        '200':
+          description: Katalog użytkowników własnej parafii
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      parish_id:
+                        type: string
+                      scope:
+                        type: string
+                        enum: [all, email_verified, parish_approved]
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OfficeDirectoryUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /office/chats:
     get:
       tags: [Office]
@@ -2056,6 +2457,12 @@ paths:
               properties:
                 parish_id:
                   type: integer
+                recipient_user_id:
+                  type: [integer, 'null']
+                  description: |
+                    Opcjonalny identyfikator wybranego odbiorcy kancelarii z endpointu
+                    `GET /office/parishes/{parishId}/staff`. Jeśli brak, backend wybiera
+                    domyślnego odbiorcę o najwyższym priorytecie.
                 message:
                   type: string
                   minLength: 2

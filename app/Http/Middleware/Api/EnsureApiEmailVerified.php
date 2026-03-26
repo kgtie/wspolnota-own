@@ -6,6 +6,9 @@ use App\Support\Api\ErrorCode;
 use Closure;
 use Illuminate\Http\Request;
 
+/**
+ * Blokuje akcje wymagające zweryfikowanego adresu e-mail w API mobilnym.
+ */
 class EnsureApiEmailVerified
 {
     public function handle(Request $request, Closure $next)

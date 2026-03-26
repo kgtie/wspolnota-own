@@ -6,6 +6,9 @@ use App\Support\Api\ErrorCode;
 use Closure;
 use Illuminate\Http\Request;
 
+/**
+ * Wymusza zatwierdzenie parafialne dla funkcji dostępnych dopiero po aprobacie proboszcza.
+ */
 class EnsureApiParishApproved
 {
     public function handle(Request $request, Closure $next)

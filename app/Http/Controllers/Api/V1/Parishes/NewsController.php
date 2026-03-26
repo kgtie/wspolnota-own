@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * Obsługuje publiczne newsy parafialne, media wpisu i drzewiaste komentarze.
+ */
 class NewsController extends ApiController
 {
     public function index(Request $request, int $parishId): JsonResponse

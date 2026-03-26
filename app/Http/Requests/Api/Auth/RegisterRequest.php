@@ -5,6 +5,9 @@ namespace App\Http\Requests\Api\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * Waliduje dane wejściowe dla endpointu auth API v1.
+ */
 class RegisterRequest extends FormRequest
 {
     public function authorize(): bool

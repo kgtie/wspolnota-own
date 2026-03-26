@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Str;
 
+/**
+ * Obsługuje preferencje powiadomień i feed notyfikacji in-app użytkownika.
+ */
 class NotificationController extends ApiController
 {
     public function updatePreferences(UpdateNotificationPreferencesRequest $request): JsonResponse

@@ -8,6 +8,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Autoryzuje każde żądanie API v1 przez hash access tokenu zapisany w bazie.
+ */
 class ApiAuthenticate
 {
     public function __construct(private readonly MobileTokenService $tokenService) {}
@@ -30,17 +33,25 @@ class ApiAuthenticate
         $token = $resolution['token'];
 
         if ($resolution['status'] !== 'active' || ! $token || ! $token->user) {
+            if ($resolution['status'] === 'inactive_user' && $token?->user) {
+                $this->tokenService->revokeAllForUser($token->user);
+            }
+
             return response()->json([
                 'error' => [
-                    'code' => $resolution['status'] === 'expired'
-                        ? ErrorCode::AUTH_TOKEN_EXPIRED
-                        : ErrorCode::AUTH_TOKEN_INVALID,
-                    'message' => $resolution['status'] === 'expired'
-                        ? 'Token dostępu wygasł.'
-                        : 'Nieprawidłowy token dostępu.',
+                    'code' => match ($resolution['status']) {
+                        'expired' => ErrorCode::AUTH_TOKEN_EXPIRED,
+                        'inactive_user' => ErrorCode::AUTH_ACCOUNT_LOCKED,
+                        default => ErrorCode::AUTH_TOKEN_INVALID,
+                    },
+                    'message' => match ($resolution['status']) {
+                        'expired' => 'Token dostępu wygasł.',
+                        'inactive_user' => 'Konto jest zablokowane lub nieaktywne.',
+                        default => 'Nieprawidłowy token dostępu.',
+                    },
                     'details' => (object) [],
                 ],
-            ], 401);
+            ], $resolution['status'] === 'inactive_user' ? 423 : 401);
         }
 
         Auth::setUser($token->user);

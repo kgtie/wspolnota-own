@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+/**
+ * Udostępnia prywatne załączniki kancelarii wyłącznie stronom konkretnej rozmowy.
+ */
 class OfficeAttachmentController extends ApiController
 {
     public function show(Request $request, int $chatId, int $attachmentId): BinaryFileResponse

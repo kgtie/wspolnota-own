@@ -9,6 +9,9 @@ use App\Support\Api\ErrorCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Zarządza urządzeniami mobilnymi i tokenami push przypiętymi do konta użytkownika.
+ */
 class DeviceController extends ApiController
 {
     public function store(StoreDeviceRequest $request): JsonResponse

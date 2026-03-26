@@ -6,13 +6,20 @@ use App\Exceptions\ApiException;
 use App\Models\ApiAccessToken;
 use App\Models\ApiRefreshToken;
 use App\Models\User;
+use App\Support\Api\ApiAudit;
 use App\Support\Api\ErrorCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+/**
+ * Zarządza krótkimi access tokenami i rotowanymi refresh tokenami dla API mobile.
+ */
 class MobileTokenService
 {
+    /**
+     * Wydaje nową parę tokenów i opcjonalnie rotuje istniejącą rodzinę refresh tokenów.
+     */
     public function issuePair(User $user, Request $request, ?string $familyId = null, ?ApiRefreshToken $rotateFrom = null): array
     {
         return DB::transaction(function () use ($user, $request, $familyId, $rotateFrom) {
@@ -60,6 +67,10 @@ class MobileTokenService
         });
     }
 
+    /**
+     * Rotuje refresh token, ale przed wydaniem nowej sesji ponownie sprawdza,
+     * czy konto nadal jest aktywne.
+     */
     public function rotateByRefreshToken(string $refreshToken, Request $request): array
     {
         $hash = hash('sha256', $refreshToken);
@@ -84,6 +95,17 @@ class MobileTokenService
 
         if ($token->used_at) {
             if ($token->user) {
+                ApiAudit::log(
+                    logName: 'api-auth',
+                    event: 'api_refresh_reuse_detected',
+                    message: 'Wykryto ponowne użycie refresh tokenu w API mobilnym.',
+                    causer: $token->user,
+                    subject: $token->user,
+                    properties: [
+                        'refresh_family_id' => (string) $token->family_id,
+                        'device_id' => $token->device_id,
+                    ],
+                );
                 $this->revokeAllForUser($token->user);
             } else {
                 $this->revokeRefreshFamily((string) $token->family_id);
@@ -96,6 +118,12 @@ class MobileTokenService
 
         if (! $user) {
             throw new ApiException(ErrorCode::AUTH_REFRESH_INVALID, 'Nieprawidłowy refresh token.', 401);
+        }
+
+        if ($user->status !== 'active') {
+            $this->revokeAllForUser($user);
+
+            throw new ApiException(ErrorCode::AUTH_ACCOUNT_LOCKED, 'Konto jest zablokowane lub nieaktywne.', 423);
         }
 
         return [
@@ -128,6 +156,11 @@ class MobileTokenService
 
         if ($token->expires_at->isPast()) {
             return ['status' => 'expired', 'token' => $token];
+        }
+
+        // Token technicznie może być poprawny, ale konto nie powinno mieć już dostępu do API.
+        if (! $token->user || $token->user->status !== 'active') {
+            return ['status' => 'inactive_user', 'token' => $token];
         }
 
         $token->forceFill(['last_used_at' => now()])->save();

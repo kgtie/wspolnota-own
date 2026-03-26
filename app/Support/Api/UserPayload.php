@@ -4,6 +4,9 @@ namespace App\Support\Api;
 
 use App\Models\User;
 
+/**
+ * Buduje spójny payload użytkownika zwracany przez auth, /me i pokrewne endpointy.
+ */
 class UserPayload
 {
     public static function make(User $user, bool $withApprovalCode = true): array
@@ -13,6 +16,8 @@ class UserPayload
         return [
             'id' => (string) $user->getKey(),
             'login' => (string) $user->name,
+            'role' => self::normalizedRole($user),
+            'role_key' => self::roleKey($user),
             'first_name' => $firstName,
             'last_name' => $lastName,
             'email' => (string) $user->email,
@@ -40,5 +45,23 @@ class UserPayload
         $lastName = implode(' ', $parts);
 
         return [$firstName, $lastName];
+    }
+
+    private static function normalizedRole(User $user): int
+    {
+        return match ((int) ($user->role ?? 0)) {
+            2 => 2,
+            1 => 1,
+            default => 0,
+        };
+    }
+
+    private static function roleKey(User $user): string
+    {
+        return match (self::normalizedRole($user)) {
+            2 => 'superadmin',
+            1 => 'admin',
+            default => 'user',
+        };
     }
 }

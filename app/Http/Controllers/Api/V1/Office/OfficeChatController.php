@@ -9,6 +9,7 @@ use App\Http\Requests\Api\Office\StoreMessageRequest;
 use App\Models\OfficeConversation;
 use App\Models\OfficeMessage;
 use App\Models\User;
+use App\Support\Api\ApiAudit;
 use App\Support\Api\CursorPaginator;
 use App\Support\Api\ErrorCode;
 use Illuminate\Http\JsonResponse;
@@ -18,29 +19,22 @@ use Illuminate\Support\Facades\DB;
 
 class OfficeChatController extends ApiController
 {
+    /**
+     * Zwraca listę czatów kancelarii przypisanych do zalogowanego parafianina.
+     */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
 
         $conversations = OfficeConversation::query()
             ->where('parishioner_user_id', $user->getKey())
-            ->with(['parish', 'latestMessage'])
+            ->with(['parish', 'latestMessage', 'priest'])
             ->orderByDesc('last_message_at')
             ->limit(50)
             ->get();
 
         return $this->success([
-            'items' => $conversations->map(fn (OfficeConversation $chat) => [
-                'id' => (string) $chat->getKey(),
-                'uuid' => $chat->uuid,
-                'parish_id' => (string) $chat->parish_id,
-                'parish_name' => $chat->parish?->short_name ?: $chat->parish?->name,
-                'status' => $chat->status,
-                'last_message_at' => optional($chat->last_message_at)?->toISOString(),
-                'last_message_preview' => $chat->latestMessage?->body,
-                'created_at' => optional($chat->created_at)?->toISOString(),
-                'updated_at' => optional($chat->updated_at)?->toISOString(),
-            ])->values(),
+            'items' => $conversations->map(fn (OfficeConversation $chat) => $this->chatPayload($chat))->values(),
         ]);
     }
 
@@ -53,11 +47,10 @@ class OfficeChatController extends ApiController
             throw new ApiException(ErrorCode::FORBIDDEN, 'Możesz rozpocząć czat wyłącznie z własną parafią.', 403);
         }
 
-        $priest = $this->resolvePriestForParish($parish->getKey());
-
-        if (! $priest) {
-            throw new ApiException(ErrorCode::NOT_FOUND, 'Brak dostępnego opiekuna kancelarii dla parafii.', 404);
-        }
+        $priest = OfficeDirectoryController::resolveRecipientForParish(
+            (int) $parish->getKey(),
+            $request->filled('recipient_user_id') ? (int) $request->integer('recipient_user_id') : null,
+        );
 
         $conversation = DB::transaction(function () use ($request, $user, $parish, $priest): OfficeConversation {
             $conversation = OfficeConversation::query()->create([
@@ -75,18 +68,23 @@ class OfficeChatController extends ApiController
                 'has_attachments' => false,
             ]);
 
-            return $conversation->fresh();
+            return $conversation->fresh(['parish', 'priest']);
         });
 
-        return $this->success([
-            'chat' => [
-                'id' => (string) $conversation->getKey(),
-                'uuid' => $conversation->uuid,
-                'parish_id' => (string) $conversation->parish_id,
-                'status' => $conversation->status,
-                'last_message_at' => optional($conversation->last_message_at)?->toISOString(),
-                'created_at' => optional($conversation->created_at)?->toISOString(),
+        ApiAudit::log(
+            logName: 'api-office',
+            event: 'api_office_chat_created',
+            message: 'Użytkownik utworzył nową rozmowę kancelarii przez API.',
+            causer: $user,
+            subject: $conversation,
+            properties: [
+                'parish_id' => $parish->getKey(),
+                'recipient_user_id' => $priest->getKey(),
             ],
+        );
+
+        return $this->success([
+            'chat' => $this->chatPayload($conversation),
         ], 201);
     }
 
@@ -137,6 +135,18 @@ class OfficeChatController extends ApiController
             return $message->load('sender');
         });
 
+        ApiAudit::log(
+            logName: 'api-office',
+            event: 'api_office_message_sent',
+            message: 'Użytkownik wysłał wiadomość tekstową do kancelarii przez API.',
+            causer: $request->user(),
+            subject: $conversation,
+            properties: [
+                'office_message_id' => $message->getKey(),
+                'has_attachments' => false,
+            ],
+        );
+
         return $this->success([
             'message' => $this->messagePayload($message),
         ], 201);
@@ -144,6 +154,7 @@ class OfficeChatController extends ApiController
 
     public function storeAttachments(StoreMessageRequest $request, int $chatId): JsonResponse
     {
+        // API dopuszcza niewielki, kontrolowany zestaw typów plików przed przyszłym skanowaniem AV.
         $request->validate([
             'files' => ['required', 'array', 'min:1', 'max:5'],
             'files.*' => ['required', 'file', 'max:10240', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx'],
@@ -169,22 +180,50 @@ class OfficeChatController extends ApiController
             return $message->load('sender');
         });
 
+        ApiAudit::log(
+            logName: 'api-office',
+            event: 'api_office_attachments_sent',
+            message: 'Użytkownik wysłał załączniki do kancelarii przez API.',
+            causer: $request->user(),
+            subject: $conversation,
+            properties: [
+                'office_message_id' => $message->getKey(),
+                'attachments_count' => count($request->file('files', [])),
+            ],
+        );
+
         return $this->success([
             'message' => $this->messagePayload($message, true),
         ], 201);
     }
 
-    private function resolvePriestForParish(int $parishId): ?User
+    private function chatPayload(OfficeConversation $chat): array
     {
-        return User::query()
-            ->where('role', '>=', 1)
-            ->where('status', 'active')
-            ->whereHas('managedParishes', function ($query) use ($parishId): void {
-                $query->where('parish_id', $parishId)
-                    ->where('parish_user.is_active', true);
-            })
-            ->orderByDesc('role')
-            ->first();
+        $recipient = $chat->priest;
+        $recipientMeta = $recipient instanceof User
+            ? OfficeDirectoryController::resolveStaffMeta($recipient, (int) $chat->parish_id)
+            : null;
+
+        return [
+            'id' => (string) $chat->getKey(),
+            'uuid' => $chat->uuid,
+            'parish_id' => (string) $chat->parish_id,
+            'parish_name' => $chat->parish?->short_name ?: $chat->parish?->name,
+            'status' => $chat->status,
+            'recipient_user_id' => $chat->priest_user_id ? (string) $chat->priest_user_id : null,
+            'recipient' => $recipient instanceof User ? [
+                'id' => (string) $recipient->getKey(),
+                'display_name' => trim((string) ($recipient->full_name ?: $recipient->name ?: $recipient->email)),
+                'avatar_url' => $recipient->avatar_media_url,
+                'role_key' => $recipientMeta['role_key'] ?? null,
+                'role_label' => $recipientMeta['role_label'] ?? null,
+                'priority' => $recipientMeta['priority'] ?? null,
+            ] : null,
+            'last_message_at' => optional($chat->last_message_at)?->toISOString(),
+            'last_message_preview' => $chat->latestMessage?->body,
+            'created_at' => optional($chat->created_at)?->toISOString(),
+            'updated_at' => optional($chat->updated_at)?->toISOString(),
+        ];
     }
 
     private function conversationForUser(int $userId, int $chatId): OfficeConversation

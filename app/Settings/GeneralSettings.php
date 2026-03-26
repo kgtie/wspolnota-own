@@ -30,6 +30,9 @@ class GeneralSettings extends Settings
     /** Maksymalny rozmiar uploadu w MB */
     public int $max_upload_size_mb;
 
+    /** Numer wersji calej uslugi Wspolnota */
+    public string $service_version;
+
     public static function group(): string
     {
         return 'general';

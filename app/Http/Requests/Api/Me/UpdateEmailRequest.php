@@ -5,6 +5,9 @@ namespace App\Http\Requests\Api\Me;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * Waliduje dane wejściowe dla endpointu profilu użytkownika w API v1.
+ */
 class UpdateEmailRequest extends FormRequest
 {
     public function authorize(): bool

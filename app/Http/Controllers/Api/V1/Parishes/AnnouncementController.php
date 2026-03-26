@@ -9,6 +9,9 @@ use App\Support\Api\CursorPaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Obsługuje publiczne ogłoszenia parafialne, archiwum oraz eksport PDF.
+ */
 class AnnouncementController extends ApiController
 {
     public function __construct(private readonly AnnouncementSetPdfExporter $pdfExporter) {}

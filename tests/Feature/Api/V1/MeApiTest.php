@@ -38,6 +38,7 @@ it('returns current user profile', function (): void {
     $user = User::factory()->create([
         'email' => 'me@example.com',
         'password' => Hash::make('Secret#2026'),
+        'role' => 0,
         'status' => 'active',
     ]);
 
@@ -46,7 +47,9 @@ it('returns current user profile', function (): void {
     $this->withHeader('Authorization', 'Bearer '.$tokens['access'])
         ->getJson('/api/v1/me')
         ->assertOk()
-        ->assertJsonPath('data.user.email', 'me@example.com');
+        ->assertJsonPath('data.user.email', 'me@example.com')
+        ->assertJsonPath('data.user.role', 0)
+        ->assertJsonPath('data.user.role_key', 'user');
 });
 
 it('registers and removes device', function (): void {
@@ -142,6 +145,12 @@ it('returns api not found payload for missing routes', function (): void {
     $this->getJson('/api/v1/not-existing-endpoint')
         ->assertStatus(404)
         ->assertJsonPath('error.code', 'NOT_FOUND');
+});
+
+it('returns semantic method-not-allowed payload for unsupported api method', function (): void {
+    $this->postJson('/api/v1/parishes')
+        ->assertStatus(405)
+        ->assertJsonPath('error.code', 'METHOD_NOT_ALLOWED');
 });
 
 it('changes default parish and resets parish approval with a new code', function (): void {

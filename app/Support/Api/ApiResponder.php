@@ -4,6 +4,9 @@ namespace App\Support\Api;
 
 use Illuminate\Http\JsonResponse;
 
+/**
+ * Ujednolica strukturę odpowiedzi JSON dla sukcesów, list i błędów w API v1.
+ */
 trait ApiResponder
 {
     protected function success(array $payload = [], int $status = 200): JsonResponse

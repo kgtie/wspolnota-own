@@ -82,3 +82,156 @@ it('allows only the conversation participant to download office attachments thro
         ->assertStatus(404)
         ->assertJsonPath('error.code', 'NOT_FOUND');
 });
+
+it('lists office staff for the requester parish with priority and pastor first', function (): void {
+    $parish = Parish::factory()->create();
+
+    $parishioner = User::factory()->verified()->create([
+        'email' => 'parishioner-office@example.com',
+        'password' => Hash::make('Secret#2026'),
+        'status' => 'active',
+        'home_parish_id' => $parish->getKey(),
+        'email_verified_at' => now(),
+    ]);
+
+    $pastor = User::factory()->admin()->create([
+        'status' => 'active',
+        'full_name' => 'ks. Proboszcz',
+    ]);
+    $assistant = User::factory()->admin()->create([
+        'status' => 'active',
+        'full_name' => 'Administrator Pomocniczy',
+    ]);
+
+    $pastor->managedParishes()->attach($parish->getKey(), [
+        'is_active' => true,
+        'assigned_at' => now(),
+        'note' => 'Proboszcz',
+    ]);
+    $assistant->managedParishes()->attach($parish->getKey(), [
+        'is_active' => true,
+        'assigned_at' => now(),
+        'note' => 'Administrator pomocniczy',
+    ]);
+
+    $access = loginForOfficeApi($parishioner);
+
+    $this->withHeader('Authorization', 'Bearer '.$access)
+        ->getJson('/api/v1/office/parishes/'.$parish->getKey().'/staff')
+        ->assertOk()
+        ->assertJsonPath('data.items.0.id', (string) $pastor->getKey())
+        ->assertJsonPath('data.items.0.role_key', 'pastor')
+        ->assertJsonPath('data.items.0.is_default_recipient', true)
+        ->assertJsonPath('data.items.1.id', (string) $assistant->getKey())
+        ->assertJsonPath('data.items.1.role_key', 'assistant_admin');
+});
+
+it('creates office conversation with explicitly selected recipient', function (): void {
+    $parish = Parish::factory()->create();
+
+    $parishioner = User::factory()->verified()->create([
+        'email' => 'chat-owner@example.com',
+        'password' => Hash::make('Secret#2026'),
+        'status' => 'active',
+        'home_parish_id' => $parish->getKey(),
+        'email_verified_at' => now(),
+    ]);
+
+    $pastor = User::factory()->admin()->create([
+        'status' => 'active',
+        'full_name' => 'ks. Proboszcz',
+    ]);
+    $assistant = User::factory()->admin()->create([
+        'status' => 'active',
+        'full_name' => 'Administrator Pomocniczy',
+    ]);
+
+    $pastor->managedParishes()->attach($parish->getKey(), [
+        'is_active' => true,
+        'assigned_at' => now(),
+        'note' => 'Proboszcz',
+    ]);
+    $assistant->managedParishes()->attach($parish->getKey(), [
+        'is_active' => true,
+        'assigned_at' => now(),
+        'note' => 'Administrator pomocniczy',
+    ]);
+
+    $access = loginForOfficeApi($parishioner);
+
+    $response = $this->withHeader('Authorization', 'Bearer '.$access)
+        ->postJson('/api/v1/office/chats', [
+            'parish_id' => $parish->getKey(),
+            'recipient_user_id' => $assistant->getKey(),
+            'message' => 'Dzien dobry, pisze do pomocniczego administratora.',
+        ])
+        ->assertCreated()
+        ->assertJsonPath('data.chat.recipient_user_id', (string) $assistant->getKey())
+        ->assertJsonPath('data.chat.recipient.role_key', 'assistant_admin');
+
+    $chatId = (int) $response->json('data.chat.id');
+
+    expect(OfficeConversation::query()->findOrFail($chatId)->priest_user_id)->toBe($assistant->getKey());
+});
+
+it('returns parish user directory filtered by scope for office consumers', function (): void {
+    $parish = Parish::factory()->create();
+
+    $requester = User::factory()->verified()->create([
+        'email' => 'directory-owner@example.com',
+        'password' => Hash::make('Secret#2026'),
+        'status' => 'active',
+        'home_parish_id' => $parish->getKey(),
+        'email_verified_at' => now(),
+    ]);
+
+    $pastor = User::factory()->admin()->create([
+        'status' => 'active',
+    ]);
+    $pastor->managedParishes()->attach($parish->getKey(), [
+        'is_active' => true,
+        'assigned_at' => now(),
+        'note' => 'Proboszcz',
+    ]);
+
+    $allUser = User::factory()->create([
+        'home_parish_id' => $parish->getKey(),
+        'status' => 'active',
+        'email_verified_at' => null,
+        'is_user_verified' => false,
+    ]);
+    $emailVerifiedUser = User::factory()->create([
+        'home_parish_id' => $parish->getKey(),
+        'status' => 'active',
+        'email_verified_at' => now(),
+        'is_user_verified' => false,
+    ]);
+    $parishApprovedUser = User::factory()->verified()->create([
+        'home_parish_id' => $parish->getKey(),
+        'status' => 'active',
+        'email_verified_at' => now(),
+    ]);
+
+    $access = loginForOfficeApi($requester);
+
+    $this->withHeader('Authorization', 'Bearer '.$access)
+        ->getJson('/api/v1/office/parishes/'.$parish->getKey().'/users?scope=all')
+        ->assertOk()
+        ->assertJsonFragment(['id' => (string) $allUser->getKey()])
+        ->assertJsonFragment(['id' => (string) $emailVerifiedUser->getKey()])
+        ->assertJsonFragment(['id' => (string) $parishApprovedUser->getKey()]);
+
+    $this->withHeader('Authorization', 'Bearer '.$access)
+        ->getJson('/api/v1/office/parishes/'.$parish->getKey().'/users?scope=email_verified')
+        ->assertOk()
+        ->assertJsonMissing(['id' => (string) $allUser->getKey()])
+        ->assertJsonFragment(['id' => (string) $emailVerifiedUser->getKey()])
+        ->assertJsonFragment(['id' => (string) $parishApprovedUser->getKey()]);
+
+    $this->withHeader('Authorization', 'Bearer '.$access)
+        ->getJson('/api/v1/office/parishes/'.$parish->getKey().'/users?scope=parish_approved')
+        ->assertOk()
+        ->assertJsonMissing(['id' => (string) $allUser->getKey()])
+        ->assertJsonMissing(['id' => (string) $emailVerifiedUser->getKey()])
+        ->assertJsonFragment(['id' => (string) $parishApprovedUser->getKey()]);
+});

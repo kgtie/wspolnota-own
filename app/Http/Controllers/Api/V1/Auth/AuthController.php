@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Notifications\ApiResetPasswordNotification;
 use App\Notifications\ApiVerifyEmailNotification;
 use App\Services\Auth\MobileTokenService;
+use App\Support\Api\ApiAudit;
 use App\Support\Api\ErrorCode;
 use App\Support\Api\UserPayload;
 use Illuminate\Auth\Events\PasswordReset;
@@ -28,6 +29,9 @@ class AuthController extends ApiController
 {
     public function __construct(private readonly MobileTokenService $tokenService) {}
 
+    /**
+     * Rejestruje nowego użytkownika mobilnego i od razu wydaje pierwszą sesję API.
+     */
     public function register(RegisterRequest $request): JsonResponse
     {
         $firstName = trim((string) $request->string('first_name'));
@@ -53,6 +57,19 @@ class AuthController extends ApiController
 
         $freshUser = $user->fresh();
 
+        ApiAudit::log(
+            logName: 'api-auth',
+            event: 'api_user_registered',
+            message: 'Użytkownik zarejestrował konto przez API mobilne.',
+            causer: $freshUser,
+            subject: $freshUser,
+            properties: [
+                'home_parish_id' => $freshUser->home_parish_id,
+                'device_platform' => data_get($request->input('device'), 'platform'),
+                'device_id' => data_get($request->input('device'), 'device_id'),
+            ],
+        );
+
         return $this->success([
             'user' => UserPayload::make($freshUser),
             'tokens' => $this->tokensPayload($tokens),
@@ -67,25 +84,66 @@ class AuthController extends ApiController
         $user = $this->findUserByLogin($login);
 
         if (! $user || ! Hash::check((string) $request->string('password'), (string) $user->password)) {
+            ApiAudit::log(
+                logName: 'api-auth',
+                event: 'api_login_failed',
+                message: 'Wystąpiła nieudana próba logowania do API mobilnego.',
+                subject: $user,
+                properties: [
+                    'login_sha1' => sha1(mb_strtolower($login)),
+                    'ip_address' => $request->ip(),
+                    'device_id' => data_get($request->input('device'), 'device_id'),
+                ],
+            );
+
             throw new ApiException(ErrorCode::AUTH_INVALID_CREDENTIALS, 'Nieprawidłowy login lub hasło.', 401);
         }
 
         if ($user->status !== 'active') {
+            ApiAudit::log(
+                logName: 'api-auth',
+                event: 'api_login_blocked_inactive_account',
+                message: 'Zablokowano logowanie do API dla nieaktywnego konta.',
+                causer: $user,
+                subject: $user,
+                properties: [
+                    'ip_address' => $request->ip(),
+                    'device_id' => data_get($request->input('device'), 'device_id'),
+                ],
+            );
+
             throw new ApiException(ErrorCode::AUTH_ACCOUNT_LOCKED, 'Konto jest zablokowane lub nieaktywne.', 423);
         }
 
         $user->forceFill(['last_login_at' => now()])->save();
 
         $tokens = $this->tokenService->issuePair($user, $request);
+        $freshUser = $user->fresh();
+
+        ApiAudit::log(
+            logName: 'api-auth',
+            event: 'api_login_succeeded',
+            message: 'Użytkownik zalogował się do API mobilnego.',
+            causer: $freshUser,
+            subject: $freshUser,
+            properties: [
+                'ip_address' => $request->ip(),
+                'device_platform' => data_get($request->input('device'), 'platform'),
+                'device_id' => data_get($request->input('device'), 'device_id'),
+            ],
+        );
 
         return $this->success([
-            'user' => UserPayload::make($user->fresh()),
+            'user' => UserPayload::make($freshUser),
             'tokens' => $this->tokensPayload($tokens),
-            'access_level' => $this->resolveAccessLevel($user),
-            'requires_email_verification' => ! $user->hasVerifiedEmail(),
+            'access_level' => $this->resolveAccessLevel($freshUser),
+            'requires_email_verification' => ! $freshUser->hasVerifiedEmail(),
         ]);
     }
 
+    /**
+     * Ponownie wysyła mail weryfikacyjny dla już zalogowanego konta.
+     */
     public function sendVerificationNotification(Request $request): JsonResponse
     {
         /** @var User $user */
@@ -99,6 +157,17 @@ class AuthController extends ApiController
         }
 
         $user->notify(new ApiVerifyEmailNotification);
+
+        ApiAudit::log(
+            logName: 'api-auth',
+            event: 'api_email_verification_resent',
+            message: 'Ponownie wysłano mail weryfikacyjny przez API mobilne.',
+            causer: $user,
+            subject: $user,
+            properties: [
+                'email_verified' => $user->hasVerifiedEmail(),
+            ],
+        );
 
         return $this->success([
             'status' => 'EMAIL_VERIFICATION_SENT',
@@ -129,6 +198,17 @@ class AuthController extends ApiController
             event(new Verified($user));
         }
 
+        ApiAudit::log(
+            logName: 'api-auth',
+            event: 'api_email_verified',
+            message: 'Użytkownik potwierdził adres e-mail dla API mobilnego.',
+            causer: $user,
+            subject: $user,
+            properties: [
+                'home_parish_id' => $user->home_parish_id,
+            ],
+        );
+
         return $this->success([
             'status' => 'EMAIL_VERIFIED',
             'user' => UserPayload::make($user->fresh()),
@@ -141,17 +221,31 @@ class AuthController extends ApiController
 
         /** @var User $user */
         $user = $result['user'];
+        $freshUser = $user->fresh();
+
+        ApiAudit::log(
+            logName: 'api-auth',
+            event: 'api_refresh_rotated',
+            message: 'Odświeżono sesję API mobilnego przez refresh token.',
+            causer: $freshUser,
+            subject: $freshUser,
+            properties: [
+                'device_id' => data_get($request->input('device'), 'device_id'),
+            ],
+        );
 
         return $this->success([
-            'user' => UserPayload::make($user->fresh()),
+            'user' => UserPayload::make($freshUser),
             'tokens' => $this->tokensPayload($result['tokens']),
-            'access_level' => $this->resolveAccessLevel($user),
-            'requires_email_verification' => ! $user->hasVerifiedEmail(),
+            'access_level' => $this->resolveAccessLevel($freshUser),
+            'requires_email_verification' => ! $freshUser->hasVerifiedEmail(),
         ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
+        /** @var User|null $user */
+        $user = $request->user();
         $accessTokenId = $request->attributes->get('api_access_token_id');
 
         if (is_int($accessTokenId) || ctype_digit((string) $accessTokenId)) {
@@ -162,6 +256,19 @@ class AuthController extends ApiController
 
         if ($refreshToken !== '' && $request->user()) {
             $this->tokenService->revokeRefreshTokenForUser($refreshToken, $request->user());
+        }
+
+        if ($user) {
+            ApiAudit::log(
+                logName: 'api-auth',
+                event: 'api_logout',
+                message: 'Użytkownik wylogował bieżącą sesję API mobilnego.',
+                causer: $user,
+                subject: $user,
+                properties: [
+                    'access_token_id' => $accessTokenId,
+                ],
+            );
         }
 
         return $this->success([
@@ -180,6 +287,14 @@ class AuthController extends ApiController
 
         $this->tokenService->revokeAllForUser($user);
 
+        ApiAudit::log(
+            logName: 'api-auth',
+            event: 'api_logout_all',
+            message: 'Użytkownik wylogował wszystkie sesje API mobilnego.',
+            causer: $user,
+            subject: $user,
+        );
+
         return $this->success([
             'status' => 'LOGGED_OUT_ALL',
         ]);
@@ -194,6 +309,14 @@ class AuthController extends ApiController
         if ($user) {
             $token = Password::broker()->createToken($user);
             $user->notify(new ApiResetPasswordNotification($token));
+
+            ApiAudit::log(
+                logName: 'api-auth',
+                event: 'api_password_reset_requested',
+                message: 'Zażądano resetu hasła przez API mobilne.',
+                causer: $user,
+                subject: $user,
+            );
         }
 
         return $this->success([
@@ -213,6 +336,14 @@ class AuthController extends ApiController
 
                 $this->tokenService->revokeAllForUser($user);
                 event(new PasswordReset($user));
+
+                ApiAudit::log(
+                    logName: 'api-auth',
+                    event: 'api_password_reset_completed',
+                    message: 'Użytkownik zresetował hasło przez API mobilne.',
+                    causer: $user,
+                    subject: $user,
+                );
             }
         );
 

@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Requests\Api\Office;
+namespace App\Http\Requests\Api\ParishApprovals;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Waliduje dane wejściowe dla endpointu kancelarii online w API v1.
+ * Waliduje dane wejściowe dla endpointu zatwierdzania parafian w API v1.
  */
-class CreateChatRequest extends FormRequest
+class PendingParishApprovalsRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -23,8 +23,7 @@ class CreateChatRequest extends FormRequest
                 'integer',
                 Rule::exists('parishes', 'id')->where(fn ($query) => $query->where('is_active', true)),
             ],
-            'recipient_user_id' => ['nullable', 'integer', 'exists:users,id'],
-            'message' => ['required', 'string', 'min:1', 'max:5000'],
+            'search' => ['nullable', 'string', 'max:120'],
         ];
     }
 }

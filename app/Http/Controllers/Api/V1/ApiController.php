@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Parish;
 use App\Support\Api\ApiResponder;
 
+/**
+ * Bazowy kontroler API v1 z helperami wspólnymi dla publicznych i chronionych endpointów.
+ */
 abstract class ApiController extends Controller
 {
     use ApiResponder;

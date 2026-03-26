@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
+/**
+ * Zwraca msze publiczne zarówno w widokach zakresowych, jak i skrótowych sekcjach aplikacji.
+ */
 class MassController extends ApiController
 {
     public function index(Request $request, int $parishId): JsonResponse

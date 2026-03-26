@@ -112,7 +112,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($e instanceof MethodNotAllowedHttpException) {
                 return response()->json([
                     'error' => [
-                        'code' => ErrorCode::FORBIDDEN,
+                        'code' => ErrorCode::METHOD_NOT_ALLOWED,
                         'message' => 'Metoda HTTP nie jest obsługiwana dla tego zasobu.',
                         'details' => (object) [],
                     ],
@@ -130,13 +130,31 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             if ($e instanceof HttpExceptionInterface) {
+                $status = $e->getStatusCode();
+
                 return response()->json([
                     'error' => [
-                        'code' => $e->getStatusCode() === 404 ? ErrorCode::NOT_FOUND : ErrorCode::FORBIDDEN,
-                        'message' => $e->getStatusCode() === 404 ? 'Nie znaleziono zasobu.' : 'Żądanie nie może zostać obsłużone.',
+                        'code' => match ($status) {
+                            400 => ErrorCode::BAD_REQUEST,
+                            403 => ErrorCode::FORBIDDEN,
+                            404 => ErrorCode::NOT_FOUND,
+                            405 => ErrorCode::METHOD_NOT_ALLOWED,
+                            409 => ErrorCode::CONFLICT,
+                            429 => ErrorCode::RATE_LIMITED,
+                            default => ErrorCode::INTERNAL_ERROR,
+                        },
+                        'message' => match ($status) {
+                            400 => 'Żądanie jest nieprawidłowe.',
+                            403 => 'Brak uprawnień.',
+                            404 => 'Nie znaleziono zasobu.',
+                            405 => 'Metoda HTTP nie jest obsługiwana dla tego zasobu.',
+                            409 => 'Żądanie powoduje konflikt stanu zasobu.',
+                            429 => 'Zbyt wiele żądań. Spróbuj ponownie później.',
+                            default => 'Żądanie nie może zostać obsłużone.',
+                        },
                         'details' => (object) [],
                     ],
-                ], $e->getStatusCode());
+                ], $status);
             }
 
             return response()->json([

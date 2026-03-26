@@ -12,6 +12,9 @@ use App\Support\Api\ErrorCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Obsługuje interakcje zalogowanego użytkownika z treściami parafii.
+ */
 class EngagementController extends ApiController
 {
     public function attendMass(Request $request, int $parishId, int $massId): JsonResponse

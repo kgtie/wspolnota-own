@@ -4,6 +4,9 @@ namespace App\Support\Api;
 
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * Realizuje lekką paginację cursor-based dla list API bez użycia numerowanych stron.
+ */
 class CursorPaginator
 {
     public static function paginate(Builder $query, int $limit = 20, ?string $cursor = null, string $column = 'id', string $direction = 'desc'): array

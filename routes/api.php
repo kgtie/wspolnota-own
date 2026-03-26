@@ -3,9 +3,12 @@
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\MetaController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\Office\OfficeAttachmentController;
 use App\Http\Controllers\Api\V1\Office\OfficeChatController;
+use App\Http\Controllers\Api\V1\Office\OfficeDirectoryController;
+use App\Http\Controllers\Api\V1\ParishApprovalController;
 use App\Http\Controllers\Api\V1\Parishes\AnnouncementController;
 use App\Http\Controllers\Api\V1\Parishes\EngagementController;
 use App\Http\Controllers\Api\V1\Parishes\MassController;
@@ -14,18 +17,21 @@ use App\Http\Controllers\Api\V1\Parishes\ParishController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
+    // Publiczny endpoint kontraktu API pozostaje bez autoryzacji.
     Route::get('/openapi.yaml', function () {
         return response()->file(base_path('openapi/v1.yaml'), [
             'Content-Type' => 'application/yaml; charset=utf-8',
         ]);
     });
 
+    Route::get('/meta/service-version', [MetaController::class, 'serviceVersion']);
+
     Route::prefix('auth')->group(function (): void {
-        Route::post('/register', [AuthController::class, 'register']);
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::post('/refresh', [AuthController::class, 'refresh']);
-        Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-        Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+        Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:api-auth-register');
+        Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:api-auth-login');
+        Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:api-auth-refresh');
+        Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:api-auth-forgot-password');
+        Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:api-auth-reset-password');
         Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
             ->middleware('signed')
             ->whereNumber('id')
@@ -34,7 +40,8 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware('api.auth')->group(function (): void {
             Route::post('/logout', [AuthController::class, 'logout']);
             Route::post('/logout-all', [AuthController::class, 'logoutAll']);
-            Route::post('/email/verification-notification', [AuthController::class, 'sendVerificationNotification']);
+            Route::post('/email/verification-notification', [AuthController::class, 'sendVerificationNotification'])
+                ->middleware('throttle:api-auth-verification-resend');
         });
     });
 
@@ -77,6 +84,16 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/me/notifications/{id}/read', [NotificationController::class, 'markRead']);
     });
 
+    Route::middleware(['api.auth', 'api.verified'])->prefix('parish-approvals')->group(function (): void {
+        Route::get('/by-code/{code}', [ParishApprovalController::class, 'byCode'])
+            ->middleware('throttle:api-parish-approval-lookup')
+            ->where('code', '\d{9}');
+        Route::post('/{userId}/approve', [ParishApprovalController::class, 'approve'])
+            ->middleware('throttle:api-parish-approval-approve')
+            ->whereNumber('userId');
+        Route::get('/pending', [ParishApprovalController::class, 'pending']);
+    });
+
     Route::middleware(['api.auth', 'api.verified'])->group(function (): void {
         Route::post('/parishes/{parishId}/masses/{massId}/attendance', [EngagementController::class, 'attendMass'])
             ->whereNumber('parishId')
@@ -97,6 +114,8 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::middleware(['api.auth', 'api.verified', 'api.parish_approved'])->prefix('office')->group(function (): void {
+        Route::get('/parishes/{parishId}/staff', [OfficeDirectoryController::class, 'staff'])->whereNumber('parishId');
+        Route::get('/parishes/{parishId}/users', [OfficeDirectoryController::class, 'users'])->whereNumber('parishId');
         Route::get('/chats', [OfficeChatController::class, 'index']);
         Route::post('/chats', [OfficeChatController::class, 'store']);
         Route::get('/chats/{chatId}/messages', [OfficeChatController::class, 'messages'])->whereNumber('chatId');

@@ -10,6 +10,9 @@ use App\Models\Parish;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Dostarcza publiczne dane parafii oraz centralny payload home-feed dla aplikacji.
+ */
 class ParishController extends ApiController
 {
     public function index(Request $request): JsonResponse

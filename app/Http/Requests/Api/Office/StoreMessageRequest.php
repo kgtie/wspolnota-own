@@ -4,6 +4,9 @@ namespace App\Http\Requests\Api\Office;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Waliduje dane wejściowe dla endpointu kancelarii online w API v1.
+ */
 class StoreMessageRequest extends FormRequest
 {
     public function authorize(): bool

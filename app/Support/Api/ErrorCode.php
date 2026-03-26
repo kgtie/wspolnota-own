@@ -2,6 +2,9 @@
 
 namespace App\Support\Api;
 
+/**
+ * Słownik stabilnych kodów błędów zwracanych przez API v1.
+ */
 final class ErrorCode
 {
     public const VALIDATION_ERROR = 'VALIDATION_ERROR';
@@ -38,9 +41,13 @@ final class ErrorCode
 
     public const FORBIDDEN = 'FORBIDDEN';
 
+    public const BAD_REQUEST = 'BAD_REQUEST';
+
     public const NOT_FOUND = 'NOT_FOUND';
 
     public const CONFLICT = 'CONFLICT';
+
+    public const METHOD_NOT_ALLOWED = 'METHOD_NOT_ALLOWED';
 
     public const RATE_LIMITED = 'RATE_LIMITED';
 
