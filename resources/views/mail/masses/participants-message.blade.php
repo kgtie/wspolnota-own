@@ -1,11 +1,11 @@
 <x-mail::message>
-# Wiadomosc do uczestnikow mszy swietej
+# Wiadomość do uczestników mszy świętej
 
-Ta wiadomosc zostala wyslana przez proboszcza z panelu parafialnego Wspolnoty.
+Ta wiadomość została wysłana przez proboszcza z panelu parafialnego Wspólnoty.
 
-**Parafia:** {{ $parishName ?? 'Nie okreslono' }}  
+**Parafia:** {{ $parishName ?? 'Nie określono' }}  
 **Nadawca:** {{ $sender->full_name ?: $sender->name }}  
-**Email nadawcy:** {{ $sender->email }}
+**E-mail nadawcy:** {{ $sender->email }}
 
 ---
 
@@ -18,8 +18,8 @@ Ta wiadomosc zostala wyslana przez proboszcza z panelu parafialnego Wspolnoty.
 
 ---
 
-W razie pytan odpowiedz bezposrednio na ten email lub skontaktuj sie z kancelaria parafii.
+W razie pytań odpowiedz bezpośrednio na ten e-mail lub skontaktuj się z kancelarią parafii.
 
 Z Bogiem,  
-Wspolnota
+Wspólnota
 </x-mail::message>

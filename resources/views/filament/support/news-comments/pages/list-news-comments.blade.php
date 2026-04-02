@@ -235,17 +235,17 @@
         <section class="comments-workbench__hero">
             <div>
                 <span class="comments-workbench__eyebrow">Moderacja i rozmowa</span>
-                <h1 class="comments-workbench__title">Komentarze w ukladzie watkow, z szybka odpowiedzia i kontekstem wpisu.</h1>
+                <h1 class="comments-workbench__title">Komentarze w układzie wątków, z szybką odpowiedzią i kontekstem wpisu.</h1>
                 <p class="comments-workbench__copy">
-                    Ten ekran ma dzialac jak redakcyjna skrzynka komentarzy, a nie zwykla tabela.
-                    Widzisz od razu zaleznosci rodzic-dziecko, stan moderacji i mozesz odpowiedziec bez wychodzenia z listy.
+                    Ten ekran ma działać jak redakcyjna skrzynka komentarzy, a nie zwykła tabela.
+                    Od razu widzisz relacje rodzic-dziecko, stan moderacji i możesz odpowiedzieć bez wychodzenia z listy.
                 </p>
             </div>
 
             <aside class="comments-workbench__hero-note">
                 <span class="comments-workbench__hero-note-label">Tryb pracy</span>
                 <p class="comments-workbench__hero-note-copy">
-                    Najedz na komentarz, aby pokazac akcje. Odpowiedz rozwija sie inline pod konkretnym wpisem, podobnie jak w panelach redakcyjnych pokroju WordPress.
+                    Najedź na komentarz, aby pokazać akcje. Odpowiedź rozwija się bezpośrednio pod konkretnym wpisem, podobnie jak w panelach redakcyjnych pokroju WordPressa.
                 </p>
             </aside>
         </section>

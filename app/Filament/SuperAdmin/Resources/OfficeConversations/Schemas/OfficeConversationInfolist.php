@@ -29,7 +29,7 @@ class OfficeConversationInfolist
                             ->state(fn (OfficeConversation $record): string => $record->parishioner?->full_name
                                 ?: $record->parishioner?->name
                                 ?: $record->parishioner?->email
-                                ?: 'Uzytkownik usuniety'),
+                                ?: 'Użytkownik usunięty'),
 
                         TextEntry::make('priest.full_name')
                             ->label('Administrator')
@@ -37,7 +37,7 @@ class OfficeConversationInfolist
                             ->state(fn (OfficeConversation $record): string => $record->priest?->full_name
                                 ?: $record->priest?->name
                                 ?: $record->priest?->email
-                                ?: 'Uzytkownik usuniety'),
+                                ?: 'Użytkownik usunięty'),
 
                         TextEntry::make('status')
                             ->label('Status')
@@ -46,16 +46,16 @@ class OfficeConversationInfolist
                             ->color(fn (string $state): string => $state === OfficeConversation::STATUS_OPEN ? 'success' : 'gray'),
 
                         TextEntry::make('messages_count')
-                            ->label('Wiadomosci')
+                            ->label('Wiadomości')
                             ->badge(),
 
                         TextEntry::make('last_message_at')
-                            ->label('Ostatnia wiadomosc')
+                            ->label('Ostatnia wiadomość')
                             ->dateTime('d.m.Y H:i')
                             ->placeholder('Brak'),
 
                         TextEntry::make('closed_at')
-                            ->label('Zamknieta')
+                            ->label('Zamknięta')
                             ->dateTime('d.m.Y H:i')
                             ->placeholder('Nie'),
 

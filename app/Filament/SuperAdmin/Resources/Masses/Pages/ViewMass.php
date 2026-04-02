@@ -30,9 +30,9 @@ class ViewMass extends ViewRecord
             EditAction::make(),
             $this->statusAction('completed', 'Oznacz jako odprawiona', 'heroicon-o-check-circle', 'success'),
             $this->statusAction('scheduled', 'Oznacz jako zaplanowana', 'heroicon-o-clock', 'warning'),
-            $this->statusAction('cancelled', 'Oznacz jako odwolana', 'heroicon-o-x-circle', 'danger'),
+            $this->statusAction('cancelled', 'Oznacz jako odwołaną', 'heroicon-o-x-circle', 'danger'),
             Action::make('send_email_to_participants')
-                ->label('Wyslij email do uczestnikow')
+                ->label('Wyślij e-mail do uczestników')
                 ->icon('heroicon-o-envelope')
                 ->color('info')
                 ->schema([
@@ -44,15 +44,15 @@ class ViewMass extends ViewRecord
                             $record = $this->getRecord();
 
                             if (! $record instanceof Mass) {
-                                return 'Informacja dotyczaca mszy swietej';
+                                return 'Informacja dotycząca Mszy Świętej';
                             }
 
                             $date = $record->celebration_at?->format('d.m.Y H:i') ?? 'bez terminu';
 
-                            return "Informacja dotyczaca mszy ({$date})";
+                            return "Informacja dotycząca Mszy ({$date})";
                         }),
                     Textarea::make('message')
-                        ->label('Tresc wiadomosci')
+                        ->label('Treść wiadomości')
                         ->required()
                         ->rows(10)
                         ->maxLength(5000),
@@ -85,13 +85,13 @@ class ViewMass extends ViewRecord
                                     'parish_id' => $record->parish_id,
                                     'reason' => 'no_recipients',
                                 ])
-                                ->log('Pominieto wysylke email do uczestnikow mszy: brak odbiorcow.');
+                                ->log('Pominięto wysyłkę e-maila do uczestników Mszy: brak odbiorców.');
                         }
 
                         Notification::make()
                             ->warning()
-                            ->title('Brak uczestnikow do powiadomienia.')
-                            ->body('Na te msze nie zapisaly sie jeszcze osoby z adresem email.')
+                            ->title('Brak uczestników do powiadomienia.')
+                            ->body('Na tę Mszę nie zapisały się jeszcze osoby z adresem e-mail.')
                             ->send();
 
                         return;
@@ -118,7 +118,7 @@ class ViewMass extends ViewRecord
                     }
 
                     $notification = Notification::make()
-                        ->title('Kolejkowanie wiadomosci zakonczone.')
+                        ->title('Kolejkowanie wiadomości zakończone.')
                         ->body("Zakolejkowano: {$queued}, bledy: {$failed}");
 
                     if ($failed > 0) {
@@ -140,7 +140,7 @@ class ViewMass extends ViewRecord
                                 'subject' => (string) $data['subject'],
                                 'message_length' => mb_strlen((string) $data['message']),
                             ])
-                            ->log('Proboszcz zakolejkowal wiadomosc email do uczestnikow mszy.');
+                            ->log('Proboszcz zakolejkował wiadomość e-mail do uczestników Mszy.');
                     }
 
                     $notification->send();

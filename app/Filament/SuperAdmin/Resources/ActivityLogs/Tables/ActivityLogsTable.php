@@ -229,7 +229,7 @@ class ActivityLogsTable
                 ActionGroup::make([
                     ViewAction::make(),
                     Action::make('open_subject')
-                        ->label('Otworz obiekt')
+                        ->label('Otwórz obiekt')
                         ->icon('heroicon-o-arrow-top-right-on-square')
                         ->visible(fn (Activity $record): bool => filled(ActivityLogResource::relationUrl(
                             $record->subject,
@@ -242,7 +242,7 @@ class ActivityLogsTable
                             $record->subject_id,
                         )),
                     Action::make('open_causer')
-                        ->label('Otworz sprawce')
+                        ->label('Otwórz sprawcę')
                         ->icon('heroicon-o-user')
                         ->visible(fn (Activity $record): bool => filled(ActivityLogResource::relationUrl(
                             $record->causer,

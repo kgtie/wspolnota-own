@@ -28,7 +28,7 @@ class MediaTable
             ->persistFiltersInSession()
             ->columns([
                 ImageColumn::make('preview')
-                    ->label('Podglad')
+                    ->label('Podgląd')
                     ->circular()
                     ->imageSize(42)
                     ->state(fn (Media $record): ?string => str_starts_with((string) ($record->mime_type ?? ''), 'image/')
@@ -121,7 +121,7 @@ class MediaTable
             ->recordActions([
                 ActionGroup::make([
                     Action::make('open_file')
-                        ->label('Otworz plik')
+                        ->label('Otwórz plik')
                         ->icon('heroicon-o-arrow-top-right-on-square')
                         ->url(fn (Media $record): string => $record->getFullUrl())
                         ->openUrlInNewTab(),

@@ -28,25 +28,25 @@ class OfficeMessageReceivedMailNotification extends Notification implements Shou
         $sender = $this->message->sender;
 
         return $this->wspolnotaMailMessage(
-            subject: 'Nowa wiadomosc w kancelarii online',
+            subject: 'Nowa wiadomość w kancelarii online',
             htmlBodyView: 'mail.html.notifications.action-message',
             textBodyView: 'mail.text.notifications.action-message',
             bodyData: [
                 'eyebrow' => 'Kancelaria online',
-                'title' => 'Otrzymales nowa wiadomosc.',
-                'intro' => 'W Twojej kancelarii online pojawila sie nowa wiadomosc i czeka na odpowiedz.',
+                'title' => 'Otrzymałeś nową wiadomość.',
+                'intro' => 'W Twojej kancelarii online pojawiła się nowa wiadomość i czeka na odpowiedź.',
                 'details' => [
                     'Parafia' => $parish?->name ?? 'Nie przypisano',
-                    'Nadawca' => $sender?->full_name ?: $sender?->name ?: 'Nieznany uzytkownik',
+                    'Nadawca' => $sender?->full_name ?: $sender?->name ?: 'Nieznany użytkownik',
                 ],
-                'actionLabel' => 'Przejdz do Wspolnoty',
+                'actionLabel' => 'Przejdź do Wspólnoty',
                 'actionUrl' => route('dashboard'),
-                'outro' => 'Otworz aplikacje lub panel, aby odpowiedziec w odpowiednim czasie.',
+                'outro' => 'Otwórz aplikację lub panel, aby odpowiedzieć w odpowiednim czasie.',
             ],
             parish: $parish,
             context: [
                 'category_label' => 'Kancelaria online',
-                'preheader' => 'Nowa wiadomosc w kancelarii online.',
+                'preheader' => 'Nowa wiadomość w kancelarii online.',
                 'mobile_note_variant' => 'parish',
             ],
         );

@@ -49,7 +49,7 @@ class DispatchCommunicationCampaignJob implements ShouldQueue
                 'recipients_total' => 0,
                 'queued_count' => 0,
                 'failed_count' => 0,
-                'last_error' => 'Brak odbiorcow dla zapisanej konfiguracji kampanii.',
+                'last_error' => 'Brak odbiorców dla zapisanej konfiguracji kampanii.',
             ]);
 
             return;
@@ -61,7 +61,7 @@ class DispatchCommunicationCampaignJob implements ShouldQueue
         foreach ($recipients as $recipient) {
             try {
                 Mail::to((string) $recipient['email'])->queue(new CommunicationBroadcastMessage(
-                    subjectLine: (string) ($payload['subject_line'] ?? $campaign->subject_line ?? 'Kampania Wspolnoty'),
+                    subjectLine: (string) ($payload['subject_line'] ?? $campaign->subject_line ?? 'Kampania Wspólnoty'),
                     messageBody: (string) ($payload['message_body'] ?? ''),
                     senderName: $actor instanceof User ? ($actor->full_name ?: $actor->name) : null,
                     senderEmail: $actor instanceof User ? $actor->email : null,
@@ -86,7 +86,7 @@ class DispatchCommunicationCampaignJob implements ShouldQueue
 
         if (($payload['send_copy_to_me'] ?? false) && $actor instanceof User && filled($actor->email)) {
             Mail::to($actor->email)->queue(new CommunicationBroadcastMessage(
-                subjectLine: '[Kopia] '.((string) ($payload['subject_line'] ?? $campaign->subject_line ?? 'Kampania Wspolnoty')),
+                subjectLine: '[Kopia] '.((string) ($payload['subject_line'] ?? $campaign->subject_line ?? 'Kampania Wspólnoty')),
                 messageBody: (string) ($payload['message_body'] ?? ''),
                 senderName: $actor->full_name ?: $actor->name,
                 senderEmail: $actor->email,
@@ -108,7 +108,7 @@ class DispatchCommunicationCampaignJob implements ShouldQueue
             'queued_count' => $queued,
             'failed_count' => $failed,
             'queued_at' => now(),
-            'last_error' => $failed > 0 ? 'Co najmniej jedna wiadomosc nie zostala zakolejkowana.' : null,
+            'last_error' => $failed > 0 ? 'Co najmniej jedna wiadomość nie została zakolejkowana.' : null,
         ]);
     }
 }

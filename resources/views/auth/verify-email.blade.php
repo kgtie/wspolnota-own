@@ -1,11 +1,11 @@
 <x-guest-layout>
     <div class="text-center mb-4">
         <i class="fa-regular fa-envelope-open fa-3x text-primary mb-3"></i>
-        <h4 class="fw-bold">Potwierdź adres email</h4>
+        <h4 class="fw-bold">Potwierdź adres e-mail</h4>
         <p class="text-muted small">
             Dziękujemy za rejestrację! Przed rozpoczęciem i kontynuowaniem prosimy o kliknięcie w link, który właśnie
             wysłaliśmy na Twój
-            adres email.
+            adres e-mail.
         </p>
     </div>
 
@@ -19,7 +19,7 @@
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
             <button type="submit" class="btn btn-md-primary w-100">
-                Wyślij ponownie email weryfikacyjny
+                Wyślij ponownie e-mail weryfikacyjny
             </button>
         </form>
 

@@ -23,7 +23,7 @@ class MessagesRelationManager extends RelationManager
 {
     protected static string $relationship = 'messages';
 
-    protected static ?string $title = 'Wiadomosci';
+    protected static ?string $title = 'Wiadomości';
 
     public function table(Table $table): Table
     {
@@ -36,19 +36,19 @@ class MessagesRelationManager extends RelationManager
                     ->state(fn (OfficeMessage $record): string => $record->sender?->full_name
                         ?: $record->sender?->name
                         ?: $record->sender?->email
-                        ?: 'Uzytkownik usuniety')
-                    ->description(fn (OfficeMessage $record): string => $record->sender?->email ?: 'Brak email')
+                        ?: 'Użytkownik usunięty')
+                    ->description(fn (OfficeMessage $record): string => $record->sender?->email ?: 'Brak adresu e-mail')
                     ->sortable()
                     ->searchable(['users.full_name', 'users.name', 'users.email']),
 
                 TextColumn::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->limit(120)
-                    ->placeholder('Brak tresci')
+                    ->placeholder('Brak treści')
                     ->wrap(),
 
                 IconColumn::make('has_attachments')
-                    ->label('Zalaczniki')
+                    ->label('Załączniki')
                     ->boolean(),
 
                 TextColumn::make('attachments_list')
@@ -84,13 +84,13 @@ class MessagesRelationManager extends RelationManager
                     ->color(fn (OfficeMessage $record): string => $record->read_by_parishioner_at ? 'success' : 'warning'),
 
                 TextColumn::make('created_at')
-                    ->label('Wyslana')
+                    ->label('Wysłana')
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Dodaj wiadomosc')
+                    ->label('Dodaj wiadomość')
                     ->schema(self::messageSchema())
                     ->mutateDataUsing(function (array $data): array {
                         $data['has_attachments'] = false;
@@ -182,16 +182,16 @@ class MessagesRelationManager extends RelationManager
                     ->all()),
 
             Textarea::make('body')
-                ->label('Tresc wiadomosci')
+                ->label('Treść wiadomości')
                 ->rows(6)
                 ->maxLength(12000)
                 ->columnSpanFull(),
 
             Toggle::make('has_attachments')
-                ->label('Czy zawiera zalaczniki')
+                ->label('Czy zawiera załączniki')
                 ->dehydrated(false)
                 ->disabled()
-                ->helperText('Zarzadzaj plikami przez modul Media (model: OfficeMessage).'),
+                ->helperText('Zarządzaj plikami przez moduł Media (model: OfficeMessage).'),
 
             DateTimePicker::make('read_by_priest_at')
                 ->label('Przeczytane po stronie admina')

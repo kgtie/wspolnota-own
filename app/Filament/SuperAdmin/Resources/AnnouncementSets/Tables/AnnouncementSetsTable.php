@@ -78,14 +78,14 @@ class AnnouncementSetsTable
                     ->formatStateUsing(fn (string $state): string => AnnouncementSet::getStatusOptions()[$state] ?? $state),
 
                 TextColumn::make('items_count')
-                    ->label('Ogloszenia')
+                    ->label('Ogłoszenia')
                     ->state(fn (AnnouncementSet $record): string => (string) ($record->items_count ?? 0))
                     ->badge()
                     ->sortable()
                     ->color('info'),
 
                 TextColumn::make('important_items_count')
-                    ->label('Wazne')
+                    ->label('Ważne')
                     ->state(fn (AnnouncementSet $record): string => (string) ($record->important_items_count ?? 0))
                     ->badge()
                     ->sortable()
@@ -109,25 +109,25 @@ class AnnouncementSetsTable
                 TextColumn::make('notifications_sent_at')
                     ->label('Mail do parafian')
                     ->state(fn (AnnouncementSet $record): string => $record->notifications_sent_at
-                        ? 'Wyslano ('.$record->notifications_sent_at->format('d.m H:i').')'
-                        : 'Nie wyslano')
+                        ? 'Wysłano ('.$record->notifications_sent_at->format('d.m H:i').')'
+                        : 'Nie wysłano')
                     ->badge()
                     ->color(fn (AnnouncementSet $record): string => $record->notifications_sent_at ? 'success' : 'warning')
                     ->toggleable(),
 
                 TextColumn::make('push_notification_sent_at')
-                    ->label('Push dispatch')
+                    ->label('Wysyłka push')
                     ->state(fn (AnnouncementSet $record): string => $record->push_notification_sent_at
-                        ? 'Wyslano '.$record->push_notification_sent_at->format('d.m H:i')
+                        ? 'Wysłano '.$record->push_notification_sent_at->format('d.m H:i')
                         : 'Oczekuje')
                     ->badge()
                     ->color(fn (AnnouncementSet $record): string => $record->push_notification_sent_at ? 'success' : 'warning')
                     ->toggleable(),
 
                 TextColumn::make('email_notification_sent_at')
-                    ->label('Email dispatch')
+                    ->label('Wysyłka e-maili')
                     ->state(fn (AnnouncementSet $record): string => $record->email_notification_sent_at
-                        ? 'Wyslano '.$record->email_notification_sent_at->format('d.m H:i')
+                        ? 'Wysłano '.$record->email_notification_sent_at->format('d.m H:i')
                         : 'Oczekuje')
                     ->badge()
                     ->color(fn (AnnouncementSet $record): string => $record->email_notification_sent_at ? 'success' : 'warning')
@@ -141,7 +141,7 @@ class AnnouncementSetsTable
                     ->toggleable(),
 
                 TextColumn::make('updatedBy.full_name')
-                    ->label('Edytowal')
+                    ->label('Edytował')
                     ->placeholder('Brak')
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -157,11 +157,11 @@ class AnnouncementSetsTable
                     ->query(fn (Builder $query): Builder => $query->current()),
 
                 Filter::make('future')
-                    ->label('Przyszle')
+                    ->label('Przyszłe')
                     ->query(fn (Builder $query): Builder => $query->whereDate('effective_from', '>', now()->toDateString())),
 
                 Filter::make('past')
-                    ->label('Przeszle')
+                    ->label('Przeszłe')
                     ->query(fn (Builder $query): Builder => $query->whereDate('effective_to', '<', now()->toDateString())),
 
                 SelectFilter::make('status')
@@ -251,10 +251,10 @@ class AnnouncementSetsTable
                             'announcement_set_id' => $record->getKey(),
                             'target_status' => $status,
                         ])
-                        ->log('Proboszcz zaktualizowal status zestawu ogloszen.');
+                        ->log('Proboszcz zaktualizował status zestawu ogłoszeń.');
                 }
             })
-            ->successNotificationTitle('Status zestawu zostal zaktualizowany.');
+            ->successNotificationTitle('Status zestawu został zaktualizowany.');
     }
 
     protected static function printAction(): Action
@@ -270,7 +270,7 @@ class AnnouncementSetsTable
                 if (! $exporter->hasPrintableItems($record)) {
                     Notification::make()
                         ->warning()
-                        ->title('Brak aktywnych ogloszen do wydruku.')
+                        ->title('Brak aktywnych ogłoszeń do wydruku.')
                         ->send();
 
                     return null;
@@ -286,7 +286,7 @@ class AnnouncementSetsTable
                             'announcement_set_id' => $record->getKey(),
                             'active_items_count' => $record->items()->where('is_active', true)->count(),
                         ])
-                        ->log('Proboszcz wygenerowal PDF z ogloszeniami parafialnymi.');
+                        ->log('Proboszcz wygenerował PDF z ogłoszeniami parafialnymi.');
                 }
 
                 return $exporter->download($record);
@@ -302,16 +302,16 @@ class AnnouncementSetsTable
             ->visible(fn (AnnouncementSet $record): bool => $record->status === 'published')
             ->schema([
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
-                    ->default(fn (AnnouncementSet $record): string => 'Nowy pakiet ogloszen'),
+                    ->default(fn (AnnouncementSet $record): string => 'Nowy pakiet ogłoszeń'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(5)
                     ->maxLength(1000)
-                    ->default(fn (AnnouncementSet $record): string => 'Opublikowano nowy pakiet ogloszen: '.$record->title),
+                    ->default(fn (AnnouncementSet $record): string => 'Opublikowano nowy pakiet ogłoszeń: '.$record->title),
             ])
             ->action(function (
                 AnnouncementSet $record,
@@ -336,8 +336,8 @@ class AnnouncementSetsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano push dla ogloszen.')
-                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano push dla ogłoszeń.')
+                    ->body("Użytkownicy: {$result['users']} · urządzenia: {$result['devices']} · pominięci: {$result['skipped']}")
                     ->send();
             });
     }
@@ -345,7 +345,7 @@ class AnnouncementSetsTable
     protected static function sendInstantEmailAction(): Action
     {
         return Action::make('send_announcement_email_now')
-            ->label('Email teraz')
+            ->label('E-mail teraz')
             ->icon('heroicon-o-envelope')
             ->color('primary')
             ->visible(fn (AnnouncementSet $record): bool => $record->status === 'published')
@@ -354,13 +354,13 @@ class AnnouncementSetsTable
                     ->label('Temat')
                     ->required()
                     ->maxLength(200)
-                    ->default(fn (AnnouncementSet $record): string => 'Nowy pakiet ogloszen: '.$record->title),
+                    ->default(fn (AnnouncementSet $record): string => 'Nowy pakiet ogłoszeń: '.$record->title),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(8)
                     ->maxLength(12000)
-                    ->default(fn (AnnouncementSet $record): string => 'Opublikowano nowy pakiet ogloszen w parafii: '.$record->title),
+                    ->default(fn (AnnouncementSet $record): string => 'Opublikowano nowy pakiet ogłoszeń w parafii: '.$record->title),
             ])
             ->action(function (
                 AnnouncementSet $record,
@@ -381,8 +381,8 @@ class AnnouncementSetsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla ogloszen.')
-                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano e-mail dla ogłoszeń.')
+                    ->body("Odbiorcy: {$result['users']} · w kolejce: {$result['queued']} · pominięci: {$result['skipped']}")
                     ->send();
             });
     }
@@ -402,8 +402,8 @@ class AnnouncementSetsTable
                 if (! $summarizer->canGenerateForSet($record)) {
                     Notification::make()
                         ->warning()
-                        ->title('Nie mozna wygenerowac streszczenia.')
-                        ->body('Zestaw musi byc opublikowany i zawierac co najmniej jedno aktywne ogloszenie.')
+                        ->title('Nie można wygenerować streszczenia.')
+                        ->body('Zestaw musi być opublikowany i zawierać co najmniej jedno aktywne ogłoszenie.')
                         ->send();
 
                     return;
@@ -429,7 +429,7 @@ class AnnouncementSetsTable
                                 'summary_length' => mb_strlen($summary),
                                 'model' => (string) config('gemini.model'),
                             ])
-                            ->log('Proboszcz recznie wygenerowal streszczenie AI dla zestawu ogloszen.');
+                            ->log('Proboszcz ręcznie wygenerował streszczenie AI dla zestawu ogłoszeń.');
                     }
 
                     Notification::make()
@@ -449,12 +449,12 @@ class AnnouncementSetsTable
                                 'announcement_set_id' => $record->getKey(),
                                 'error' => $exception->getMessage(),
                             ])
-                            ->log('Reczne generowanie streszczenia AI dla zestawu ogloszen zakonczone bledem.');
+                            ->log('Ręczne generowanie streszczenia AI dla zestawu ogłoszeń zakończyło się błędem.');
                     }
 
                     Notification::make()
                         ->danger()
-                        ->title('Nie udalo sie wygenerowac streszczenia AI.')
+                        ->title('Nie udało się wygenerować streszczenia AI.')
                         ->body($exception->getMessage())
                         ->send();
                 }
@@ -505,13 +505,13 @@ class AnnouncementSetsTable
                             'new_set_id' => $clone->getKey(),
                             'copied_items_count' => $items->count(),
                         ])
-                        ->log('Proboszcz zduplikowal zestaw ogloszen.');
+                        ->log('Proboszcz zduplikował zestaw ogłoszeń.');
                 }
 
                 Notification::make()
                     ->success()
-                    ->title('Utworzono kopie zestawu ogloszen.')
-                    ->body('Skopiowano wszystkie pojedyncze ogloszenia i przesunieto daty o 7 dni.')
+                    ->title('Utworzono kopię zestawu ogłoszeń.')
+                    ->body('Skopiowano wszystkie pojedyncze ogłoszenia i przesunięto daty o 7 dni.')
                     ->send();
             });
     }
@@ -566,13 +566,13 @@ class AnnouncementSetsTable
                             'updated_count' => $updated,
                             'updated_set_ids' => $updatedIds,
                         ])
-                        ->log('Proboszcz masowo zaktualizowal statusy zestawow ogloszen.');
+                        ->log('Proboszcz masowo zaktualizował statusy zestawów ogłoszeń.');
                 }
 
                 Notification::make()
                     ->success()
-                    ->title('Zaktualizowano statusy zestawow ogloszen.')
-                    ->body("Liczba zmienionych rekordow: {$updated}")
+                    ->title('Zaktualizowano statusy zestawów ogłoszeń.')
+                    ->body("Liczba zmienionych rekordów: {$updated}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();
@@ -586,12 +586,12 @@ class AnnouncementSetsTable
             ->color('info')
             ->schema([
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
                     ->default('Nowe informacje z wybranych parafii'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(5)
                     ->maxLength(1000),
@@ -626,8 +626,8 @@ class AnnouncementSetsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano push dla zaznaczonych ogloszen.')
-                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano push dla zaznaczonych ogłoszeń.')
+                    ->body("Użytkownicy: {$result['users']} · urządzenia: {$result['devices']} · pominięci: {$result['skipped']}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();
@@ -636,7 +636,7 @@ class AnnouncementSetsTable
     protected static function sendInstantEmailBulkAction(): BulkAction
     {
         return BulkAction::make('send_announcement_email_bulk')
-            ->label('Email teraz')
+            ->label('E-mail teraz')
             ->icon('heroicon-o-envelope')
             ->color('primary')
             ->schema([
@@ -646,7 +646,7 @@ class AnnouncementSetsTable
                     ->maxLength(200)
                     ->default('Nowe informacje z wybranych parafii'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(8)
                     ->maxLength(12000),
@@ -677,8 +677,8 @@ class AnnouncementSetsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla zaznaczonych ogloszen.')
-                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano e-mail dla zaznaczonych ogłoszeń.')
+                    ->body("Odbiorcy: {$result['users']} · w kolejce: {$result['queued']} · pominięci: {$result['skipped']}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();

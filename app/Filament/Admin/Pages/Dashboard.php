@@ -173,19 +173,19 @@ class Dashboard extends BaseDashboard
                     'value' => number_format((clone $parishionersQuery)->count(), 0, ',', ' '),
                     'description' => $pendingApprovals > 0
                         ? "Do zatwierdzenia: {$pendingApprovals}"
-                        : 'Brak zaleglych zatwierdzen',
+                        : 'Brak zaległych zatwierdzeń',
                     'tone' => $pendingApprovals > 0 ? 'warning' : 'success',
                     'icon' => 'heroicon-o-users',
                 ],
                 [
                     'label' => 'Msze dzisiaj',
                     'value' => number_format($todayMasses, 0, ',', ' '),
-                    'description' => "Nadchodzace 14 dni: {$upcomingWeekMasses}",
+                    'description' => "Nadchodzące 14 dni: {$upcomingWeekMasses}",
                     'tone' => $coverage['missing_days_count'] > 0 ? $coverage['tone'] : 'info',
                     'icon' => 'heroicon-o-calendar-days',
                 ],
                 [
-                    'label' => 'Ogloszenia',
+                    'label' => 'Ogłoszenia',
                     'value' => $currentAnnouncements['hero_value'],
                     'description' => $nextAnnouncements['hero_description'],
                     'tone' => $currentAnnouncements['tone'],
@@ -219,32 +219,32 @@ class Dashboard extends BaseDashboard
             'quickActions' => $this->resolveQuickActions($officeSnapshot),
             'areaCards' => [
                 [
-                    'title' => 'Wspolnota',
+                    'title' => 'Wspólnota',
                     'tone' => $pendingApprovals > 0 ? 'warning' : 'success',
                     'tone_label' => $pendingApprovals > 0 ? 'uwaga' : 'stabilnie',
                     'status' => $pendingApprovals > 0
-                        ? 'Sa sprawy do zatwierdzenia'
-                        : 'Ruch parafian jest pod kontrola',
-                    'description' => 'To tutaj domyka sie rejestracja wiernych, role administracyjne i status aktywnych kont.',
+                        ? 'Są sprawy do zatwierdzenia'
+                        : 'Ruch parafian jest pod kontrolą',
+                    'description' => 'To tutaj domyka się rejestracja wiernych, role administracyjne i status aktywnych kont.',
                     'metrics' => [
                         ['label' => 'Parafianie', 'value' => number_format((clone $parishionersQuery)->count(), 0, ',', ' ')],
                         ['label' => 'Nowe konta 7d', 'value' => number_format($newRegistrations, 0, ',', ' ')],
                         ['label' => 'Czeka na zatwierdzenie', 'value' => number_format($pendingApprovals, 0, ',', ' ')],
                     ],
                     'url' => UserResource::getUrl('index'),
-                    'action_label' => 'Otworz parafian',
+                    'action_label' => 'Otwórz parafian',
                 ],
                 [
                     'title' => 'Liturgia',
                     'tone' => $this->resolveLiturgiaTone($currentAnnouncements['tone'], $nextAnnouncements['tone'], $coverage['tone'], $outstandingStipendiumsCount),
                     'tone_label' => $this->resolveLiturgiaToneLabel($currentAnnouncements['tone'], $nextAnnouncements['tone'], $coverage['tone'], $outstandingStipendiumsCount),
                     'status' => $coverage['missing_days_count'] > 0
-                        ? 'Plan tygodnia wymaga dopiecia'
+                        ? 'Plan tygodnia wymaga dopięcia'
                         : 'Plan liturgiczny jest czytelny',
-                    'description' => 'Msze, stypendia i ogloszenia powinny dawac jeden spojny rytm tygodnia.',
+                    'description' => 'Msze, stypendia i ogłoszenia powinny tworzyć jeden spójny rytm tygodnia.',
                     'metrics' => [
                         ['label' => 'Msze dzisiaj', 'value' => number_format($todayMasses, 0, ',', ' ')],
-                        ['label' => 'Brakujace dni 14d', 'value' => number_format($coverage['missing_days_count'], 0, ',', ' ')],
+                        ['label' => 'Brakujące dni 14d', 'value' => number_format($coverage['missing_days_count'], 0, ',', ' ')],
                         ['label' => 'Nierozliczone stypendia', 'value' => number_format($outstandingStipendiumsCount, 0, ',', ' ')],
                     ],
                     'url' => MassResource::getUrl('index'),
@@ -255,32 +255,32 @@ class Dashboard extends BaseDashboard
                     'tone' => $this->resolveCommunicationTone($officeSnapshot['tone'], $newsSnapshot['tone']),
                     'tone_label' => $this->resolveCommunicationToneLabel($officeSnapshot['tone'], $newsSnapshot['tone']),
                     'status' => $officeSnapshot['enabled']
-                        ? 'Parafia ma aktywne kanaly kontaktu'
-                        : 'Kancelaria online jest wylaczona',
-                    'description' => 'Aktualnosci, komentarze i kancelaria powinny prowadzic ludzi do jednego miejsca odpowiedzi.',
+                        ? 'Parafia ma aktywne kanały kontaktu'
+                        : 'Kancelaria online jest wyłączona',
+                    'description' => 'Aktualności, komentarze i kancelaria powinny prowadzić ludzi do jednego miejsca odpowiedzi.',
                     'metrics' => [
                         ['label' => 'Kolejka newsroomu', 'value' => number_format($newsSnapshot['ready_queue'], 0, ',', ' ')],
                         ['label' => 'Komentarze 7d', 'value' => number_format($newsSnapshot['recent_comments'], 0, ',', ' ')],
-                        ['label' => 'Nieprzeczytane wiadomosci', 'value' => number_format($officeSnapshot['unread_count'], 0, ',', ' ')],
+                        ['label' => 'Nieprzeczytane wiadomości', 'value' => number_format($officeSnapshot['unread_count'], 0, ',', ' ')],
                     ],
                     'url' => $officeSnapshot['enabled'] ? OfficeInbox::getUrl() : NewsPostResource::getUrl('index'),
-                    'action_label' => $officeSnapshot['enabled'] ? 'Otworz komunikacje' : 'Przejdz do aktualnosci',
+                    'action_label' => $officeSnapshot['enabled'] ? 'Otwórz komunikację' : 'Przejdź do aktualności',
                 ],
                 [
-                    'title' => 'Tozsamosc i ustawienia',
+                    'title' => 'Tożsamość i ustawienia',
                     'tone' => $profileSnapshot['completion_percent'] < 75 ? 'warning' : 'info',
-                    'tone_label' => $profileSnapshot['completion_percent'] < 75 ? 'do dopiecia' : 'rozwoj',
+                    'tone_label' => $profileSnapshot['completion_percent'] < 75 ? 'do dopięcia' : 'rozwój',
                     'status' => $profileSnapshot['completion_percent'] >= 90
-                        ? 'Profil parafii jest dopiety'
-                        : 'Wartosci domknac profil i ustawienia',
-                    'description' => 'Kontakt, media, notification settings i branding ustawiaja jak parafia wyglada oraz jak odpowiada.',
+                        ? 'Profil parafii jest dopięty'
+                        : 'Warto domknąć profil i ustawienia',
+                    'description' => 'Kontakt, media, ustawienia powiadomień i branding określają, jak parafia wygląda i jak odpowiada.',
                     'metrics' => [
-                        ['label' => 'Kompletnosc profilu', 'value' => $profileSnapshot['completion_percent'].'%'],
-                        ['label' => 'Powiadomienia', 'value' => $tenant->getSetting('notifications_enabled', true) ? 'wlaczone' : 'wylaczone'],
-                        ['label' => 'Komentarze', 'value' => $tenant->getSetting('news_comments_enabled', true) ? 'aktywne' : 'wylaczone'],
+                        ['label' => 'Kompletność profilu', 'value' => $profileSnapshot['completion_percent'].'%'],
+                        ['label' => 'Powiadomienia', 'value' => $tenant->getSetting('notifications_enabled', true) ? 'włączone' : 'wyłączone'],
+                        ['label' => 'Komentarze', 'value' => $tenant->getSetting('news_comments_enabled', true) ? 'aktywne' : 'wyłączone'],
                     ],
                     'url' => EditParishProfile::getUrl(),
-                    'action_label' => 'Zarzadzaj parafia',
+                    'action_label' => 'Zarządzaj parafią',
                 ],
             ],
         ];
@@ -314,7 +314,7 @@ class Dashboard extends BaseDashboard
             [
                 'weight' => $this->toneWeight($nextAnnouncements['tone']),
                 'tone' => $nextAnnouncements['tone'],
-                'eyebrow' => 'Nastepny tydzien',
+                'eyebrow' => 'Następny tydzień',
                 'title' => $nextAnnouncements['priority_title'],
                 'body' => $nextAnnouncements['priority_body'],
                 'meta' => $nextAnnouncements['meta'],
@@ -329,11 +329,11 @@ class Dashboard extends BaseDashboard
                 'weight' => $this->toneWeight($coverage['tone']),
                 'tone' => $coverage['tone'],
                 'eyebrow' => 'Plan mszalny',
-                'title' => 'Brakuje mszy do wpisania na najblizsze 14 dni',
-                'body' => 'To ma wywierac presje na dopiecie kalendarza. Jezeli w ciagu 14 dni sa dziury, proboszcz powinien zobaczyc to natychmiast.',
+                'title' => 'Brakuje mszy do wpisania na najbliższe 14 dni',
+                'body' => 'To ma od razu pokazywać, że kalendarz wymaga uzupełnienia. Jeśli w ciągu 14 dni są luki, proboszcz powinien zobaczyć to natychmiast.',
                 'meta' => $coverage['summary_inline'],
                 'url' => $coverage['url'],
-                'action_label' => 'Uzupelnij kalendarz',
+                'action_label' => 'Uzupełnij kalendarz',
                 'icon' => 'heroicon-o-clock',
             ];
         }
@@ -342,14 +342,14 @@ class Dashboard extends BaseDashboard
             $cards[] = [
                 'weight' => $pendingApprovals > 0 ? 1 : 2,
                 'tone' => $pendingApprovals > 0 ? 'warning' : 'info',
-                'eyebrow' => 'Wspolnota',
+                'eyebrow' => 'Wspólnota',
                 'title' => $pendingApprovals > 0
                     ? "Czeka {$pendingApprovals} parafian na zatwierdzenie"
-                    : 'Ruch parafian wymaga szybkiego przegladu',
-                'body' => 'Na liscie parafian domkniesz weryfikacje, kody oraz role administratorow parafii.',
+                    : 'Ruch parafian wymaga szybkiego przeglądu',
+                'body' => 'Na liście parafian domkniesz weryfikacje, kody i role administratorów parafii.',
                 'meta' => "Nowe rejestracje z 7 dni: {$newRegistrations}",
                 'url' => UserResource::getUrl('index'),
-                'action_label' => 'Otworz parafian',
+                'action_label' => 'Otwórz parafian',
                 'icon' => 'heroicon-o-user-group',
             ];
         }
@@ -360,12 +360,12 @@ class Dashboard extends BaseDashboard
                 'tone' => $officeSnapshot['tone'],
                 'eyebrow' => 'Kancelaria',
                 'title' => $officeSnapshot['unread_count'] > 0
-                    ? 'Kancelaria ma nieprzeczytane wiadomosci'
-                    : 'Sa otwarte sprawy do domkniecia',
-                'body' => 'W panelu kancelarii zobaczysz watki parafian, odpowiesz i zamkniesz sprawy bez wychodzenia z systemu.',
+                    ? 'Kancelaria ma nieprzeczytane wiadomości'
+                    : 'Są otwarte sprawy do domknięcia',
+                'body' => 'W panelu kancelarii zobaczysz wątki parafian, odpowiesz i zamkniesz sprawy bez wychodzenia z systemu.',
                 'meta' => "Otwarte: {$officeSnapshot['open_count']} | Nieprzeczytane: {$officeSnapshot['unread_count']}",
                 'url' => OfficeInbox::getUrl(),
-                'action_label' => 'Otworz kancelarie',
+                'action_label' => 'Otwórz kancelarię',
                 'icon' => 'heroicon-o-chat-bubble-left-right',
             ];
         }
@@ -375,11 +375,11 @@ class Dashboard extends BaseDashboard
                 'weight' => $this->toneWeight($newsSnapshot['tone']),
                 'tone' => $newsSnapshot['tone'],
                 'eyebrow' => 'Komunikacja',
-                'title' => 'Newsroom ma gotowe materialy do dopracowania',
-                'body' => 'Szkice, wpisy zaplanowane i komentarze warto przegladac razem, bo to jedna kolejka kontaktu z parafianami.',
+                'title' => 'Newsroom ma gotowe materiały do dopracowania',
+                'body' => 'Szkice, wpisy zaplanowane i komentarze warto przeglądać razem, bo to jedna kolejka kontaktu z parafianami.',
                 'meta' => "Kolejka redakcyjna: {$newsSnapshot['ready_queue']} | Komentarze 7 dni: {$newsSnapshot['recent_comments']}",
                 'url' => NewsPostResource::getUrl('index'),
-                'action_label' => 'Przejdz do newsroomu',
+                'action_label' => 'Przejdź do newsroomu',
                 'icon' => 'heroicon-o-newspaper',
             ];
         }
@@ -389,11 +389,11 @@ class Dashboard extends BaseDashboard
                 'weight' => 2,
                 'tone' => 'info',
                 'eyebrow' => 'Ustawienia',
-                'title' => 'Profil parafii nie jest jeszcze domkniety',
-                'body' => 'Dopelnij kontakt, media i konfiguracje. To poprawia odbior uslugi w aplikacji oraz w panelu.',
+                'title' => 'Profil parafii nie jest jeszcze domknięty',
+                'body' => 'Uzupełnij kontakt, media i konfigurację. To poprawia odbiór usługi w aplikacji oraz w panelu.',
                 'meta' => 'Braki: '.implode(', ', array_slice($profileSnapshot['missing'], 0, 3)),
                 'url' => EditParishProfile::getUrl(),
-                'action_label' => 'Uzupelnij profil',
+                'action_label' => 'Uzupełnij profil',
                 'icon' => 'heroicon-o-building-library',
             ];
         }
@@ -414,28 +414,28 @@ class Dashboard extends BaseDashboard
         return [
             [
                 'label' => 'Zweryfikuj parafian',
-                'description' => 'Lista parafian z tabami i akcjami administratorow.',
+                'description' => 'Lista parafian z zakładkami i akcjami administratorów.',
                 'url' => UserResource::getUrl('index'),
                 'icon' => 'heroicon-o-users',
                 'tone' => 'warning',
             ],
             [
                 'label' => 'Dodaj msze',
-                'description' => 'Najkrotsza droga do wpisania nowej intencji lub celebracji.',
+                'description' => 'Najkrótsza droga do wpisania nowej intencji lub celebracji.',
                 'url' => MassResource::getUrl('create'),
                 'icon' => 'heroicon-o-plus-circle',
                 'tone' => 'info',
             ],
             [
-                'label' => 'Ogloszenia',
-                'description' => 'Biezace i przyszle zestawy ogloszen z drukiem PDF.',
+                'label' => 'Ogłoszenia',
+                'description' => 'Bieżące i przyszłe zestawy ogłoszeń z wydrukiem PDF.',
                 'url' => AnnouncementSetResource::getUrl('index'),
                 'icon' => 'heroicon-o-megaphone',
                 'tone' => 'success',
             ],
             [
                 'label' => 'Newsroom',
-                'description' => 'Szkice, publikacje i harmonogram aktualnosci parafialnych.',
+                'description' => 'Szkice, publikacje i harmonogram aktualności parafialnych.',
                 'url' => NewsPostResource::getUrl('index'),
                 'icon' => 'heroicon-o-newspaper',
                 'tone' => 'info',
@@ -451,14 +451,14 @@ class Dashboard extends BaseDashboard
                 'label' => 'Kancelaria online',
                 'description' => $officeSnapshot['enabled']
                     ? 'Rozmowy z parafianami i sprawy kancelaryjne.'
-                    : 'Sekcja jest wylaczona, ale mozna ja wlaczyc w ustawieniach.',
+                    : 'Sekcja jest wyłączona, ale można ją włączyć w ustawieniach.',
                 'url' => $officeSnapshot['enabled'] ? OfficeInbox::getUrl() : EditParishProfile::getUrl(),
                 'icon' => 'heroicon-o-chat-bubble-left-right',
                 'tone' => $officeSnapshot['enabled'] ? 'warning' : 'neutral',
             ],
             [
-                'label' => 'Zarzadzaj parafia',
-                'description' => 'Kontakt, grafiki, branding, powiadomienia i konfiguracja uslugi.',
+                'label' => 'Zarządzaj parafią',
+                'description' => 'Kontakt, grafiki, branding, powiadomienia i konfiguracja usługi.',
                 'url' => EditParishProfile::getUrl(),
                 'icon' => 'heroicon-o-cog-6-tooth',
                 'tone' => 'neutral',
@@ -479,8 +479,8 @@ class Dashboard extends BaseDashboard
                 'open_count' => 0,
                 'unread_count' => 0,
                 'tone' => 'neutral',
-                'hero_value' => 'wylaczona',
-                'hero_description' => 'Kancelaria online jest wylaczona',
+                'hero_value' => 'wyłączona',
+                'hero_description' => 'Kancelaria online jest wyłączona',
             ];
         }
 
@@ -507,8 +507,8 @@ class Dashboard extends BaseDashboard
             },
             'hero_value' => $unreadCount > 0 ? (string) $unreadCount : (string) $openCount,
             'hero_description' => $unreadCount > 0
-                ? 'nieprzeczytane wiadomosci'
-                : ($openCount > 0 ? 'otwarte sprawy' : 'wszystko domkniete'),
+                ? 'nieprzeczytane wiadomości'
+                : ($openCount > 0 ? 'otwarte sprawy' : 'wszystko domknięte'),
         ];
     }
 

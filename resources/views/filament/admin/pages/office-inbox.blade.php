@@ -299,14 +299,14 @@
     @php
         $selectedConversation = $this->selectedConversation;
         $parishioner = $selectedConversation?->parishioner;
-        $threadName = $parishioner?->full_name ?: $parishioner?->name ?: 'Uzytkownik usuniety';
-        $threadEmail = $parishioner?->email ?: 'brak adresu email';
-        $threadParish = $selectedConversation?->parish?->name ?: 'Parafia usunieta';
+        $threadName = $parishioner?->full_name ?: $parishioner?->name ?: 'Użytkownik usunięty';
+        $threadEmail = $parishioner?->email ?: 'brak adresu e-mail';
+        $threadParish = $selectedConversation?->parish?->name ?: 'Parafia usunięta';
         $priestId = auth()->id();
     @endphp
 
     <div class="office-inbox-layout" wire:poll.8s="refreshThread">
-        <x-filament::section class="office-inbox-sidebar" heading="Konwersacje" description="Watki rozpoczęte przez parafian.">
+        <x-filament::section class="office-inbox-sidebar" heading="Konwersacje" description="Wątki rozpoczęte przez parafian.">
             <div class="office-inbox-filters">
                 <x-filament::button size="sm" :outlined="$conversationFilter !== 'open'" wire:click="$set('conversationFilter', 'open')">
                     Otwarte
@@ -323,7 +323,7 @@
                 <x-filament::input
                     type="text"
                     wire:model.live.debounce.300ms="search"
-                    placeholder="Szukaj po imieniu lub emailu"
+                    placeholder="Szukaj po imieniu lub adresie e-mail"
                 />
             </x-filament::input.wrapper>
 
@@ -331,12 +331,12 @@
                 @forelse ($this->conversations as $conversation)
                     @php
                         $parishioner = $conversation->parishioner;
-                        $parishionerLabel = $parishioner?->full_name ?: $parishioner?->name ?: 'Uzytkownik usuniety';
-                        $parishionerEmail = $parishioner?->email ?: 'brak adresu email';
+                        $parishionerLabel = $parishioner?->full_name ?: $parishioner?->name ?: 'Użytkownik usunięty';
+                        $parishionerEmail = $parishioner?->email ?: 'brak adresu e-mail';
                         $parishionerAvatar = $parishioner?->avatar_url;
                         $isSelected = $selectedConversationId === $conversation->id;
                         $latest = $conversation->latestMessage;
-                        $latestPreview = $latest?->body ?: ($latest?->has_attachments ? 'Zalacznik' : 'Brak tresci');
+                        $latestPreview = $latest?->body ?: ($latest?->has_attachments ? 'Załącznik' : 'Brak treści');
                     @endphp
 
                     <button
@@ -357,7 +357,7 @@
                             </div>
                             <div class="office-conversation-item__badges">
                                 <x-filament::badge :color="$conversation->status === \App\Models\OfficeConversation::STATUS_OPEN ? 'success' : 'gray'" size="sm">
-                                    {{ $conversation->status === \App\Models\OfficeConversation::STATUS_OPEN ? 'OTWARTA' : 'ZAMKNIETA' }}
+                                    {{ $conversation->status === \App\Models\OfficeConversation::STATUS_OPEN ? 'OTWARTA' : 'ZAMKNIĘTA' }}
                                 </x-filament::badge>
 
                                 @if ($conversation->unread_for_priest_count > 0)
@@ -380,7 +380,7 @@
                     <x-filament::empty-state
                         icon="heroicon-o-chat-bubble-left-right"
                         heading="Brak konwersacji"
-                        description="Dla wybranych filtrow nie ma rozmow."
+                        description="Dla wybranych filtrów nie ma rozmów."
                     />
                 @endforelse
             </div>
@@ -388,15 +388,15 @@
 
         <x-filament::section
             class="office-thread-section"
-            :heading="$selectedConversation ? $threadName : 'Wybierz konwersacje'"
-            :description="$selectedConversation ? ($threadEmail . ' · ' . $threadParish) : 'Po wybraniu konwersacji zobaczysz tresc rozmowy i formularz odpowiedzi.'"
+            :heading="$selectedConversation ? $threadName : 'Wybierz konwersację'"
+            :description="$selectedConversation ? ($threadEmail . ' · ' . $threadParish) : 'Po wybraniu konwersacji zobaczysz treść rozmowy i formularz odpowiedzi.'"
         >
             @if ($selectedConversation)
                 <x-slot name="afterHeader">
                     <div class="office-thread-toolbar">
                         @if ($selectedConversation->status === \App\Models\OfficeConversation::STATUS_OPEN)
                             <x-filament::button size="sm" color="gray" outlined wire:click="closeConversation">
-                                Zamknij konwersacje
+                                Zamknij konwersację
                             </x-filament::button>
                         @else
                             <div class="office-thread-status">
@@ -459,8 +459,8 @@
                         <x-filament::empty-state
                             compact
                             icon="heroicon-o-chat-bubble-left-right"
-                            heading="Brak wiadomosci"
-                            description="Ta konwersacja nie zawiera jeszcze zadnej tresci."
+                            heading="Brak wiadomości"
+                            description="Ta konwersacja nie zawiera jeszcze żadnej treści."
                         />
                     @endforelse
                 </div>
@@ -472,7 +472,7 @@
                                 wire:model.defer="body"
                                 rows="4"
                                 class="fi-input office-reply-textarea"
-                                placeholder="Wpisz odpowiedz..."
+                                placeholder="Wpisz odpowiedź..."
                                 wire:loading.attr="disabled"
                                 wire:target="sendMessage"
                             ></textarea>
@@ -503,7 +503,7 @@
                             @enderror
                         @else
                             <x-filament::badge color="gray" size="sm">
-                                Wysylanie zalacznikow jest aktualnie wylaczone dla tej parafii.
+                                Wysyłanie załączników jest obecnie wyłączone dla tej parafii.
                             </x-filament::badge>
                         @endif
 
@@ -514,28 +514,28 @@
                                 wire:target="sendMessage"
                                 icon="heroicon-m-paper-airplane"
                             >
-                                Wyslij odpowiedz
+                                Wyślij odpowiedź
                             </x-filament::button>
                         </div>
 
                         <div wire:loading.flex wire:target="sendMessage" class="office-reply-loading">
                             <x-filament::loading-indicator class="h-4 w-4" />
-                            <span>Wysylanie wiadomosci...</span>
+                            <span>Wysyłanie wiadomości...</span>
                         </div>
                     @else
                         <x-filament::empty-state
                             compact
                             icon="heroicon-o-lock-closed"
-                            heading="Konwersacja zamknieta"
-                            description="Aby odpowiedziec, uzyj akcji Otworz ponownie."
+                            heading="Konwersacja zamknięta"
+                            description="Aby odpowiedzieć, użyj akcji Otwórz ponownie."
                         />
                     @endif
                 </div>
             @else
                 <x-filament::empty-state
                     icon="heroicon-o-chat-bubble-left-right"
-                    heading="Wybierz konwersacje"
-                    description="Kliknij rozmowe z listy po lewej stronie, aby wyswietlic szczegoly."
+                    heading="Wybierz konwersację"
+                    description="Kliknij rozmowę z listy po lewej stronie, aby wyświetlić szczegóły."
                 />
             @endif
         </x-filament::section>

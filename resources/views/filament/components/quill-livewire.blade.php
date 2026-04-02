@@ -254,14 +254,14 @@
 
             async uploadAndInsertImage(file, config) {
                 if (! config.imageUploadUrl) {
-                    this.showStatus('Najpierw zapisz kampanie jako szkic, aby osadzac obrazy w tresci.', 'error');
+                    this.showStatus('Najpierw zapisz kampanię jako szkic, aby osadzać obrazy w treści.', 'error');
                     return;
                 }
 
                 const maxUploadBytes = config.maxUploadSizeKb * 1024;
 
                 if (file.size > maxUploadBytes) {
-                    this.showStatus(`Plik jest zbyt duzy. Maksymalny rozmiar: ${config.maxUploadSizeKb / 1024} MB.`, 'error');
+                    this.showStatus(`Plik jest zbyt duży. Maksymalny rozmiar: ${config.maxUploadSizeKb / 1024} MB.`, 'error');
                     return;
                 }
 
@@ -270,7 +270,7 @@
 
                 try {
                     this.isUploading = true;
-                    this.showStatus('Trwa wysylanie obrazu...', 'info');
+                    this.showStatus('Trwa wysyłanie obrazu...', 'info');
 
                     const response = await fetch(config.imageUploadUrl, {
                         method: 'POST',
@@ -283,14 +283,14 @@
                     });
 
                     if (response.status === 413) {
-                        this.showStatus('Obraz jest za duzy dla konfiguracji serwera. Zmniejsz plik i sprobuj ponownie.', 'error');
+                        this.showStatus('Obraz jest zbyt duży dla konfiguracji serwera. Zmniejsz plik i spróbuj ponownie.', 'error');
                         return;
                     }
 
                     const payload = await response.json();
 
                     if (! response.ok || ! payload?.url) {
-                        this.showStatus(payload?.message ?? 'Nie udalo sie przeslac obrazu.', 'error');
+                        this.showStatus(payload?.message ?? 'Nie udało się przesłać obrazu.', 'error');
                         return;
                     }
 
@@ -300,9 +300,9 @@
                     this.quill.insertEmbed(index, 'image', payload.url, 'user');
                     this.quill.setSelection(index + 1, 0, 'silent');
                     this.updateStateFromEditor();
-                    this.showStatus('Obraz zostal osadzony w tresci.', 'success');
+                    this.showStatus('Obraz został osadzony w treści.', 'success');
                 } catch (error) {
-                    this.showStatus('Wystapil blad podczas wysylki obrazu.', 'error');
+                    this.showStatus('Wystąpił błąd podczas wysyłania obrazu.', 'error');
                 } finally {
                     this.isUploading = false;
                 }

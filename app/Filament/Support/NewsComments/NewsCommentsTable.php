@@ -54,9 +54,9 @@ class NewsCommentsTable
                         ? '[Komentarz ukryty]'
                         : str($record->body)->squish()->limit(140)->toString())
                     ->description(fn (NewsComment $record): string => match ((int) $record->depth) {
-                        1 => 'Odpowiedz na komentarz glowny',
+                        1 => 'Odpowiedź na komentarz główny',
                         2 => 'Odpowiedz drugiego poziomu',
-                        default => 'Komentarz glowny',
+                        default => 'Komentarz główny',
                     })
                     ->wrap(),
 
@@ -66,7 +66,7 @@ class NewsCommentsTable
                     ->state(fn (NewsComment $record): string => $record->user?->full_name ?: ($record->user?->name ?? 'Brak')),
 
                 TextColumn::make('is_hidden')
-                    ->label('Widocznosc')
+                    ->label('Widoczność')
                     ->badge()
                     ->state(fn (NewsComment $record): string => $record->is_hidden ? 'Ukryty' : 'Widoczny')
                     ->color(fn (string $state): string => $state === 'Ukryty' ? 'warning' : 'success'),
@@ -97,7 +97,7 @@ class NewsCommentsTable
                 SelectFilter::make('depth')
                     ->label('Poziom')
                     ->options([
-                        '0' => 'Komentarze glowne',
+                        '0' => 'Komentarze główne',
                         '1' => 'Odpowiedzi poziomu 1',
                         '2' => 'Odpowiedzi poziomu 2',
                     ]),
@@ -130,13 +130,13 @@ class NewsCommentsTable
     protected static function replyAction(): Action
     {
         return Action::make('reply')
-            ->label('Odpowiedz')
+                    ->label('Odpowiedz')
             ->icon('heroicon-o-arrow-uturn-left')
             ->color('info')
             ->visible(fn (NewsComment $record): bool => ! $record->is_hidden && $record->canReceiveReplies())
             ->schema([
                 Textarea::make('body')
-                    ->label('Tresci odpowiedzi')
+                    ->label('Treść odpowiedzi')
                     ->required()
                     ->rows(6)
                     ->maxLength(2000),
@@ -144,13 +144,13 @@ class NewsCommentsTable
             ->action(function (NewsComment $record, array $data): void {
                 if ($record->is_hidden) {
                     throw ValidationException::withMessages([
-                        'body' => 'Nie mozna odpowiadac na ukryty komentarz.',
+                        'body' => 'Nie można odpowiadać na ukryty komentarz.',
                     ]);
                 }
 
                 if (! $record->canReceiveReplies()) {
                     throw ValidationException::withMessages([
-                        'body' => 'Ten komentarz osiagnal juz maksymalna glebokosc watku.',
+                        'body' => 'Ten komentarz osiągnął już maksymalną głębokość wątku.',
                     ]);
                 }
 
@@ -166,7 +166,7 @@ class NewsCommentsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Dodano odpowiedz na komentarz.')
+                    ->title('Dodano odpowiedź na komentarz.')
                     ->send();
             });
     }
@@ -186,7 +186,7 @@ class NewsCommentsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Komentarz zostal ukryty.')
+                    ->title('Komentarz został ukryty.')
                     ->send();
             });
     }
@@ -194,7 +194,7 @@ class NewsCommentsTable
     protected static function restoreVisibilityAction(): Action
     {
         return Action::make('restore_visibility')
-            ->label('Przywroc widocznosc')
+            ->label('Przywróć widoczność')
             ->icon('heroicon-o-eye')
             ->color('success')
             ->visible(fn (NewsComment $record): bool => $record->is_hidden)
@@ -203,7 +203,7 @@ class NewsCommentsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Komentarz jest znowu widoczny.')
+                    ->title('Komentarz znów jest widoczny.')
                     ->send();
             });
     }
@@ -211,7 +211,7 @@ class NewsCommentsTable
     protected static function deleteCommentAction(): Action
     {
         return Action::make('delete_comment')
-            ->label('Usun')
+            ->label('Usuń')
             ->icon('heroicon-o-trash')
             ->color('danger')
             ->requiresConfirmation()
@@ -224,7 +224,7 @@ class NewsCommentsTable
 
                     Notification::make()
                         ->warning()
-                        ->title('Komentarz ma odpowiedzi, dlatego zostal ukryty zamiast usuniecia.')
+                        ->title('Komentarz ma odpowiedzi, dlatego został ukryty zamiast usunięcia.')
                         ->send();
 
                     return;
@@ -234,7 +234,7 @@ class NewsCommentsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Komentarz zostal usuniety.')
+                    ->title('Komentarz został usunięty.')
                     ->send();
             });
     }

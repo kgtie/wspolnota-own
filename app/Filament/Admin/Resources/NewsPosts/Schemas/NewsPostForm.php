@@ -30,26 +30,26 @@ class NewsPostForm
                 Hidden::make('created_by_user_id'),
                 Hidden::make('updated_by_user_id'),
 
-                Section::make('Naglowek wpisu')
-                    ->description('Nadaj tytul. Szkic jest tworzony automatycznie, wiec od razu mozesz pracowac na pelnym edytorze.')
+                Section::make('Nagłówek wpisu')
+                    ->description('Nadaj tytuł. Szkic jest tworzony automatycznie, więc od razu możesz pracować na pełnym edytorze.')
                     ->extraAttributes([
                         'class' => 'news-post-form-card news-post-form-card--masthead',
                     ])
                     ->columnSpanFull()
                     ->schema([
                         TextInput::make('title')
-                            ->label('Tytul wpisu')
+                            ->label('Tytuł wpisu')
                             ->live(debounce: 600)
                             ->maxLength(255)
-                            ->placeholder('Np. Droga krzyzowa w najblizszy piatek')
-                            ->helperText('Slug wygeneruje sie automatycznie. Nie trzeba go uzupelniac ani pilnowac recznie.')
+                            ->placeholder('Np. Droga krzyżowa w najbliższy piątek')
+                            ->helperText('Slug wygeneruje się automatycznie. Nie trzeba go uzupełniać ani pilnować ręcznie.')
                             ->extraInputAttributes([
                                 'class' => 'text-lg md:text-2xl font-semibold',
                             ]),
                     ]),
 
                 Section::make('Publikacja')
-                    ->description('Sterujesz tylko stanem wpisu. Draft zapisuje sie w tle, publikacja i planowanie wymagaja juz swiadomego zapisu.')
+                    ->description('Sterujesz tylko stanem wpisu. Szkic zapisuje się w tle, a publikacja i planowanie wymagają już świadomego zapisu.')
                     ->extraAttributes([
                         'class' => 'news-post-form-card news-post-form-card--publication',
                     ])
@@ -84,14 +84,14 @@ class NewsPostForm
                             ->inline(false),
 
                         Toggle::make('comments_enabled')
-                            ->label('Zezwol na komentarze')
+                            ->label('Zezwól na komentarze')
                             ->default(true)
                             ->inline(false)
-                            ->helperText('Domyslnie komentarze sa wlaczone. Komentowac moga tylko zalogowani i zatwierdzeni uzytkownicy.'),
+                            ->helperText('Domyślnie komentarze są włączone. Komentować mogą tylko zalogowani i zatwierdzeni użytkownicy.'),
 
                         Placeholder::make('publication_hint')
                             ->label('Tryb pracy')
-                            ->content('Nowy wpis powstaje od razu jako szkic. W tym trybie mozesz od razu dodawac obrazy do tresci i spokojnie wracac do edycji.'),
+                            ->content('Nowy wpis powstaje od razu jako szkic. W tym trybie możesz od razu dodawać obrazy do treści i spokojnie wracać do edycji.'),
 
                         Placeholder::make('comments_shortcut')
                             ->label('Komentarze do wpisu')
@@ -100,12 +100,12 @@ class NewsPostForm
                                     'filters' => [
                                         'news_post_id' => ['value' => $record->getKey()],
                                     ],
-                                ])).'" class="text-primary-600 underline">Otworz komentarze tego wpisu</a>'
-                                : 'Link do komentarzy pojawi sie po utworzeniu wpisu.')),
+                                ])).'" class="text-primary-600 underline">Otwórz komentarze tego wpisu</a>'
+                                : 'Link do komentarzy pojawi się po utworzeniu wpisu.')),
                     ]),
 
-                Section::make('Tresc wpisu')
-                    ->description('Glowny obszar redakcyjny. Edytor obsluguje osadzanie zdjec wewnatrz tresci i zapisuje HTML wpisu.')
+                Section::make('Treść wpisu')
+                    ->description('Główny obszar redakcyjny. Edytor obsługuje osadzanie zdjęć wewnątrz treści i zapisuje HTML wpisu.')
                     ->extraAttributes([
                         'class' => 'news-post-form-card news-post-form-card--content',
                     ])
@@ -115,20 +115,20 @@ class NewsPostForm
                     ])
                     ->schema([
                         QuillEditor::make('content')
-                            ->label('Tresc')
+                            ->label('Treść')
                             ->minHeight(860)
                             ->maxLength(65000)
                             ->maxUploadSize(8192)
                             ->imageUploadUrl(fn (?NewsPost $record): ?string => $record
                                 ? route('admin.news-posts.inline-image', ['newsPost' => $record])
                                 : null)
-                            ->placeholder('Napisz aktualnosc...')
-                            ->helperText('Zdjecia osadzane przyciskiem obrazu trafiaja do Spatie Media Library i sa dostepne od razu, bez dodatkowego zapisywania szkicu.')
+                            ->placeholder('Napisz aktualność...')
+                            ->helperText('Zdjęcia osadzane przyciskiem obrazu trafiają do Spatie Media Library i są dostępne od razu, bez dodatkowego zapisywania szkicu.')
                             ->columnSpanFull(),
                     ]),
 
                 Section::make('Media wpisu')
-                    ->description('Media obslugiwane przez Spatie Media Library.')
+                    ->description('Media obsługiwane przez Spatie Media Library.')
                     ->extraAttributes([
                         'class' => 'news-post-form-card news-post-form-card--media',
                     ])
@@ -138,7 +138,7 @@ class NewsPostForm
                     ])
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('featured_image')
-                            ->label('Zdjecie wyrozniajace')
+                            ->label('Zdjęcie wyróżniające')
                             ->collection('featured_image')
                             ->image()
                             ->imageEditor()
@@ -156,7 +156,7 @@ class NewsPostForm
                             ->maxSize(6144),
 
                         SpatieMediaLibraryFileUpload::make('attachments')
-                            ->label('Zalaczniki')
+                            ->label('Załączniki')
                             ->collection('attachments')
                             ->multiple()
                             ->appendFiles()
@@ -167,8 +167,8 @@ class NewsPostForm
                             ->maxSize(10240),
 
                         Placeholder::make('inline_media_hint')
-                            ->label('Osadzanie zdjec w tresci')
-                            ->content('Zdjecia dodane przyciskiem obrazu w edytorze zapisywane sa jako kolekcja "content_images" w Spatie Media Library.'),
+                            ->label('Osadzanie zdjęć w treści')
+                            ->content('Zdjęcia dodane przyciskiem obrazu w edytorze są zapisywane jako kolekcja "content_images" w Spatie Media Library.'),
                     ]),
             ]);
     }

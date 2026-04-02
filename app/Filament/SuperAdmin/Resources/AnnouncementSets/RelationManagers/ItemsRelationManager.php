@@ -32,7 +32,7 @@ class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
 
-    protected static ?string $title = 'Pojedyncze ogloszenia';
+    protected static ?string $title = 'Pojedyncze ogłoszenia';
 
     public function table(Table $table): Table
     {
@@ -44,7 +44,7 @@ class ItemsRelationManager extends RelationManager
                 ->label($isReordering ? 'Zakoncz sortowanie' : 'Sortuj drag-and-drop')
                 ->tooltip($isReordering
                     ? 'Kliknij i zakoncz tryb sortowania po ustawieniu kolejnosci.'
-                    : 'Wlacz tryb przeciagania i upuszczania pojedynczych ogloszen.'))
+                    : 'Włącz tryb przeciągania i upuszczania pojedynczych ogłoszeń.'))
             ->afterReordering(function (array $order): void {
                 $admin = Filament::auth()->user();
                 $owner = $this->getOwnerRecord();
@@ -63,7 +63,7 @@ class ItemsRelationManager extends RelationManager
                         'new_order' => array_values($order),
                         'items_count' => count($order),
                     ])
-                    ->log('Proboszcz uporzadkowal kolejnosc ogloszen metoda drag-and-drop.');
+                    ->log('Proboszcz uporządkował kolejność ogłoszeń metodą drag and drop.');
             })
             ->columns([
                 TextColumn::make('position')
@@ -121,7 +121,7 @@ class ItemsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Dodaj ogloszenie')
+                    ->label('Dodaj ogłoszenie')
                     ->schema(self::getItemFormSchema()),
             ])
             ->recordActions([
@@ -146,7 +146,7 @@ class ItemsRelationManager extends RelationManager
                                         'from_position' => $previousPosition,
                                         'to_position' => $record->position,
                                     ])
-                                    ->log('Proboszcz przesunal ogloszenie wyzej.');
+                                    ->log('Proboszcz przesunął ogłoszenie wyżej.');
                             }
                         })
                         ->disabled(fn (AnnouncementItem $record): bool => $record->position <= 1),
@@ -171,7 +171,7 @@ class ItemsRelationManager extends RelationManager
                                         'from_position' => $previousPosition,
                                         'to_position' => $record->position,
                                     ])
-                                    ->log('Proboszcz przesunal ogloszenie nizej.');
+                                    ->log('Proboszcz przesunął ogłoszenie niżej.');
                             }
                         })
                         ->disabled(function (AnnouncementItem $record): bool {
@@ -203,14 +203,14 @@ class ItemsRelationManager extends RelationManager
                                         'announcement_set_id' => $record->announcement_set_id,
                                         'is_important' => $record->is_important,
                                     ])
-                                    ->log('Proboszcz zmienil priorytet ogloszenia.');
+                                    ->log('Proboszcz zmienił priorytet ogłoszenia.');
                             }
                         }),
 
                     Action::make('toggle_active')
                         ->label(fn (AnnouncementItem $record): string => $record->is_active
-                            ? 'Ukryj ogloszenie'
-                            : 'Pokaz ogloszenie')
+                            ? 'Ukryj ogłoszenie'
+                            : 'Pokaż ogłoszenie')
                         ->icon('heroicon-o-eye')
                         ->color(fn (AnnouncementItem $record): string => $record->is_active ? 'warning' : 'success')
                         ->action(function (AnnouncementItem $record): void {
@@ -229,7 +229,7 @@ class ItemsRelationManager extends RelationManager
                                         'announcement_set_id' => $record->announcement_set_id,
                                         'is_active' => $record->is_active,
                                     ])
-                                    ->log('Proboszcz zmienil widocznosc ogloszenia.');
+                                    ->log('Proboszcz zmienił widoczność ogłoszenia.');
                             }
                         }),
 
@@ -264,11 +264,11 @@ class ItemsRelationManager extends RelationManager
     {
         return [
             TextInput::make('title')
-                ->label('Naglowek')
+                ->label('Nagłówek')
                 ->maxLength(255),
 
             Textarea::make('content')
-                ->label('Tresc ogloszenia')
+                ->label('Treść ogłoszenia')
                 ->required()
                 ->rows(6)
                 ->maxLength(8000)

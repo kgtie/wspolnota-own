@@ -19,16 +19,16 @@ use Illuminate\Support\Facades\Schema;
 use stdClass;
 
 /**
- * Operacyjny cockpit dla automatycznych dispatchy.
+ * Operacyjne centrum nadzoru dla automatycznych wysyłek.
  *
- * Widok pokazuje backlog contentu, opoznienia, remindery mszalne i failed maile
- * oraz pozwala recznie uruchamiac krytyczne komendy bez pracy w terminalu.
+ * Widok pokazuje backlog treści, opóźnienia, przypomnienia mszalne i nieudane maile
+ * oraz pozwala ręcznie uruchamiać krytyczne komendy bez pracy w terminalu.
  */
 class NotificationDispatchCenter extends Page
 {
-    protected static ?string $title = 'Centrum dispatchu';
+    protected static ?string $title = 'Centrum wysyłki';
 
-    protected static ?string $navigationLabel = 'Centrum dispatchu';
+    protected static ?string $navigationLabel = 'Centrum wysyłki';
 
     protected static string | \BackedEnum | null $navigationIcon = null;
 
@@ -36,7 +36,7 @@ class NotificationDispatchCenter extends Page
 
     protected static ?int $navigationSort = 3;
 
-    protected ?string $subheading = 'Operacyjny widok backlogu, opoznien, retry i recznego uruchamiania dispatchu dla contentu, mszy i maili.';
+    protected ?string $subheading = 'Operacyjny widok backlogu, opóźnień, ponowień i ręcznego uruchamiania wysyłki treści, mszy i maili.';
 
     protected string $view = 'filament.superadmin.pages.notification-dispatch-center';
 
@@ -53,7 +53,7 @@ class NotificationDispatchCenter extends Page
                     $this->runArtisanCommand(
                         'notifications:dispatch-delayed-content',
                         ['--limit' => 150],
-                        'Uruchomiono dispatch news i ogloszen.',
+                        'Uruchomiono wysyłkę aktualności i ogłoszeń.',
                     );
                 }),
             Action::make('run_mass_push_dispatch')
@@ -109,7 +109,7 @@ class NotificationDispatchCenter extends Page
             [
                 'label' => 'Content backlog',
                 'value' => number_format($pendingNews + $pendingAnnouncements, 0, ',', ' '),
-                'hint' => "News: {$pendingNews} · ogloszenia: {$pendingAnnouncements}",
+                'hint' => "Aktualności: {$pendingNews} · ogłoszenia: {$pendingAnnouncements}",
                 'tone' => ($pendingNews + $pendingAnnouncements) > 0 ? 'warning' : 'success',
             ],
             [
@@ -154,7 +154,7 @@ class NotificationDispatchCenter extends Page
                 'tone' => $oldestNewsDelay && $oldestNewsDelay >= 120 ? 'danger' : ($pendingNews > 0 ? 'warning' : 'success'),
             ],
             [
-                'label' => 'Najstarsze ogloszenia w backlogu',
+                'label' => 'Najstarsze ogłoszenia w backlogu',
                 'value' => $oldestAnnouncementsDelay ? "{$oldestAnnouncementsDelay} min" : 'brak',
                 'meta' => $pendingAnnouncements > 0 ? "rekordow: {$pendingAnnouncements}" : 'brak oczekujacych',
                 'tone' => $oldestAnnouncementsDelay && $oldestAnnouncementsDelay >= 120 ? 'danger' : ($pendingAnnouncements > 0 ? 'warning' : 'success'),

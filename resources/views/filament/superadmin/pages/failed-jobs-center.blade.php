@@ -3,18 +3,18 @@
         <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div class="space-y-1">
-                    <h2 class="text-lg font-semibold text-gray-950 dark:text-white">Centrum failed jobs</h2>
+                    <h2 class="text-lg font-semibold text-gray-950 dark:text-white">Centrum nieudanych zadań</h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                        Globalny podglad nieudanych jobow kolejki z szybkim retry, forget i flush.
+                        Globalny podgląd nieudanych zadań kolejki z szybkim ponowieniem, usunięciem wpisu i czyszczeniem kolejki błędów.
                     </p>
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <label class="space-y-1">
-                        <span class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Queue</span>
+                        <span class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Kolejka</span>
                         <x-filament::input.wrapper>
                             <x-filament::input.select wire:model.live="queueFilter">
-                                <option value="">Wszystkie queue</option>
+                                <option value="">Wszystkie kolejki</option>
                                 @foreach ($this->queueOptions as $queue => $label)
                                     <option value="{{ $queue }}">{{ $label }}</option>
                                 @endforeach
@@ -28,7 +28,7 @@
                             <x-filament::input
                                 type="text"
                                 wire:model.live.debounce.300ms="search"
-                                placeholder="displayName, exception, queue, kind"
+                                placeholder="nazwa zadania, wyjątek, kolejka, typ"
                             />
                         </x-filament::input.wrapper>
                     </label>
@@ -56,11 +56,11 @@
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">ID</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Typ</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Display name</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Queue</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Connection</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Blad</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Failed at</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Nazwa zadania</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Kolejka</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Połączenie</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Błąd</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Czas błędu</th>
                             <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Akcje</th>
                         </tr>
                     </thead>
@@ -91,10 +91,10 @@
                                 <td class="px-4 py-3">
                                     <div class="flex justify-end gap-2">
                                         <x-filament::button size="sm" color="warning" wire:click="retryFailedJob({{ $job['id'] }})">
-                                            Retry
+                                            Ponów
                                         </x-filament::button>
                                         <x-filament::button size="sm" color="gray" wire:click="forgetFailedJob({{ $job['id'] }})">
-                                            Forget
+                                            Usuń wpis
                                         </x-filament::button>
                                     </div>
                                 </td>
@@ -102,7 +102,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                                    Brak failed jobs dla aktualnych filtrow.
+                                    Brak nieudanych zadań dla aktualnych filtrów.
                                 </td>
                             </tr>
                         @endforelse

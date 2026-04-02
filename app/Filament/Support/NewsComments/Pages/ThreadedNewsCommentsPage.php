@@ -57,25 +57,25 @@ abstract class ThreadedNewsCommentsPage extends ListRecords
             [
                 'label' => 'Wszystkie komentarze',
                 'value' => (string) $total,
-                'description' => 'Pelny zakres roboczy dla aktualnych filtrow i wybranego wpisu.',
+                'description' => 'Pełny zakres roboczy dla aktualnych filtrów i wybranego wpisu.',
                 'tone' => 'neutral',
             ],
             [
                 'label' => 'Widoczne',
                 'value' => (string) $visible,
-                'description' => 'Komentarze, ktore nadal sa publicznie widoczne na froncie.',
+                'description' => 'Komentarze, które nadal są publicznie widoczne na stronie.',
                 'tone' => 'calm',
             ],
             [
                 'label' => 'Ukryte',
                 'value' => (string) $hidden,
-                'description' => 'Komentarze zdjete z widoku, ale zachowane w drzewie odpowiedzi.',
+                'description' => 'Komentarze zdjęte z widoku, ale zachowane w drzewie odpowiedzi.',
                 'tone' => 'warm',
             ],
             [
                 'label' => 'Odpowiedzi',
                 'value' => (string) $replies,
-                'description' => 'Wszystkie komentarze zagniezdzone pod watkami glownymi.',
+                'description' => 'Wszystkie komentarze zagnieżdżone pod głównymi wątkami.',
                 'tone' => 'cool',
             ],
         ];
@@ -184,7 +184,7 @@ abstract class ThreadedNewsCommentsPage extends ListRecords
     public function commentStatusLabel(NewsComment $comment): string
     {
         if ($comment->trashed()) {
-            return 'Usuniety';
+            return 'Usunięty';
         }
 
         if ($comment->is_hidden) {
@@ -200,14 +200,14 @@ abstract class ThreadedNewsCommentsPage extends ListRecords
 
         if (! $this->canReplyToComment($comment)) {
             throw ValidationException::withMessages([
-                "replyBodies.{$commentId}" => 'Na ten komentarz nie mozna juz odpowiedziec z poziomu listy.',
+                "replyBodies.{$commentId}" => 'Na ten komentarz nie można już odpowiedzieć z poziomu listy.',
             ]);
         }
 
         $validator = Validator::make(
             ['body' => $this->replyBodies[$commentId] ?? ''],
             ['body' => ['required', 'string', 'min:1', 'max:2000']],
-            ['body.required' => 'Tresci odpowiedzi nie mozna zostawic pustej.'],
+            ['body.required' => 'Treść odpowiedzi nie może być pusta.'],
         );
 
         $validator->validate();
@@ -226,7 +226,7 @@ abstract class ThreadedNewsCommentsPage extends ListRecords
 
         Notification::make()
             ->success()
-            ->title('Odpowiedz zostala dodana.')
+            ->title('Odpowiedź została dodana.')
             ->send();
 
         $this->dispatch('news-comment-reply-saved', commentId: $commentId);
@@ -246,7 +246,7 @@ abstract class ThreadedNewsCommentsPage extends ListRecords
 
         Notification::make()
             ->success()
-            ->title('Komentarz zostal ukryty.')
+            ->title('Komentarz został ukryty.')
             ->send();
     }
 
@@ -309,7 +309,7 @@ abstract class ThreadedNewsCommentsPage extends ListRecords
 
             Notification::make()
                 ->warning()
-                ->title('Komentarz ma odpowiedzi, dlatego zostal ukryty zamiast usuniecia.')
+                ->title('Komentarz ma odpowiedzi, dlatego został ukryty zamiast usunięcia.')
                 ->send();
 
             return;

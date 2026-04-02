@@ -22,7 +22,7 @@ class MassForm
                 Hidden::make('updated_by_user_id'),
 
                 Section::make('Harmonogram i intencja')
-                    ->description('Podstawowe informacje o dacie, godzinie i tresci intencji.')
+                    ->description('Podstawowe informacje o dacie, godzinie i treści intencji.')
                     ->columns(2)
                     ->schema([
                         DateTimePicker::make('celebration_at')

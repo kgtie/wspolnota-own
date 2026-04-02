@@ -26,18 +26,18 @@ class NewsCommentForm
                     ])
                     ->schema([
                         Textarea::make('body')
-                            ->label('Tresc komentarza')
+                            ->label('Treść komentarza')
                             ->rows(12)
                             ->required($isSuperAdmin)
                             ->disabled(! $isSuperAdmin)
                             ->helperText($isSuperAdmin
-                                ? 'Superadmin moze poprawiac tresc komentarza, ale drzewo odpowiedzi pozostaje nienaruszalne.'
-                                : 'Administrator nie edytuje tresci komentarza. Do dyspozycji pozostaje odpowiedz i ukrycie komentarza.'),
+                                ? 'Superadministrator może poprawiać treść komentarza, ale drzewo odpowiedzi pozostaje nienaruszone.'
+                                : 'Administrator nie edytuje treści komentarza. Do dyspozycji pozostają odpowiedź i ukrycie komentarza.'),
 
                         Toggle::make('is_hidden')
                             ->label('Komentarz ukryty')
                             ->disabled(! $isSuperAdmin)
-                            ->helperText('Ukryty komentarz pozostaje w drzewie odpowiedzi, ale nie pokazuje swojej tresci.'),
+                            ->helperText('Ukryty komentarz pozostaje w drzewie odpowiedzi, ale nie pokazuje swojej treści.'),
                     ]),
 
                 Section::make('Kontekst')
@@ -55,18 +55,18 @@ class NewsCommentForm
                             ->content(fn (?NewsComment $record): string => $record?->user?->full_name ?: ($record?->user?->name ?? '-')),
 
                         Placeholder::make('thread_level')
-                            ->label('Poziom w watku')
+                            ->label('Poziom w wątku')
                             ->content(fn (?NewsComment $record): string => match ((int) ($record?->depth ?? 0)) {
-                                1 => 'Odpowiedz na komentarz glowny',
+                                1 => 'Odpowiedź na komentarz główny',
                                 2 => 'Odpowiedz drugiego poziomu',
-                                default => 'Komentarz glowny',
+                                default => 'Komentarz główny',
                             }),
 
                         Placeholder::make('parent_preview')
                             ->label('Komentarz rodzica')
                             ->content(fn (?NewsComment $record): string => $record?->parent
                                 ? str($record->parent->body)->squish()->limit(120)->toString()
-                                : 'Brak - komentarz glowny'),
+                                : 'Brak - komentarz główny'),
 
                         Placeholder::make('created_at_label')
                             ->label('Dodano')

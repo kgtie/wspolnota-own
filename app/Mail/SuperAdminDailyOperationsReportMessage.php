@@ -13,7 +13,7 @@ class SuperAdminDailyOperationsReportMessage extends WspolnotaMailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Dobowy raport operacyjny Wspolnota - '.$this->report['date_label'],
+            subject: 'Dobowy raport operacyjny Wspólnoty - '.$this->report['date_label'],
         );
     }
 
@@ -38,7 +38,7 @@ class SuperAdminDailyOperationsReportMessage extends WspolnotaMailable
     {
         return [
             'category_label' => 'Raport operacyjny',
-            'preheader' => 'Dobowy raport operacyjny dla superadmina Wspolnoty.',
+            'preheader' => 'Dobowy raport operacyjny dla superadministratora Wspólnoty.',
         ];
     }
 }

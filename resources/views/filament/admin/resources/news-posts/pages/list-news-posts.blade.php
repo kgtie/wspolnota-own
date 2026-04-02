@@ -208,10 +208,10 @@
         <section class="newsroom-index__hero">
             <div>
                 <span class="newsroom-index__eyebrow">Newsroom parafii</span>
-                <h1 class="newsroom-index__title">Zamiast suchej tabeli masz redakcyjne centrum dowodzenia dla aktualnosci.</h1>
+                <h1 class="newsroom-index__title">Zamiast suchej tabeli masz redakcyjne centrum dowodzenia dla aktualności.</h1>
                 <p class="newsroom-index__copy">
-                    Tu najlepiej widac rytm publikacji: co czeka w szkicach, co juz zyje na stronie, a co wymaga domkniecia.
-                    Klikniecie rekordu od razu otwiera edytor, wiec ta lista ma sluzyc orientacji i szybkiemu przechodzeniu do pracy.
+                    Tu najlepiej widać rytm publikacji: co czeka w szkicach, co już żyje na stronie, a co wymaga domknięcia.
+                    Kliknięcie rekordu od razu otwiera edytor, więc ta lista ma służyć orientacji i szybkiemu przechodzeniu do pracy.
                 </p>
             </div>
 
@@ -219,7 +219,7 @@
                 <span class="newsroom-index__pulse-label">Aktualny fokus</span>
                 <div class="newsroom-index__pulse-value">{{ $activeTabLabel ?? 'Wszystkie wpisy' }}</div>
                 <p class="newsroom-index__pulse-copy">
-                    Korzystaj z tabow ponizej jak z kolejek redakcyjnych. To najszybszy sposob, by przeskoczyc miedzy szkicami, planowaniem i archiwum.
+                    Korzystaj z zakładek poniżej jak z kolejek redakcyjnych. To najszybszy sposób, by przeskakiwać między szkicami, planowaniem i archiwum.
                 </p>
             </aside>
         </section>

@@ -62,7 +62,7 @@
     <link rel="canonical" href="{{ $seoCanonical }}">
     <link rel="alternate" hreflang="pl-PL" href="{{ $seoCanonical }}">
     <link rel="alternate" hreflang="x-default" href="{{ $seoCanonical }}">
-    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    @include('partials.favicon')
     <title>{{ $seoTitle }}</title>
 
     <script>

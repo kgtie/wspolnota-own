@@ -27,11 +27,11 @@ class AnnouncementSetResource extends Resource
 
     protected static ?string $tenantOwnershipRelationshipName = 'parish';
 
-    protected static ?string $modelLabel = 'zestaw ogloszen';
+    protected static ?string $modelLabel = 'zestaw ogłoszeń';
 
-    protected static ?string $pluralModelLabel = 'zestawy ogloszen';
+    protected static ?string $pluralModelLabel = 'zestawy ogłoszeń';
 
-    protected static ?string $navigationLabel = 'Ogloszenia mszalne';
+    protected static ?string $navigationLabel = 'Ogłoszenia mszalne';
 
     protected static string|UnitEnum|null $navigationGroup = 'Liturgia';
 

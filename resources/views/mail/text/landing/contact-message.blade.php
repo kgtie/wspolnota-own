@@ -1,7 +1,7 @@
-Nowa wiadomosc z formularza kontaktowego
+Nowa wiadomość z formularza kontaktowego
 
 Nadawca: {{ $name }}
-Email: {{ $email }}
+Adres e-mail: {{ $email }}
 @if (filled($parish))
 Parafia: {{ $parish }}
 @endif
@@ -10,5 +10,5 @@ Telefon: {{ $phone }}
 @endif
 Temat: {{ $subjectLine }}
 
-Tresc:
+Treść:
 {{ $messageBody }}

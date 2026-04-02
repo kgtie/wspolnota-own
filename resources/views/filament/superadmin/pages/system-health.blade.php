@@ -356,14 +356,14 @@
         <div class="sa-health-hero">
             <div>
                 <p class="sa-health-hero-title">Centrum nadzoru platformy</p>
-                <p class="sa-health-hero-sub">Pelny, globalny podglad kondycji aplikacji, tenantow, tresci i obciazenia runtime.</p>
+                <p class="sa-health-hero-sub">Pełny, globalny podgląd kondycji aplikacji, tenantów, treści i obciążenia środowiska.</p>
             </div>
             <div class="sa-health-refresh">Auto-refresh co 30s · {{ now()->format('d.m.Y H:i:s') }}</div>
         </div>
 
         <x-filament::section
-            heading="Globalny przeglad KPI"
-            description="Najwazniejsze liczby dla calej platformy."
+            heading="Globalny przegląd KPI"
+            description="Najważniejsze liczby dla całej platformy."
         >
             <div class="sa-health-grid overview">
                 @foreach ($this->overviewCards as $card)
@@ -398,7 +398,7 @@
         </x-filament::section>
 
         <x-filament::section
-            heading="Push / FCM health"
+            heading="Stan push / FCM"
             description="Stan urzadzen, dostarczen i higieny tokenow push."
         >
             <div class="sa-health-grid infra">
@@ -418,7 +418,7 @@
         <div class="sa-health-panels">
             <x-filament::section
                 heading="Top eventy (24h)"
-                description="Najczestsze zdarzenia z activity_log."
+                description="Najczęstsze zdarzenia z activity_log."
             >
                 <div class="sa-health-list">
                     @forelse ($this->activityBreakdown as $row)
@@ -484,7 +484,7 @@
                                 <p class="sa-health-row-meta">sent {{ number_format($row['sent'], 0, ',', ' ') }} · failed {{ number_format($row['failed'], 0, ',', ' ') }} · queued {{ number_format($row['queued'], 0, ',', ' ') }}</p>
                             </div>
                             <div class="mt-1 flex items-center gap-2">
-                                <span class="sa-health-row-meta-chip">lacznie {{ number_format($row['total'], 0, ',', ' ') }}</span>
+                                <span class="sa-health-row-meta-chip">łącznie {{ number_format($row['total'], 0, ',', ' ') }}</span>
                             </div>
                             <div class="sa-health-bar">
                                 <div class="sa-health-bar-fill" style="width: {{ max(3, $pct) }}%;"></div>
@@ -498,7 +498,7 @@
 
             <x-filament::section
                 heading="Push devices per platform"
-                description="Rozklad urzadzen, aktywnosci i odmow zgody po platformie."
+                description="Rozkład urządzeń, aktywności i odmów zgody według platformy."
             >
                 <div class="sa-health-list">
                     @forelse ($this->pushPlatformBreakdown as $row)

@@ -17,12 +17,12 @@ class EmailThemeFactory
         );
 
         return [
-            'service_name' => (string) config('app.name', 'Wspolnota'),
+            'service_name' => (string) config('app.name', 'Wspólnota'),
             'service_url' => $serviceUrl,
             'service_logo_url' => asset('assets/mail/wspolnota-logo-placeholder.svg'),
-            'service_logo_alt' => 'Wspolnota logo placeholder',
+            'service_logo_alt' => 'Logo usługi Wspólnota',
             'support_email' => (string) config('mail.from.address', 'wspolnota@wspolnota.app'),
-            'category_label' => (string) ($context['category_label'] ?? 'Wiadomosc z Wspolnoty'),
+            'category_label' => (string) ($context['category_label'] ?? 'Wiadomość z Wspólnoty'),
             'accent_color' => $accentColor,
             'accent_soft' => $this->hexToRgba($accentColor, 0.14),
             'parish_name' => $parish?->name,
@@ -31,7 +31,7 @@ class EmailThemeFactory
             'parish_link_label' => $parish ? 'Strona parafii' : 'Publiczne strony parafii',
             'has_parish' => $parish !== null,
             'mobile_note' => $this->resolveMobileNote($parish, (string) ($context['mobile_note_variant'] ?? 'default')),
-            'footer_note' => (string) ($context['footer_note'] ?? 'Wiadomosc zostala wyslana automatycznie przez usluge Wspolnota.'),
+            'footer_note' => (string) ($context['footer_note'] ?? 'Wiadomość została wysłana automatycznie przez usługę Wspólnota.'),
         ];
     }
 
@@ -73,13 +73,13 @@ class EmailThemeFactory
     private function resolveMobileNote(?Parish $parish, string $variant): string
     {
         $subject = $parish
-            ? 'Wspolnota pomaga parafii byc blizej ludzi takze na telefonach.'
-            : 'Wspolnota jest projektowana jako usluga wygodna takze na telefonach.';
+            ? 'Wspólnota pomaga parafii być bliżej ludzi także na telefonach.'
+            : 'Wspólnota jest projektowana jako usługa wygodna także na telefonach.';
 
         return match ($variant) {
-            'parish' => $subject.' Dziala na iPhone\'ach i telefonach z Androidem, dzieki czemu wierni i administratorzy wracaja do ogloszen, wiadomosci i spraw parafii z dowolnego miejsca.',
-            'campaign' => 'Kazda kampania w Wspolnocie wspiera komunikacje z osobami, ktore korzystaja z telefonow z iOS i Androidem, dlatego wartosciowe informacje pozostaja pod reka rowniez po otwarciu maila.',
-            default => $subject.' Wspolnota dziala na telefonach z iOS i Androidem, dlatego najwazniejsze sprawy mozna wygodnie kontynuowac takze po przeczytaniu tej wiadomosci.',
+            'parish' => $subject.' Działa na iPhone’ach i telefonach z Androidem, dzięki czemu wierni i administratorzy mogą wracać do ogłoszeń, wiadomości i spraw parafii z dowolnego miejsca.',
+            'campaign' => 'Każda kampania we Wspólnocie wspiera komunikację z osobami, które korzystają z telefonów z iOS i Androidem, dlatego ważne informacje pozostają pod ręką także po otwarciu maila.',
+            default => $subject.' Wspólnota działa na telefonach z iOS i Androidem, dlatego najważniejsze sprawy można wygodnie kontynuować także po przeczytaniu tej wiadomości.',
         };
     }
 

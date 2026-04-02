@@ -7,25 +7,25 @@
 
     $pageTitle = match (true) {
         $isVerified => 'Konto aktywowane • ' . $parish->short_name,
-        $isAlreadyVerified => 'Adres email już potwierdzony • ' . $parish->short_name,
+        $isAlreadyVerified => 'Adres e-mail już potwierdzony • ' . $parish->short_name,
         default => 'Link weryfikacyjny jest nieważny • ' . $parish->short_name,
     };
 
     $pageDescription = match (true) {
-        $isVerified => 'Adres email został potwierdzony, a konto aktywowane.',
-        $isAlreadyVerified => 'Adres email tego konta był już wcześniej potwierdzony.',
+        $isVerified => 'Adres e-mail został potwierdzony, a konto aktywowane.',
+        $isAlreadyVerified => 'Adres e-mail tego konta był już wcześniej potwierdzony.',
         default => 'Link weryfikacyjny jest nieprawidłowy lub wygasł.',
     };
 
     $headline = match (true) {
         $isVerified => 'Konto zostało aktywowane.',
-        $isAlreadyVerified => 'Adres email był już wcześniej potwierdzony.',
-        default => 'Nie udało się potwierdzić adresu email.',
+        $isAlreadyVerified => 'Adres e-mail był już wcześniej potwierdzony.',
+        default => 'Nie udało się potwierdzić adresu e-mail.',
     };
 
     $body = match (true) {
-        $isVerified => 'Adres email został właśnie zweryfikowany. Możesz wrócić do aplikacji i korzystać z konta dalej.',
-        $isAlreadyVerified => 'To konto ma już potwierdzony adres email. Możesz bezpiecznie wrócić do aplikacji.',
+        $isVerified => 'Adres e-mail został właśnie zweryfikowany. Możesz wrócić do aplikacji i dalej korzystać z konta.',
+        $isAlreadyVerified => 'To konto ma już potwierdzony adres e-mail. Możesz bezpiecznie wrócić do aplikacji.',
         default => 'Ten link jest nieprawidłowy albo wygasł. W aplikacji możesz poprosić o wysłanie nowego maila weryfikacyjnego.',
     };
 @endphp
@@ -79,9 +79,9 @@
                             <div class="mt-4 text-sm text-stone-600">
                                 <p class="font-semibold text-stone-900">{{ $user->email }}</p>
                                 @if ($isVerified)
-                                    <p class="mt-1">Adres email został potwierdzony przed chwilą.</p>
+                                    <p class="mt-1">Adres e-mail został potwierdzony przed chwilą.</p>
                                 @elseif ($isAlreadyVerified)
-                                    <p class="mt-1">Adres email tego konta był już wcześniej aktywny.</p>
+                                    <p class="mt-1">Adres e-mail tego konta był już wcześniej aktywny.</p>
                                 @else
                                     <p class="mt-1">Aby dokończyć rejestrację, użyj nowego linku wysłanego z aplikacji.</p>
                                 @endif

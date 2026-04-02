@@ -46,7 +46,7 @@ class ParishInfolist
                         TextEntry::make('parishioners_count')->label('Parafianie')->badge(),
                         TextEntry::make('admins_count')->label('Administratorzy')->badge(),
                         TextEntry::make('masses_count')->label('Msze')->badge(),
-                        TextEntry::make('announcement_sets_count')->label('Zestawy ogloszen')->badge(),
+                        TextEntry::make('announcement_sets_count')->label('Zestawy ogłoszeń')->badge(),
                         TextEntry::make('news_posts_count')->label('Aktualnosci')->badge(),
                         TextEntry::make('office_conversations_count')->label('Konwersacje online')->badge(),
 

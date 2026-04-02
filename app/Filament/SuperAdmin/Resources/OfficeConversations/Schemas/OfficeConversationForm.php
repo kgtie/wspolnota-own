@@ -74,7 +74,7 @@ class OfficeConversationForm
                             ->default(OfficeConversation::STATUS_OPEN),
 
                         DateTimePicker::make('last_message_at')
-                            ->label('Ostatnia wiadomosc')
+                            ->label('Ostatnia wiadomość')
                             ->seconds(false)
                             ->native(false),
 

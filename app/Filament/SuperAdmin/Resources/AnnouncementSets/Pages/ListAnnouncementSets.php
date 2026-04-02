@@ -29,10 +29,10 @@ class ListAnnouncementSets extends ListRecords
             ->label('Wydruk wybranego zestawu')
             ->icon('heroicon-o-printer')
             ->color('gray')
-            ->modalHeading('Wydruk zestawu ogloszen')
+            ->modalHeading('Wydruk zestawu ogłoszeń')
             ->schema([
                 Select::make('announcement_set_id')
-                    ->label('Zestaw ogloszen')
+                    ->label('Zestaw ogłoszeń')
                     ->required()
                     ->preload()
                     ->searchable()
@@ -69,7 +69,7 @@ class ListAnnouncementSets extends ListRecords
                 if (! $exporter->hasPrintableItems($set)) {
                     Notification::make()
                         ->warning()
-                        ->title('Brak aktywnych ogloszen do wydruku.')
+                        ->title('Brak aktywnych ogłoszeń do wydruku.')
                         ->body('Dodaj aktywne pozycje lub zmien ich status.')
                         ->send();
 

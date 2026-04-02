@@ -17,6 +17,7 @@
     <meta name="robots" content="{{ $pageRobots }}">
     <meta name="theme-color" content="#f4efe7">
     <link rel="canonical" href="{{ $pageCanonicalUrl }}">
+    @include('partials.favicon')
 
     <meta property="og:locale" content="pl_PL">
     <meta property="og:type" content="{{ $pageOgType }}">

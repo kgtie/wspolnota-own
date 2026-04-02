@@ -68,7 +68,7 @@ class ListActivityLogs extends ListRecords
                     Notification::make()
                         ->success()
                         ->title('Wyczyszczono activity_log.')
-                        ->body("Usunieto lacznie {$deletedCount} rekordow.")
+                        ->body("Usunięto łącznie {$deletedCount} rekordów.")
                         ->send();
                 }),
         ];

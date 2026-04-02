@@ -13,7 +13,7 @@ class SchedulerDailyReportMessage extends WspolnotaMailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Raport schedulera Wspolnota - '.$this->report['date_label'],
+            subject: 'Raport harmonogramu zadań Wspólnoty - '.$this->report['date_label'],
         );
     }
 
@@ -37,8 +37,8 @@ class SchedulerDailyReportMessage extends WspolnotaMailable
     protected function emailContext(): array
     {
         return [
-            'category_label' => 'Raport schedulera',
-            'preheader' => 'Dzienny raport wykonania zadan schedulera Wspolnota.',
+            'category_label' => 'Raport harmonogramu zadań',
+            'preheader' => 'Dzienny raport wykonania zadań harmonogramu Wspólnoty.',
         ];
     }
 }

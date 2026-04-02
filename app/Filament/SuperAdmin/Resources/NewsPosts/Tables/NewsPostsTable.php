@@ -44,14 +44,14 @@ class NewsPostsTable
             ->persistFiltersInSession()
             ->columns([
                 SpatieMediaLibraryImageColumn::make('featured_image')
-                    ->label('Okladka')
+                    ->label('Okładka')
                     ->collection('featured_image')
                     ->conversion('thumb')
                     ->height(52)
                     ->width(80),
 
                 TextColumn::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->searchable()
                     ->sortable()
                     ->description(fn (NewsPost $record): ?string => filled($record->content)
@@ -71,7 +71,7 @@ class NewsPostsTable
                     ->color(fn (string $state): string => self::statusColor($state)),
 
                 TextColumn::make('is_pinned')
-                    ->label('Przypiety')
+                    ->label('Przypięty')
                     ->state(fn (NewsPost $record): string => $record->is_pinned ? 'Tak' : 'Nie')
                     ->badge()
                     ->color(fn (string $state): string => $state === 'Tak' ? 'info' : 'gray')
@@ -102,25 +102,25 @@ class NewsPostsTable
                     ])),
 
                 TextColumn::make('push_notification_sent_at')
-                    ->label('Push dispatch')
+                    ->label('Wysyłka push')
                     ->state(fn (NewsPost $record): string => $record->push_notification_sent_at
-                        ? 'Wyslano '.$record->push_notification_sent_at->format('d.m H:i')
+                        ? 'Wysłano '.$record->push_notification_sent_at->format('d.m H:i')
                         : 'Oczekuje')
                     ->badge()
                     ->color(fn (NewsPost $record): string => $record->push_notification_sent_at ? 'success' : 'warning')
                     ->toggleable(),
 
                 TextColumn::make('email_notification_sent_at')
-                    ->label('Email dispatch')
+                    ->label('Wysyłka e-maili')
                     ->state(fn (NewsPost $record): string => $record->email_notification_sent_at
-                        ? 'Wyslano '.$record->email_notification_sent_at->format('d.m H:i')
+                        ? 'Wysłano '.$record->email_notification_sent_at->format('d.m H:i')
                         : 'Oczekuje')
                     ->badge()
                     ->color(fn (NewsPost $record): string => $record->email_notification_sent_at ? 'success' : 'warning')
                     ->toggleable(),
 
                 TextColumn::make('updatedBy.full_name')
-                    ->label('Edytowal')
+                    ->label('Edytował')
                     ->placeholder('Brak')
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -155,7 +155,7 @@ class NewsPostsTable
                         ->all()),
 
                 TernaryFilter::make('is_pinned')
-                    ->label('Przypiety')
+                    ->label('Przypięty')
                     ->nullable()
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
@@ -226,7 +226,7 @@ class NewsPostsTable
                     ],
                 ));
             })
-            ->successNotificationTitle('Status wpisu zostal zaktualizowany.');
+            ->successNotificationTitle('Status wpisu został zaktualizowany.');
     }
 
     protected static function duplicateAction(): Action
@@ -251,8 +251,8 @@ class NewsPostsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Utworzono kopie wpisu.')
-                    ->body('Kopia ma status szkicu i moze byc dalej edytowana.')
+                    ->title('Utworzono kopię wpisu.')
+                    ->body('Kopia ma status szkicu i może być dalej edytowana.')
                     ->send();
             });
     }
@@ -266,16 +266,16 @@ class NewsPostsTable
             ->visible(fn (NewsPost $record): bool => $record->status === 'published')
             ->schema([
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
-                    ->default(fn (NewsPost $record): string => 'Nowa aktualnosc w parafii'),
+                    ->default(fn (NewsPost $record): string => 'Nowa aktualność w parafii'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(5)
                     ->maxLength(1000)
-                    ->default(fn (NewsPost $record): string => 'Dodano nowa aktualnosc: '.$record->title),
+                    ->default(fn (NewsPost $record): string => 'Dodano nową aktualność: '.$record->title),
             ])
             ->action(function (
                 NewsPost $record,
@@ -300,8 +300,8 @@ class NewsPostsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano push dla aktualnosci.')
-                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano push dla aktualności.')
+                    ->body("Użytkownicy: {$result['users']} · urządzenia: {$result['devices']} · pominięci: {$result['skipped']}")
                     ->send();
             });
     }
@@ -309,7 +309,7 @@ class NewsPostsTable
     protected static function sendInstantEmailAction(): Action
     {
         return Action::make('send_news_email_now')
-            ->label('Email teraz')
+            ->label('E-mail teraz')
             ->icon('heroicon-o-envelope')
             ->color('primary')
             ->visible(fn (NewsPost $record): bool => $record->status === 'published')
@@ -318,13 +318,13 @@ class NewsPostsTable
                     ->label('Temat')
                     ->required()
                     ->maxLength(200)
-                    ->default(fn (NewsPost $record): string => 'Nowa aktualnosc: '.$record->title),
+                    ->default(fn (NewsPost $record): string => 'Nowa aktualność: '.$record->title),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(8)
                     ->maxLength(12000)
-                    ->default(fn (NewsPost $record): string => 'Opublikowano nowa aktualnosc w parafii: '.$record->title),
+                    ->default(fn (NewsPost $record): string => 'Opublikowano nową aktualność w parafii: '.$record->title),
             ])
             ->action(function (
                 NewsPost $record,
@@ -345,8 +345,8 @@ class NewsPostsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla aktualnosci.')
-                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano e-mail dla aktualności.')
+                    ->body("Odbiorcy: {$result['users']} · w kolejce: {$result['queued']} · pominięci: {$result['skipped']}")
                     ->send();
             });
     }
@@ -380,8 +380,8 @@ class NewsPostsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zaktualizowano status wpisow.')
-                    ->body("Zmieniono {$updated} z {$selectedCount} zaznaczonych rekordow.")
+                    ->title('Zaktualizowano statusy wpisów.')
+                    ->body("Zmieniono {$updated} z {$selectedCount} zaznaczonych rekordów.")
                     ->send();
             });
     }
@@ -394,12 +394,12 @@ class NewsPostsTable
             ->color('info')
             ->schema([
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
                     ->default('Aktualizacja z wybranych parafii'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(5)
                     ->maxLength(1000),
@@ -434,8 +434,8 @@ class NewsPostsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano push dla zaznaczonych aktualnosci.')
-                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano push dla zaznaczonych aktualności.')
+                    ->body("Użytkownicy: {$result['users']} · urządzenia: {$result['devices']} · pominięci: {$result['skipped']}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();
@@ -444,7 +444,7 @@ class NewsPostsTable
     protected static function sendInstantEmailBulkAction(): BulkAction
     {
         return BulkAction::make('send_news_email_bulk')
-            ->label('Email teraz')
+            ->label('E-mail teraz')
             ->icon('heroicon-o-envelope')
             ->color('primary')
             ->schema([
@@ -454,7 +454,7 @@ class NewsPostsTable
                     ->maxLength(200)
                     ->default('Aktualizacja z wybranych parafii'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(8)
                     ->maxLength(12000),
@@ -485,8 +485,8 @@ class NewsPostsTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla zaznaczonych aktualnosci.')
-                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano e-mail dla zaznaczonych aktualności.')
+                    ->body("Odbiorcy: {$result['users']} · w kolejce: {$result['queued']} · pominięci: {$result['skipped']}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();

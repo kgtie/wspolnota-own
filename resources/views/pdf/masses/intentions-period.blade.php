@@ -203,7 +203,7 @@
 
             <div class="service-cell">
                 <div class="logo-box">
-                    <img src="{{ $service_logo_data_uri }}" alt="Logo Wspolnota">
+                    <img src="{{ $service_logo_data_uri }}" alt="Logo Wspólnoty">
                 </div>
             </div>
         </div>
@@ -242,7 +242,7 @@
 
         <div class="footer">
             <strong>Wygenerowano:</strong> {{ $generatedAt->format('d.m.Y H:i') }}<br>
-            Usluga Wspolnota jest dostepna w App Store oraz Google Play Store.
+            Usługa Wspólnota jest dostępna w App Store oraz Google Play.
         </div>
     </div>
 </body>

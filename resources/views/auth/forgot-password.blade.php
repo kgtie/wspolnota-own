@@ -3,7 +3,7 @@
         <i class="fa-solid fa-key fa-3x text-primary mb-3"></i>
         <h4 class="fw-bold">Zapomniałeś hasła?</h4>
         <p class="text-muted small">
-            To nie problem. Podaj nam swój adres email, a wyślemy Ci link, który pozwoli ustalić nowe hasło.
+            To nie problem. Podaj nam swój adres e-mail, a wyślemy Ci link, który pozwoli ustalić nowe hasło.
         </p>
     </div>
 

@@ -33,7 +33,7 @@ class EditNewsPost extends EditRecord
 
     public function getSubheading(): ?string
     {
-        return 'Szkic istnieje od razu. Obrazy w tresci i pozostale media mozesz dodawac bez wstepnego zapisu.';
+        return 'Szkic istnieje od razu. Obrazy w treści i pozostałe media możesz dodawać bez wstępnego zapisu.';
     }
 
     public function getFormActionsAlignment(): string|Alignment
@@ -146,7 +146,7 @@ class EditNewsPost extends EditRecord
                     Notification::make()
                         ->danger()
                         ->title('Wpis wymaga uzupelnienia.')
-                        ->body('Uzupelnij przynajmniej tytul i tresc, zanim zmienisz status wpisu na inny niz szkic.')
+                        ->body('Uzupełnij przynajmniej tytuł i treść, zanim zmienisz status wpisu na inny niż szkic.')
                         ->send();
 
                     throw $exception;
@@ -220,7 +220,7 @@ class EditNewsPost extends EditRecord
         $errors = [];
 
         if ($this->normalizeAutosaveValue($data['title'] ?? null) === '') {
-            $errors['data.title'] = 'Tytul jest wymagany poza trybem szkicu.';
+            $errors['data.title'] = 'Tytuł jest wymagany poza trybem szkicu.';
         }
 
         if ($this->normalizeAutosaveValue($data['content'] ?? null) === '') {

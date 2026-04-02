@@ -25,8 +25,8 @@ use Illuminate\Validation\ValidationException;
 /**
  * Globalna konfiguracja FCM i diagnostyka push.
  *
- * Strona laczy ustawienia integracji Firebase z szybkimi metrykami oraz
- * recznym smoke-testem push, zeby superadmin mogl obsluzyc caly obszar
+ * Strona łączy ustawienia integracji Firebase z szybkimi metrykami oraz
+ * ręcznym testem push, żeby superadmin mógł obsłużyć cały obszar
  * mobilnych notyfikacji z jednego miejsca.
  */
 class FcmSettingsPage extends SettingsPage
@@ -41,11 +41,11 @@ class FcmSettingsPage extends SettingsPage
 
     protected static string | \BackedEnum | null $navigationIcon = null;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Push i urzadzenia';
+    protected static string | \UnitEnum | null $navigationGroup = 'Push i urządzenia';
 
     protected static ?int $navigationSort = 2;
 
-    protected ?string $subheading = 'Globalna konfiguracja Firebase Cloud Messaging, testy wysylki i kontrola stanu push.';
+    protected ?string $subheading = 'Globalna konfiguracja Firebase Cloud Messaging, testy wysyłki i kontrola stanu push.';
 
     public static function getNavigationBadge(): ?string
     {
@@ -81,30 +81,30 @@ class FcmSettingsPage extends SettingsPage
                     ->columns(3)
                     ->schema([
                         Placeholder::make('active_devices')
-                            ->label('Aktywne urzadzenia')
+                            ->label('Aktywne urządzenia')
                             ->content(fn (): string => (string) UserDevice::query()->pushable()->count()),
                         Placeholder::make('saved_preferences')
-                            ->label('Uzytkownicy ze zgodami')
+                            ->label('Użytkownicy ze zgodami')
                             ->content(fn (): string => (string) User::query()->whereHas('notificationPreference')->count()),
                         Placeholder::make('missing_preferences')
                             ->label('Brak zapisanych zgod')
                             ->content(fn (): string => (string) User::query()->whereDoesntHave('notificationPreference')->count()),
                         Placeholder::make('sent_24h')
-                            ->label('Push sent 24h')
+                            ->label('Push wysłane w 24 h')
                             ->content(fn (): string => (string) PushDelivery::query()
                                 ->where('status', PushDelivery::STATUS_SENT)
                                 ->where('created_at', '>=', now()->subDay())
                                 ->count()),
                         Placeholder::make('failed_24h')
-                            ->label('Push failed 24h')
+                            ->label('Błędne push w 24 h')
                             ->content(fn (): string => (string) PushDelivery::query()
                                 ->where('status', PushDelivery::STATUS_FAILED)
                                 ->where('created_at', '>=', now()->subDay())
                                 ->count()),
                         Placeholder::make('permission_status_mix')
-                            ->label('Permission status')
+                            ->label('Status uprawnień')
                             ->content(fn (): string => sprintf(
-                                'auth: %d · provisional: %d · denied: %d · not_determined: %d',
+                                'autoryzowane: %d · tymczasowe: %d · odrzucone: %d · nieustalone: %d',
                                 UserDevice::query()->where('permission_status', 'authorized')->count(),
                                 UserDevice::query()->where('permission_status', 'provisional')->count(),
                                 UserDevice::query()->where('permission_status', 'denied')->count(),
@@ -121,11 +121,11 @@ class FcmSettingsPage extends SettingsPage
 
                         TextInput::make('project_id')
                             ->label('Firebase project_id')
-                            ->helperText('Mozesz zostawic puste, jesli project_id jest juz w service account JSON.')
+                            ->helperText('Możesz zostawić puste, jeśli `project_id` jest już w JSON-ie konta usługi.')
                             ->maxLength(255),
 
                         TextInput::make('request_timeout_seconds')
-                            ->label('Timeout requestu')
+                            ->label('Limit czasu żądania')
                             ->numeric()
                             ->minValue(2)
                             ->maxValue(60)
@@ -135,7 +135,7 @@ class FcmSettingsPage extends SettingsPage
                             ->label('Service account JSON')
                             ->rows(18)
                             ->columnSpanFull()
-                            ->helperText('Wklej caly JSON konta serwisowego Firebase / Google Cloud. Pole jest szyfrowane przez Spatie Settings.')
+                            ->helperText('Wklej cały JSON konta usługi Firebase / Google Cloud. Pole jest szyfrowane przez Spatie Settings.')
                             ->required(fn (callable $get): bool => (bool) $get('enabled')),
                     ]),
 
@@ -161,7 +161,7 @@ class FcmSettingsPage extends SettingsPage
                             ->inline(false),
 
                         Toggle::make('announcements_collapsible')
-                            ->label('Ogloszenia: collapse')
+                            ->label('Ogłoszenia: grupowanie')
                             ->inline(false),
 
                         Toggle::make('office_messages_collapsible')
@@ -169,7 +169,7 @@ class FcmSettingsPage extends SettingsPage
                             ->inline(false),
 
                         Toggle::make('parish_approval_collapsible')
-                            ->label('Zatwierdzenie parafii: collapse')
+                            ->label('Zatwierdzenie parafii: grupowanie')
                             ->inline(false),
                     ]),
             ]);
@@ -179,13 +179,13 @@ class FcmSettingsPage extends SettingsPage
     {
         $serviceAccountJson = trim((string) ($data['service_account_json'] ?? ''));
 
-        // Walidujemy JSON przed zapisem, bo blad w tym polu rozwala caly sender FCM.
+        // Walidujemy JSON przed zapisem, bo błąd w tym polu unieruchamia cały mechanizm wysyłki FCM.
         if ($serviceAccountJson !== '') {
             $decoded = json_decode($serviceAccountJson, true);
 
             if (! is_array($decoded)) {
                 throw ValidationException::withMessages([
-                    'data.service_account_json' => 'Service account JSON musi byc poprawnym JSON-em.',
+                    'data.service_account_json' => 'JSON konta usługi musi być poprawnym JSON-em.',
                 ]);
             }
         }
@@ -235,7 +235,7 @@ class FcmSettingsPage extends SettingsPage
                         ->required(),
 
                     TextInput::make('title')
-                        ->label('Tytul')
+                        ->label('Tytuł')
                         ->required()
                         ->maxLength(120)
                         ->default('Test push z panelu superadmina'),
@@ -244,7 +244,7 @@ class FcmSettingsPage extends SettingsPage
                         ->label('Tresc')
                         ->rows(4)
                         ->required()
-                        ->default('Jesli widzisz ta wiadomosc, FCM dziala poprawnie.'),
+                        ->default('Jeśli widzisz tę wiadomość, FCM działa poprawnie.'),
 
                     Textarea::make('data_json')
                         ->label('Data (JSON)')
@@ -352,7 +352,7 @@ class FcmSettingsPage extends SettingsPage
                 $device->getKey() => sprintf(
                     '#%s %s · %s · %s',
                     $device->getKey(),
-                    $device->user?->email ?? 'brak usera',
+                    $device->user?->email ?? 'brak użytkownika',
                     strtoupper((string) $device->platform),
                     $device->device_name ?: $device->device_id,
                 ),

@@ -88,16 +88,16 @@ class ParishPriestWeeklyDigestBuilder
         if ($missingDays->isEmpty()) {
             return [
                 'tone' => 'success',
-                'headline' => 'Kalendarz mszalny na najblizsze 10 dni jest uzupelniony.',
-                'description' => 'Kazdego dnia od dzisiaj do '.$end->format('d.m.Y').' jest zaplanowana przynajmniej jedna msza.',
+                'headline' => 'Kalendarz mszalny na najbliższe 10 dni jest uzupełniony.',
+                'description' => 'Każdego dnia od dzisiaj do '.$end->format('d.m.Y').' jest zaplanowana przynajmniej jedna msza.',
                 'missing_days' => [],
             ];
         }
 
         return [
             'tone' => 'danger',
-            'headline' => 'Kalendarz mszalny wymaga uzupelnienia.',
-            'description' => 'W najblizszych 10 dniach brakuje co najmniej jednej zaplanowanej mszy w niektorych dniach. Warto uzupelnic terminy jak najszybciej.',
+            'headline' => 'Kalendarz mszalny wymaga uzupełnienia.',
+            'description' => 'W najbliższych 10 dniach w niektórych dniach brakuje co najmniej jednej zaplanowanej mszy. Warto jak najszybciej uzupełnić terminy.',
             'missing_days' => $missingDays->all(),
         ];
     }
@@ -123,7 +123,7 @@ class ParishPriestWeeklyDigestBuilder
         if ($publishedSet) {
             return [
                 'tone' => 'success',
-                'headline' => 'Ogloszenia na przyszly tydzien sa gotowe i opublikowane.',
+                'headline' => 'Ogłoszenia na przyszły tydzień są gotowe i opublikowane.',
                 'description' => $publishedSet->title.' | Aktywne pozycje: '.(int) ($publishedSet->active_items_count ?? 0).'. Okres: '.$start->format('d.m').' - '.$end->format('d.m.Y').'.',
             ];
         }
@@ -139,15 +139,15 @@ class ParishPriestWeeklyDigestBuilder
         if ($draftSet) {
             return [
                 'tone' => 'warning',
-                'headline' => 'Na przyszly tydzien jest szkic ogloszen, ale nie jest jeszcze opublikowany.',
-                'description' => $draftSet->title.' | Aktywne pozycje: '.(int) ($draftSet->active_items_count ?? 0).'. Warto dokonczyc zestaw i opublikowac go przed rozpoczeciem tygodnia.',
+                'headline' => 'Na przyszły tydzień jest szkic ogłoszeń, ale nie został jeszcze opublikowany.',
+                'description' => $draftSet->title.' | Aktywne pozycje: '.(int) ($draftSet->active_items_count ?? 0).'. Warto dokończyć zestaw i opublikować go przed rozpoczęciem tygodnia.',
             ];
         }
 
         return [
             'tone' => 'danger',
-            'headline' => 'Brakuje przygotowanych ogloszen na przyszly tydzien.',
-            'description' => 'Nie znaleziono ani opublikowanego zestawu, ani szkicu obejmujacego kolejny tydzien. Warto utworzyc zestaw i opublikowac go zawczasu.',
+            'headline' => 'Brakuje przygotowanych ogłoszeń na przyszły tydzień.',
+            'description' => 'Nie znaleziono ani opublikowanego zestawu, ani szkicu obejmującego kolejny tydzień. Warto utworzyć zestaw i opublikować go z wyprzedzeniem.',
         ];
     }
 
@@ -168,8 +168,8 @@ class ParishPriestWeeklyDigestBuilder
         if ($openCount === 0) {
             return [
                 'tone' => 'success',
-                'headline' => 'Kancelaria online jest uporzadkowana.',
-                'description' => 'Nie masz obecnie otwartych konwersacji oczekujacych na domkniecie.',
+                'headline' => 'Kancelaria online jest uporządkowana.',
+                'description' => 'Nie masz obecnie otwartych konwersacji oczekujących na domknięcie.',
                 'open_count' => 0,
                 'unread_count' => 0,
             ];
@@ -178,7 +178,7 @@ class ParishPriestWeeklyDigestBuilder
         return [
             'tone' => $openCount >= 10 ? 'danger' : 'warning',
             'headline' => 'Masz otwarte konwersacje w kancelarii online.',
-            'description' => 'Otwarte watki: '.$openCount.'. Nieprzeczytane lub wymagajace reakcji: '.$unreadCount.'. Warto odpowiadac parafianom mozliwie szybko i zamykac zakonczone sprawy.',
+            'description' => 'Otwarte wątki: '.$openCount.'. Nieprzeczytane lub wymagające reakcji: '.$unreadCount.'. Warto odpowiadać parafianom możliwie szybko i zamykać zakończone sprawy.',
             'open_count' => $openCount,
             'unread_count' => $unreadCount,
         ];
@@ -197,23 +197,23 @@ class ParishPriestWeeklyDigestBuilder
         if ($publishedLast30Days >= 4) {
             return [
                 'tone' => 'success',
-                'headline' => 'Parafia publikuje aktualnosci regularnie.',
-                'description' => 'W ostatnich 30 dniach opublikowano '.$publishedLast30Days.' wpisow. Ostatnia publikacja: '.$this->formatNewsDateLabel($lastPublished).'.',
+                'headline' => 'Parafia publikuje aktualności regularnie.',
+                'description' => 'W ostatnich 30 dniach opublikowano '.$publishedLast30Days.' wpisów. Ostatnia publikacja: '.$this->formatNewsDateLabel($lastPublished).'.',
             ];
         }
 
         if ($publishedLast30Days > 0) {
             return [
                 'tone' => 'warning',
-                'headline' => 'Warto publikowac aktualnosci czesciej.',
-                'description' => 'W ostatnich 30 dniach opublikowano '.$publishedLast30Days.' wpisow. Ostatnia publikacja: '.$this->formatNewsDateLabel($lastPublished).'. Regularne wpisy pomagaja parafianom byc na biezaco.',
+                'headline' => 'Warto publikować aktualności częściej.',
+                'description' => 'W ostatnich 30 dniach opublikowano '.$publishedLast30Days.' wpisów. Ostatnia publikacja: '.$this->formatNewsDateLabel($lastPublished).'. Regularne wpisy pomagają parafianom być na bieżąco.',
             ];
         }
 
         return [
             'tone' => 'danger',
-            'headline' => 'Brakuje swiezych aktualnosci na stronie parafii.',
-            'description' => 'W ostatnich 30 dniach nie opublikowano zadnej aktualnosci. Warto przygotowac wpis, aby parafianie byli dobrze poinformowani o tym, co dzieje sie w parafii.',
+            'headline' => 'Brakuje świeżych aktualności na stronie parafii.',
+            'description' => 'W ostatnich 30 dniach nie opublikowano żadnej aktualności. Warto przygotować wpis, aby parafianie byli dobrze poinformowani o tym, co dzieje się w parafii.',
         ];
     }
 

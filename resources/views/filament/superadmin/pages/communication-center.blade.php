@@ -262,11 +262,11 @@
         <section class="comm-hero">
             <div class="comm-hero-grid">
                 <div class="comm-stack">
-                    <div class="comm-kicker">Superadmin Communication Center</div>
-                    <h1 class="comm-title">Kampanie email i push uporzadkowane wokol jednego buildera.</h1>
+                    <div class="comm-kicker">Centrum komunikacji superadministratora</div>
+                    <h1 class="comm-title">Kampanie e-mail i push uporządkowane wokół jednego edytora.</h1>
                     <p class="comm-lead">
-                        Jeden workflow do szkicow, szablonow, segmentacji odbiorcow, testowych wysylek, harmonogramu i preview finalnego maila.
-                        Rich text trafia do tego samego shella HTML, ktory obsluguje maile systemowe i parafialne.
+                        Jeden przepływ pracy dla szkiców, szablonów, segmentacji odbiorców, testowych wysyłek, harmonogramu i podglądu finalnej wiadomości.
+                        Treść rozbudowana trafia do tej samej powłoki HTML, która obsługuje wiadomości systemowe i parafialne.
                     </p>
                     <div class="comm-action-bar">
                         <x-filament::button wire:click="newCampaign" color="gray" icon="heroicon-m-sparkles">
@@ -282,7 +282,7 @@
                             Wyslij test
                         </x-filament::button>
                         <x-filament::button wire:click="sendCampaign" color="primary" icon="heroicon-m-paper-airplane">
-                            Uruchom email
+                            Uruchom e-mail
                         </x-filament::button>
                         <x-filament::button wire:click="sendPushCampaign" color="success" icon="heroicon-m-device-phone-mobile">
                             Uruchom push
@@ -303,7 +303,7 @@
 
         <div class="comm-shell-grid">
             <div class="comm-stack">
-                <x-filament::section heading="Builder Kampanii" description="To tutaj ustawiasz branding, tresc, CTA i fallback tekstowy.">
+                <x-filament::section heading="Edytor kampanii" description="Tutaj ustawiasz branding, treść, CTA i tekst awaryjny.">
                     <div class="comm-stack">
                         <div class="comm-panel">
                             <div class="comm-input-grid two">
@@ -317,7 +317,7 @@
                                     <label class="text-sm font-medium">Branding parafialny</label>
                                     <x-filament::input.wrapper>
                                         <select wire:model.live="brandingParishId" class="fi-input block w-full rounded-lg border-gray-300 text-sm">
-                                            <option value="">-- branding globalny Wspolnoty --</option>
+                                            <option value="">-- branding globalny Wspólnoty --</option>
                                             @foreach ($this->parishOptions as $id => $label)
                                                 <option value="{{ $id }}">{{ $label }}</option>
                                             @endforeach
@@ -328,7 +328,7 @@
 
                             <div class="comm-input-grid two mt-4">
                                 <div>
-                                    <label class="text-sm font-medium">Temat email</label>
+                                    <label class="text-sm font-medium">Temat e-maila</label>
                                     <x-filament::input.wrapper>
                                         <x-filament::input wire:model.defer="subjectLine" type="text" placeholder="Temat kampanii" />
                                     </x-filament::input.wrapper>
@@ -343,19 +343,19 @@
 
                             <div class="comm-input-grid three mt-4">
                                 <div>
-                                    <label class="text-sm font-medium">Reply-to email</label>
+                                    <label class="text-sm font-medium">Adres „Odpowiedz do”</label>
                                     <x-filament::input.wrapper>
                                         <x-filament::input wire:model.defer="replyToEmail" type="email" placeholder="odpowiedzi@wspolnota.app" />
                                     </x-filament::input.wrapper>
                                 </div>
                                 <div>
-                                    <label class="text-sm font-medium">Reply-to name</label>
+                                    <label class="text-sm font-medium">Nazwa „Odpowiedz do”</label>
                                     <x-filament::input.wrapper>
                                         <x-filament::input wire:model.defer="replyToName" type="text" placeholder="Imie i nazwisko / zespol" />
                                     </x-filament::input.wrapper>
                                 </div>
                                 <div>
-                                    <label class="text-sm font-medium">Planowana wysylka</label>
+                                    <label class="text-sm font-medium">Planowana wysyłka</label>
                                     <x-filament::input.wrapper>
                                         <x-filament::input wire:model.defer="scheduledFor" type="datetime-local" />
                                     </x-filament::input.wrapper>
@@ -366,19 +366,19 @@
                         <div class="comm-panel">
                             <div class="comm-input-grid three">
                                 <div>
-                                    <label class="text-sm font-medium">Hero image URL</label>
+                                    <label class="text-sm font-medium">Adres URL obrazu głównego</label>
                                     <x-filament::input.wrapper>
                                         <x-filament::input wire:model.defer="heroImageUrl" type="url" placeholder="https://..." />
                                     </x-filament::input.wrapper>
                                 </div>
                                 <div>
-                                    <label class="text-sm font-medium">CTA label</label>
+                                    <label class="text-sm font-medium">Etykieta CTA</label>
                                     <x-filament::input.wrapper>
-                                        <x-filament::input wire:model.defer="ctaLabel" type="text" placeholder="np. Otworz Wspolnote" />
+                                        <x-filament::input wire:model.defer="ctaLabel" type="text" placeholder="np. Otwórz Wspólnotę" />
                                     </x-filament::input.wrapper>
                                 </div>
                                 <div>
-                                    <label class="text-sm font-medium">CTA URL</label>
+                                    <label class="text-sm font-medium">Adres URL CTA</label>
                                     <x-filament::input.wrapper>
                                         <x-filament::input wire:model.defer="ctaUrl" type="url" placeholder="https://..." />
                                     </x-filament::input.wrapper>
@@ -386,12 +386,12 @@
                             </div>
 
                             <div class="mt-4">
-                                <label class="text-sm font-medium">Tekst fallback / skrot kampanii</label>
+                                <label class="text-sm font-medium">Tekst awaryjny / skrót kampanii</label>
                                 <x-filament::input.wrapper>
-                                    <textarea wire:model.defer="messageBody" rows="4" class="fi-input w-full rounded-lg" placeholder="Obowiazkowy skrot tresci. Trafia do plain-text, push i fallbacku."></textarea>
+                                    <textarea wire:model.defer="messageBody" rows="4" class="fi-input w-full rounded-lg" placeholder="Obowiązkowy skrót treści. Trafia do wersji tekstowej, powiadomienia push i wersji awaryjnej."></textarea>
                                 </x-filament::input.wrapper>
                                 <p class="comm-helper mt-2">
-                                    Ten tekst nadal jest potrzebny, ale finalny mail HTML powinien opierac sie glownie o rich content ponizej.
+                                    Ten tekst nadal jest potrzebny, ale finalna wiadomość HTML powinna opierać się głównie na rozbudowanej treści poniżej.
                                 </p>
                             </div>
                         </div>
@@ -399,7 +399,7 @@
                         <div class="comm-panel">
                             <div class="flex items-center justify-between gap-3">
                                 <div>
-                                    <div class="comm-kicker">Rich Content</div>
+                                    <div class="comm-kicker">Treść rozbudowana</div>
                                     <h3 class="text-base font-semibold text-gray-900 dark:text-white">Kompozycja finalnego maila</h3>
                                 </div>
                                 <p class="comm-helper">{{ $this->imageEditorHint }}</p>
@@ -409,7 +409,7 @@
                                 @include('filament.components.quill-livewire', [
                                     'statePath' => 'campaignContentHtml',
                                     'stateValue' => $campaignContentHtml ?? '',
-                                    'placeholder' => 'Buduj kampanie z naglowkami, obrazami, cytatami, listami i linkami...',
+                                    'placeholder' => 'Buduj kampanię z nagłówkami, obrazami, cytatami, listami i linkami...',
                                     'minHeight' => 620,
                                     'imageUploadUrl' => $this->campaignInlineImageUploadUrl,
                                     'maxUploadSize' => 8192,
@@ -429,7 +429,7 @@
                             <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $loadedCampaignId ?: 'nowa wersja robocza' }}</div>
                         </div>
                         <div>
-                            <div class="comm-helper">Podglad odbiorcow</div>
+                            <div class="comm-helper">Podgląd odbiorców</div>
                             <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ number_format($this->recipientPreview['count'], 0, ',', ' ') }}</div>
                         </div>
                         <div>
@@ -440,23 +440,23 @@
 
                     <div class="comm-action-bar mt-4">
                         <x-filament::button wire:click="saveDraft" color="gray" size="sm" icon="heroicon-m-document-text">
-                            Szkic
+                            Zapisz szkic
                         </x-filament::button>
                         <x-filament::button wire:click="sendTestCampaign" color="warning" size="sm" icon="heroicon-m-beaker">
                             Test
                         </x-filament::button>
                         <x-filament::button wire:click="sendCampaign" color="primary" size="sm" icon="heroicon-m-paper-airplane">
-                            Email
+                            E-mail
                         </x-filament::button>
                     </div>
                 </div>
 
-                <x-filament::section heading="Segmentacja i Dostawa" description="Wybierasz grupy odbiorcow i kontrolujesz zachowanie kampanii.">
+                <x-filament::section heading="Segmentacja i dostawa" description="Wybierasz grupy odbiorców i kontrolujesz zachowanie kampanii.">
                     <div class="comm-stack">
                         <div class="comm-panel">
                             <div class="comm-input-grid two">
                                 <div>
-                                    <label class="text-sm font-medium">Zakres odbiorcow</label>
+                                    <label class="text-sm font-medium">Zakres odbiorców</label>
                                     <x-filament::input.wrapper>
                                         <select wire:model.live="recipientScope" class="fi-input block w-full rounded-lg border-gray-300 text-sm">
                                             @foreach ($this->recipientScopeOptions as $scopeKey => $scopeLabel)
@@ -466,7 +466,7 @@
                                     </x-filament::input.wrapper>
                                 </div>
                                 <div>
-                                    <label class="text-sm font-medium">Temat preferencji email</label>
+                                    <label class="text-sm font-medium">Temat preferencji e-mail</label>
                                     <x-filament::input.wrapper>
                                         <select wire:model.live="emailPreferenceTopic" class="fi-input block w-full rounded-lg border-gray-300 text-sm">
                                             @foreach ($this->emailTopicOptions as $topicKey => $topicLabel)
@@ -479,7 +479,7 @@
 
                             @if ($recipientScope === 'single_users')
                                 <div class="mt-4">
-                                    <label class="text-sm font-medium">Wybierz odbiorcow</label>
+                                    <label class="text-sm font-medium">Wybierz odbiorców</label>
                                     <x-filament::input.wrapper>
                                         <select wire:model="selectedUserIds" multiple size="8" class="fi-input block w-full rounded-lg border-gray-300 text-sm">
                                             @foreach ($this->userOptions as $id => $label)
@@ -492,10 +492,10 @@
 
                             @if ($recipientScope === 'users_by_parish')
                                 <div class="mt-4">
-                                    <label class="text-sm font-medium">Wybierz parafie</label>
+                                    <label class="text-sm font-medium">Wybierz parafię</label>
                                     <x-filament::input.wrapper>
                                         <select wire:model.live="targetParishId" class="fi-input block w-full rounded-lg border-gray-300 text-sm">
-                                            <option value="">-- wybierz parafie --</option>
+                                            <option value="">-- wybierz parafię --</option>
                                             @foreach ($this->parishOptions as $id => $label)
                                                 <option value="{{ $id }}">{{ $label }}</option>
                                             @endforeach
@@ -526,7 +526,7 @@
 
                             @if ($recipientScope === 'custom_emails')
                                 <div class="mt-4">
-                                    <label class="text-sm font-medium">Wlasne emaile</label>
+                                    <label class="text-sm font-medium">Własne adresy e-mail</label>
                                     <x-filament::input.wrapper>
                                         <textarea wire:model.defer="customEmails" rows="6" class="fi-input w-full rounded-lg" placeholder="a@example.com&#10;b@example.com"></textarea>
                                     </x-filament::input.wrapper>
@@ -539,7 +539,7 @@
                             <div class="comm-input-grid two mt-4">
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" wire:model="includeInactiveUsers" class="rounded border-gray-300">
-                                    uwzglednij konta nieaktywne
+                                    uwzględnij konta nieaktywne
                                 </label>
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" wire:model="onlyVerifiedUsers" class="rounded border-gray-300">
@@ -547,29 +547,29 @@
                                 </label>
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" wire:model="onlyEmailVerifiedUsers" class="rounded border-gray-300">
-                                    tylko konta z potwierdzonym email
+                                    tylko konta z potwierdzonym adresem e-mail
                                 </label>
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" wire:model="onlyUsersWithPushDevices" class="rounded border-gray-300">
-                                    tylko uzytkownicy z push
+                                    tylko użytkownicy z aktywnym push
                                 </label>
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" wire:model="respectEmailPreferences" class="rounded border-gray-300">
-                                    respektuj preferencje email
+                                    respektuj preferencje e-mail
                                 </label>
                                 <label class="flex items-center gap-2 text-sm">
                                     <input type="checkbox" wire:model="sendCopyToMe" class="rounded border-gray-300">
-                                    wyslij kopie do mnie po dispatchu
+                                    wyślij kopię do mnie po wysyłce
                                 </label>
                             </div>
 
                             <div class="mt-5">
-                                <div class="comm-kicker">Przykladowi odbiorcy</div>
+                                <div class="comm-kicker">Przykładowi odbiorcy</div>
                                 <div class="comm-badges mt-3">
                                     @forelse ($this->recipientPreview['sample'] as $recipient)
                                         <x-filament::badge color="gray">{{ $recipient['email'] }}</x-filament::badge>
                                     @empty
-                                        <span class="text-xs text-gray-500">Brak odbiorcow dla obecnych filtrow.</span>
+                                        <span class="text-xs text-gray-500">Brak odbiorców dla obecnych filtrów.</span>
                                     @endforelse
                                 </div>
                             </div>
@@ -585,7 +585,7 @@
                                 </div>
                                 <div class="flex items-end">
                                     <x-filament::button wire:click="sendTestCampaign" color="warning" icon="heroicon-m-beaker" class="w-full justify-center">
-                                        Wyslij test
+                                        Wyślij test
                                     </x-filament::button>
                                 </div>
                             </div>
@@ -595,15 +595,15 @@
             </div>
         </div>
 
-        <x-filament::section heading="Preview Kampanii" description="HTML i plain-text z tego samego silnika, bez osobnego skladania podgladu.">
+        <x-filament::section heading="Podgląd kampanii" description="HTML i wersja tekstowa z tego samego silnika, bez osobnego składania podglądu.">
             <div class="comm-preview-grid">
                 <div class="comm-panel">
-                    <div class="comm-kicker">HTML preview</div>
+                    <div class="comm-kicker">Podgląd HTML</div>
                     <iframe class="comm-preview-frame mt-4" srcdoc="{{ e($this->campaignPreviewHtml) }}"></iframe>
                 </div>
 
                 <div class="comm-panel">
-                    <div class="comm-kicker">Plain-text fallback</div>
+                    <div class="comm-kicker">Wersja tekstowa</div>
                     <div class="comm-preview-text mt-4">{{ $this->campaignPreviewText }}</div>
                 </div>
             </div>
@@ -618,7 +618,7 @@
                                 <x-filament::input wire:model.defer="newListName" type="text" placeholder="Nowa lista, np. Newsletter parafialny" />
                             </x-filament::input.wrapper>
                             <x-filament::button wire:click="createList" icon="heroicon-m-plus" color="primary">
-                                Dodaj liste
+                                Dodaj listę
                             </x-filament::button>
                         </div>
                     </div>
@@ -632,7 +632,7 @@
                                         <div class="comm-row-meta">
                                             aktywni: {{ number_format($list->subscribers_active_count, 0, ',', ' ') }} ·
                                             potwierdzeni: {{ number_format($list->subscribers_confirmed_count, 0, ',', ' ') }} ·
-                                            lacznie: {{ number_format($list->subscribers_total_count, 0, ',', ' ') }}
+                                            łącznie: {{ number_format($list->subscribers_total_count, 0, ',', ' ') }}
                                         </div>
                                     </div>
                                     <div class="comm-row-actions">
@@ -640,13 +640,13 @@
                                             {{ $selectedListId === $list->id ? 'Wybrana' : 'Wybierz' }}
                                         </x-filament::button>
                                         <x-filament::button size="xs" color="danger" wire:click="deleteList({{ $list->id }})">
-                                            Usun
+                                            Usuń
                                         </x-filament::button>
                                     </div>
                                 </div>
                             </div>
                         @empty
-                            <p class="text-sm text-gray-500">Brak list mailingowych. Dodaj pierwsza liste, aby zaczac.</p>
+                            <p class="text-sm text-gray-500">Brak list mailingowych. Dodaj pierwszą listę, aby zacząć.</p>
                         @endforelse
                     </div>
 
@@ -657,7 +657,7 @@
                                     <x-filament::input wire:model.defer="renameListName" type="text" placeholder="Nazwa wybranej listy" />
                                 </x-filament::input.wrapper>
                                 <x-filament::button wire:click="saveSelectedListName" icon="heroicon-m-pencil-square" color="gray">
-                                    Zapisz nazwe listy
+                                    Zapisz nazwę listy
                                 </x-filament::button>
                             </div>
 
@@ -677,7 +677,7 @@
 
                             <div class="mt-4">
                                 <x-filament::input.wrapper>
-                                    <x-filament::input wire:model.live.debounce.250ms="subscriberSearch" type="text" placeholder="Szukaj subskrybenta po email" />
+                                    <x-filament::input wire:model.live.debounce.250ms="subscriberSearch" type="text" placeholder="Szukaj subskrybenta po adresie e-mail" />
                                 </x-filament::input.wrapper>
                             </div>
                         </div>
@@ -705,15 +705,15 @@
                                     </div>
                                     <div class="comm-row-actions mt-3">
                                         <x-filament::button size="xs" color="gray" wire:click="toggleSubscriberConfirmation({{ $subscriber->id }})">
-                                            Przelacz potwierdzenie
+                                            Przełącz potwierdzenie
                                         </x-filament::button>
 
                                         @if ($subscriber->deleted_at)
                                             <x-filament::button size="xs" color="success" wire:click="restoreSubscriber({{ $subscriber->id }})">
-                                                Przywroc
+                                                Przywróć
                                             </x-filament::button>
                                             <x-filament::button size="xs" color="danger" wire:click="deleteSubscriberPermanently({{ $subscriber->id }})">
-                                                Usun trwale
+                                                Usuń trwale
                                             </x-filament::button>
                                         @else
                                             <x-filament::button size="xs" color="warning" wire:click="removeSubscriber({{ $subscriber->id }})">
@@ -723,7 +723,7 @@
                                     </div>
                                 </div>
                             @empty
-                                <p class="text-sm text-gray-500">Brak subskrybentow dla wybranego filtra.</p>
+                                <p class="text-sm text-gray-500">Brak subskrybentów dla wybranego filtra.</p>
                             @endforelse
                         </div>
                     @endif
@@ -731,7 +731,7 @@
             </x-filament::section>
 
             <div class="comm-stack">
-                <x-filament::section heading="Ostatnie kampanie" description="Szkice, zaplanowane i zakolejkowane kampanie email.">
+                <x-filament::section heading="Ostatnie kampanie" description="Szkice, zaplanowane i zakolejkowane kampanie e-mail.">
                     <div class="comm-list">
                         @forelse ($this->recentCampaigns as $campaign)
                             <div class="comm-campaign-row">
@@ -749,8 +749,8 @@
                                 </div>
                                 <div class="comm-row-meta mt-2">
                                     odbiorcy: {{ number_format($campaign->recipients_total ?? 0, 0, ',', ' ') }} ·
-                                    queued: {{ number_format($campaign->queued_count ?? 0, 0, ',', ' ') }} ·
-                                    failed: {{ number_format($campaign->failed_count ?? 0, 0, ',', ' ') }}
+                                    w kolejce: {{ number_format($campaign->queued_count ?? 0, 0, ',', ' ') }} ·
+                                    błędów: {{ number_format($campaign->failed_count ?? 0, 0, ',', ' ') }}
                                     @if ($campaign->scheduled_for)
                                         · start: {{ $campaign->scheduled_for->format('d.m.Y H:i') }}
                                     @endif

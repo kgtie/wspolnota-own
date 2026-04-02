@@ -45,8 +45,8 @@ class OfficeConversationsTable
                     ->state(fn (OfficeConversation $record): string => $record->parishioner?->full_name
                         ?: $record->parishioner?->name
                         ?: $record->parishioner?->email
-                        ?: 'Uzytkownik usuniety')
-                    ->description(fn (OfficeConversation $record): string => $record->parishioner?->email ?: 'Brak email')
+                        ?: 'Użytkownik usunięty')
+                    ->description(fn (OfficeConversation $record): string => $record->parishioner?->email ?: 'Brak adresu e-mail')
                     ->searchable(['users.full_name', 'users.name', 'users.email'])
                     ->sortable(),
 
@@ -55,8 +55,8 @@ class OfficeConversationsTable
                     ->state(fn (OfficeConversation $record): string => $record->priest?->full_name
                         ?: $record->priest?->name
                         ?: $record->priest?->email
-                        ?: 'Uzytkownik usuniety')
-                    ->description(fn (OfficeConversation $record): string => $record->priest?->email ?: 'Brak email')
+                        ?: 'Użytkownik usunięty')
+                    ->description(fn (OfficeConversation $record): string => $record->priest?->email ?: 'Brak adresu e-mail')
                     ->searchable()
                     ->sortable(),
 
@@ -68,12 +68,12 @@ class OfficeConversationsTable
                     ->sortable(),
 
                 TextColumn::make('messages_count')
-                    ->label('Wiadomosci')
+                    ->label('Wiadomości')
                     ->badge()
                     ->sortable(),
 
                 TextColumn::make('last_message_at')
-                    ->label('Ostatnia aktywnosc')
+                    ->label('Ostatnia aktywność')
                     ->since()
                     ->sortable(),
 
@@ -107,7 +107,7 @@ class OfficeConversationsTable
                         ->all()),
 
                 Filter::make('with_unread_for_priest')
-                    ->label('Nieprzeczytane po stronie admina')
+                    ->label('Nieprzeczytane po stronie administratora')
                     ->query(fn (Builder $query): Builder => $query->whereHas('messages', fn (Builder $inner): Builder => $inner
                         ->whereNull('read_by_priest_at')
                         ->whereColumn('sender_user_id', '!=', 'office_conversations.priest_user_id'))),
@@ -116,7 +116,7 @@ class OfficeConversationsTable
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
-                    self::statusAction(OfficeConversation::STATUS_OPEN, 'Otworz', 'heroicon-o-lock-open', 'success'),
+                    self::statusAction(OfficeConversation::STATUS_OPEN, 'Otwórz', 'heroicon-o-lock-open', 'success'),
                     self::statusAction(OfficeConversation::STATUS_CLOSED, 'Zamknij', 'heroicon-o-lock-closed', 'gray'),
                     DeleteAction::make(),
                 ])
@@ -126,7 +126,7 @@ class OfficeConversationsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    self::bulkStatusAction(OfficeConversation::STATUS_OPEN, 'Otworz zaznaczone'),
+                    self::bulkStatusAction(OfficeConversation::STATUS_OPEN, 'Otwórz zaznaczone'),
                     self::bulkStatusAction(OfficeConversation::STATUS_CLOSED, 'Zamknij zaznaczone'),
                     DeleteBulkAction::make(),
                 ]),

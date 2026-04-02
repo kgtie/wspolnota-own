@@ -28,24 +28,24 @@ class NewsPublishedMailNotification extends Notification implements ShouldQueue
         $serviceUrl = app(EmailThemeFactory::class)->resolveServiceUrl();
 
         return $this->wspolnotaMailMessage(
-            subject: 'Nowa aktualnosc parafialna',
+            subject: 'Nowa aktualność parafialna',
             htmlBodyView: 'mail.html.notifications.action-message',
             textBodyView: 'mail.text.notifications.action-message',
             bodyData: [
-                'eyebrow' => 'Aktualnosci parafialne',
-                'title' => 'Pojawila sie nowa aktualnosc.',
-                'intro' => 'Opublikowano nowa aktualnosc: '.$this->newsPost->title,
+                'eyebrow' => 'Aktualności parafialne',
+                'title' => 'Pojawiła się nowa aktualność.',
+                'intro' => 'Opublikowano nową aktualność: '.$this->newsPost->title,
                 'details' => [
                     'Parafia' => $parish?->name ?? 'Nie przypisano',
                 ],
-                'actionLabel' => 'Otworz Wspolnote',
+                'actionLabel' => 'Otwórz Wspólnotę',
                 'actionUrl' => $serviceUrl,
-                'outro' => 'Szczegoly znajdziesz we Wspolnocie oraz na stronie parafii.',
+                'outro' => 'Szczegóły znajdziesz we Wspólnocie oraz na stronie parafii.',
             ],
             parish: $parish,
             context: [
-                'category_label' => 'Aktualnosci parafialne',
-                'preheader' => 'Opublikowano nowa aktualnosc parafialna.',
+                'category_label' => 'Aktualności parafialne',
+                'preheader' => 'Opublikowano nową aktualność parafialną.',
                 'mobile_note_variant' => 'parish',
             ],
         );

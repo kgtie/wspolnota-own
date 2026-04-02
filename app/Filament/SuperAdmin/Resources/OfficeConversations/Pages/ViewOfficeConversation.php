@@ -19,7 +19,7 @@ class ViewOfficeConversation extends ViewRecord
         return [
             EditAction::make(),
             Action::make('open')
-                ->label('Otworz')
+                ->label('Otwórz')
                 ->icon('heroicon-o-lock-open')
                 ->color('success')
                 ->visible(fn (): bool => $this->getRecord()->status !== OfficeConversation::STATUS_OPEN)
@@ -33,7 +33,7 @@ class ViewOfficeConversation extends ViewRecord
 
                     Notification::make()
                         ->success()
-                        ->title('Konwersacja zostala otwarta.')
+                        ->title('Konwersacja została otwarta.')
                         ->send();
                 }),
             Action::make('close')
@@ -51,7 +51,7 @@ class ViewOfficeConversation extends ViewRecord
 
                     Notification::make()
                         ->success()
-                        ->title('Konwersacja zostala zamknieta.')
+                        ->title('Konwersacja została zamknięta.')
                         ->send();
                 }),
             DeleteAction::make(),

@@ -31,24 +31,24 @@ class ApiVerifyEmailNotification extends Notification implements ShouldQueue
             htmlBodyView: 'mail.html.notifications.action-message',
             textBodyView: 'mail.text.notifications.action-message',
             bodyData: [
-                'eyebrow' => 'Bezpieczenstwo konta',
+                'eyebrow' => 'Bezpieczeństwo konta',
                 'title' => 'Zweryfikuj adres e-mail.',
-                'intro' => 'Kliknij ponizszy przycisk, aby potwierdzic adres e-mail uzywany w aplikacji i API Wspolnoty.',
+                'intro' => 'Kliknij poniższy przycisk, aby potwierdzić adres e-mail używany w aplikacji i API Wspólnoty.',
                 'details' => [
-                    'Adres email' => (string) data_get($notifiable, 'email'),
-                    'Srodowisko' => $parish ? 'Parafia + API mobilne' : 'API mobilne',
+                    'Adres e-mail' => (string) data_get($notifiable, 'email'),
+                    'Środowisko' => $parish ? 'Parafia + API mobilne' : 'API mobilne',
                 ],
                 'actionLabel' => 'Zweryfikuj adres e-mail',
                 'actionUrl' => $verificationUrl,
-                'outro' => 'Jesli nie zakladales konta, zignoruj te wiadomosc.',
-                'secondaryText' => 'Link jest podpisany i czasowo ograniczony dla bezpiecznej aktywacji konta.',
+                'outro' => 'Jeśli nie zakładałeś konta, zignoruj tę wiadomość.',
+                'secondaryText' => 'Link jest podpisany i ważny tylko przez określony czas, aby bezpiecznie aktywować konto.',
             ],
             parish: $parish,
             context: [
-                'category_label' => 'Weryfikacja email',
-                'preheader' => 'Potwierdz adres e-mail dla konta Wspolnota.',
+                'category_label' => 'Weryfikacja e-maila',
+                'preheader' => 'Potwierdź adres e-mail dla konta Wspólnota.',
                 'mobile_note_variant' => $parish ? 'parish' : 'default',
-                'footer_note' => 'To powiadomienie pomaga bezpiecznie aktywowac dostep do Wspolnoty.',
+                'footer_note' => 'To powiadomienie pomaga bezpiecznie aktywować dostęp do Wspólnoty.',
             ],
         );
     }

@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
 /**
- * Globalny resource uzytkownikow dla panelu superadmina.
+ * Globalny zasób użytkowników dla panelu superadministratora.
  *
  * Oprocz standardowego CRUD-u zawiera pomocnicze metody do operacji
  * administracyjnych, takich jak weryfikacja parafialna i synchronizacja avatara.
@@ -32,11 +32,11 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = null;
 
-    protected static ?string $modelLabel = 'uzytkownik';
+    protected static ?string $modelLabel = 'użytkownik';
 
-    protected static ?string $pluralModelLabel = 'uzytkownicy';
+    protected static ?string $pluralModelLabel = 'użytkownicy';
 
-    protected static ?string $navigationLabel = 'Uzytkownicy';
+    protected static ?string $navigationLabel = 'Użytkownicy';
 
     protected static string|UnitEnum|null $navigationGroup = 'Podstawowe dane';
 
@@ -123,7 +123,7 @@ class UserResource extends Resource
             event: 'user_verified_by_code',
             record: $record,
             actor: $verifiedBy,
-            description: 'Superadmin zatwierdzil uzytkownika kodem weryfikacyjnym.',
+            description: 'Superadministrator zatwierdził użytkownika kodem weryfikacyjnym.',
             properties: [
                 'verification_method' => '9_digit_code',
                 'verification_code_was_already_set' => $hadVerificationCode,
@@ -141,7 +141,7 @@ class UserResource extends Resource
                 event: 'user_verification_failed_invalid_code',
                 record: $record,
                 actor: $verifiedBy,
-                description: 'Superadmin podal nieprawidlowy kod podczas zatwierdzania uzytkownika.',
+                description: 'Superadmin podał nieprawidłowy kod podczas zatwierdzania użytkownika.',
                 properties: [
                     'provided_code_length' => strlen($normalizedCode),
                     'expected_code_exists' => $expectedCode !== '',
@@ -168,7 +168,7 @@ class UserResource extends Resource
             event: 'user_verification_revoked',
             record: $record,
             actor: $performedBy,
-            description: 'Superadmin cofnal zatwierdzenie uzytkownika.',
+            description: 'Superadmin cofnął zatwierdzenie użytkownika.',
             properties: [
                 'verification_method' => '9_digit_code',
             ],
@@ -188,7 +188,7 @@ class UserResource extends Resource
             event: 'user_verification_code_regenerated',
             record: $record,
             actor: $performedBy,
-            description: 'Superadmin wygenerowal nowy kod weryfikacyjny uzytkownika.',
+            description: 'Superadmin wygenerował nowy kod weryfikacyjny użytkownika.',
             properties: [
                 'had_previous_code' => $hadPreviousCode,
             ],

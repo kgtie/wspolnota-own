@@ -261,7 +261,7 @@ class EditParishProfile extends EditTenantProfile
                         Toggle::make('ps_public_email')
                             ->label('Email publiczny')
                             ->default(true)
-                            ->helperText('Pozwala pokazywać adres email na publicznej stronie parafii.'),
+                            ->helperText('Pozwala pokazywać adres e-mail na publicznej stronie parafii.'),
 
                         Toggle::make('ps_public_phone')
                             ->label('Telefon publiczny')
@@ -376,10 +376,10 @@ class EditParishProfile extends EditTenantProfile
                     ->columns(2)
                     ->schema([
                         Placeholder::make('service_push_and_email')
-                            ->label('Push i email do parafian')
+                            ->label('Push i e-mail do parafian')
                             ->content(fn (): HtmlString => $this->renderBulletList([
                                 'Przypomnienia o zapisanych mszach wychodzą automatycznie 24h, 8h i 1h przed celebracją.',
-                                'Poranny email z dzisiejszymi mszami wychodzi codziennie o 05:00.',
+                                'Poranny e-mail z dzisiejszymi Mszami wychodzi codziennie o 05:00.',
                                 'Po publikacji ogłoszeń i aktualności system czeka około 1 godziny, a następnie uruchamia powiadomienia push i email.',
                             ])),
 

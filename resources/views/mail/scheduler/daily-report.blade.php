@@ -1,5 +1,5 @@
 <x-mail::message>
-# Raport schedulera
+# Raport harmonogramu zadań
 
 Data raportu: {{ $report['date_label'] }}  
 Zakres: {{ $report['window']['start']->format('d.m.Y H:i') }} - {{ $report['window']['end']->format('d.m.Y H:i') }}
@@ -10,7 +10,7 @@ Zakres: {{ $report['window']['start']->format('d.m.Y H:i') }} - {{ $report['wind
 - Komenda: `{{ $job['command'] }}`
 - Uruchomienia: {{ $job['runs'] }}
 - Przebiegi bez zmian: {{ $job['noop_runs'] }}
-- Zakonczone przebiegi: {{ $job['completed_runs'] }}
+- Zakończone przebiegi: {{ $job['completed_runs'] }}
 
 @if (! empty($job['metrics']))
 <x-mail::panel>
@@ -21,17 +21,17 @@ Zakres: {{ $report['window']['start']->format('d.m.Y H:i') }} - {{ $report['wind
 @endif
 
 @if ($job['latest_error'])
-Ostatni blad: `{{ $job['latest_error'] }}`
+Ostatni błąd: `{{ $job['latest_error'] }}`
 @endif
 
 @endforeach
 
 @if ($report['has_failures'])
 <x-mail::panel>
-W raporcie wykryto bledy. Sprawdz logi aplikacji i activity log po stronie panelu.
+W raporcie wykryto błędy. Sprawdź logi aplikacji i dziennik aktywności w panelu.
 </x-mail::panel>
 @else
-Wszystkie zadania z raportu zakonczyly sie bez bledow krytycznych.
+Wszystkie zadania z raportu zakończyły się bez błędów krytycznych.
 @endif
 
 Pozdrawiamy,<br>

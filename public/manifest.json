@@ -3,8 +3,8 @@
     "short_name": "Wspólnota",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#0d6efd",
+    "background_color": "#f3efe6",
+    "theme_color": "#b87333",
     "icons": [
         {
             "src": "/images/icon-192.png",

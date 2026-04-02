@@ -30,22 +30,22 @@ class QueuedVerifyEmailNotification extends VerifyEmail implements ShouldQueue
             textBodyView: 'mail.text.notifications.action-message',
             bodyData: [
                 'eyebrow' => 'Aktywacja konta',
-                'title' => 'Zweryfikuj swoj adres e-mail.',
-                'intro' => 'Kliknij przycisk, aby potwierdzic adres e-mail i aktywowac pelny dostep do Wspolnoty.',
+                'title' => 'Zweryfikuj swój adres e-mail.',
+                'intro' => 'Kliknij przycisk, aby potwierdzić adres e-mail i aktywować pełny dostęp do Wspólnoty.',
                 'details' => [
-                    'Adres email' => (string) data_get($notifiable, 'email'),
+                    'Adres e-mail' => (string) data_get($notifiable, 'email'),
                 ],
                 'actionLabel' => 'Zweryfikuj adres e-mail',
                 'actionUrl' => $this->verificationUrl($notifiable),
-                'outro' => 'Jesli nie rejestrowales konta, zignoruj te wiadomosc.',
-                'secondaryText' => 'Po weryfikacji latwiej dokończysz sprawy w aplikacji i panelach Wspolnoty.',
+                'outro' => 'Jeśli nie rejestrowałeś konta, zignoruj tę wiadomość.',
+                'secondaryText' => 'Po weryfikacji łatwiej dokończysz sprawy w aplikacji i panelach Wspólnoty.',
             ],
             parish: $parish,
             context: [
-                'category_label' => 'Weryfikacja email',
-                'preheader' => 'Potwierdz adres e-mail dla konta Wspolnota.',
+                'category_label' => 'Weryfikacja e-maila',
+                'preheader' => 'Potwierdź adres e-mail dla konta Wspólnota.',
                 'mobile_note_variant' => $parish ? 'parish' : 'default',
-                'footer_note' => 'To powiadomienie pomaga bezpiecznie aktywowac konto Wspolnoty.',
+                'footer_note' => 'To powiadomienie pomaga bezpiecznie aktywować konto Wspólnoty.',
             ],
         );
     }

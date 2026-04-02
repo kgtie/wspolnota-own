@@ -47,7 +47,7 @@ class NewsPostsTable
                     ->width(104),
 
                 TextColumn::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->searchable()
                     ->sortable()
                     ->wrap()

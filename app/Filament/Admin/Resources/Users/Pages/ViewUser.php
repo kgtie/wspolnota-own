@@ -193,8 +193,8 @@ class ViewUser extends ViewRecord
                     if (! filled($record->email) || ! $preferences->wantsEmail($record, 'manual_messages')) {
                         Notification::make()
                             ->warning()
-                            ->title('Wysylka zablokowana przez preferencje uzytkownika.')
-                            ->body('Ten uzytkownik ma wylaczone reczne komunikaty email.')
+                            ->title('Wysyłka zablokowana przez preferencje użytkownika.')
+                            ->body('Ten użytkownik ma wyłączone ręczne komunikaty e-mail.')
                             ->send();
 
                         return;
@@ -243,12 +243,12 @@ class ViewUser extends ViewRecord
                             'message_length' => mb_strlen((string) $data['message']),
                             'parish_id' => Filament::getTenant()?->getKey(),
                         ])
-                        ->log('Proboszcz zakolejkowal wiadomosc email do parafianina.');
+                        ->log('Proboszcz zakolejkował wiadomość e-mail do parafianina.');
 
                     Notification::make()
                         ->success()
                         ->title('Wiadomość została zakolejkowana.')
-                        ->body('Parafianin otrzyma email z informacją, że wiadomość pochodzi od proboszcza.')
+                        ->body('Parafianin otrzyma e-mail z informacją, że wiadomość pochodzi od proboszcza.')
                         ->send();
                 }),
         ];

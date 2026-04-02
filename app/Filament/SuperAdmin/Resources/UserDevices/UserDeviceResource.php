@@ -34,10 +34,10 @@ use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 /**
- * Operacyjny resource do zarzadzania rejestrem urzadzen push.
+ * Operacyjny resource do zarządzania rejestrem urządzeń push.
  *
- * Pokazuje stan zgód, tokenów i bledów dostarczenia oraz pozwala superadminowi
- * wykonywac masowe akcje naprawcze bez edycji samego modelu UserDevice.
+ * Pokazuje stan zgód, tokenów i błędów dostarczenia oraz pozwala superadminowi
+ * wykonywać masowe akcje naprawcze bez edycji samego modelu UserDevice.
  */
 class UserDeviceResource extends Resource
 {
@@ -45,13 +45,13 @@ class UserDeviceResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = null;
 
-    protected static ?string $modelLabel = 'urzadzenie push';
+    protected static ?string $modelLabel = 'urządzenie push';
 
-    protected static ?string $pluralModelLabel = 'urzadzenia push';
+    protected static ?string $pluralModelLabel = 'urządzenia push';
 
-    protected static ?string $navigationLabel = 'Urzadzenia push';
+    protected static ?string $navigationLabel = 'Urządzenia push';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Push i urzadzenia';
+    protected static string|UnitEnum|null $navigationGroup = 'Push i urządzenia';
 
     protected static ?int $navigationSort = 10;
 
@@ -64,7 +64,7 @@ class UserDeviceResource extends Resource
             ->columns([
                 TextColumn::make('id')->label('#')->badge()->sortable(),
                 TextColumn::make('user.email')
-                    ->label('Uzytkownik')
+                    ->label('Użytkownik')
                     ->searchable()
                     ->sortable()
                     ->url(fn (UserDevice $record): ?string => $record->user ? UserResource::getUrl('view', ['record' => $record->user]) : null),
@@ -84,8 +84,8 @@ class UserDeviceResource extends Resource
                         'denied' => 'danger',
                         default => 'warning',
                     }),
-                TextColumn::make('device_name')->label('Urzadzenie')->searchable()->placeholder('Brak'),
-                TextColumn::make('app_version')->label('Wersja app')->sortable(),
+                TextColumn::make('device_name')->label('Urządzenie')->searchable()->placeholder('Brak'),
+                TextColumn::make('app_version')->label('Wersja aplikacji')->sortable(),
                 TextColumn::make('push_token')
                     ->label('Token')
                     ->limit(24)
@@ -93,9 +93,9 @@ class UserDeviceResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('last_seen_at')->label('Ostatnio widziane')->since()->sortable(),
                 TextColumn::make('last_push_sent_at')->label('Ostatni push OK')->since()->placeholder('Brak')->toggleable(),
-                TextColumn::make('last_push_error_at')->label('Ostatni blad')->since()->placeholder('Brak')->toggleable(),
+                TextColumn::make('last_push_error_at')->label('Ostatni błąd')->since()->placeholder('Brak')->toggleable(),
                 TextColumn::make('disabled_at')
-                    ->label('Wylaczone')
+                    ->label('Wyłączone')
                     ->state(fn (UserDevice $record): string => $record->disabled_at ? $record->disabled_at->diffForHumans() : 'Aktywne')
                     ->badge()
                     ->color(fn (UserDevice $record): string => $record->disabled_at ? 'danger' : 'success'),
@@ -129,12 +129,12 @@ class UserDeviceResource extends Resource
                     self::openUserAction(),
                     self::openParishAction(),
                     self::sendTestPushAction(),
-                    self::setPermissionStatusAction('authorized', 'Ustaw authorized', 'success'),
-                    self::setPermissionStatusAction('provisional', 'Ustaw provisional', 'info'),
-                    self::setPermissionStatusAction('denied', 'Ustaw denied', 'danger'),
-                    self::setPermissionStatusAction('not_determined', 'Ustaw not_determined', 'warning'),
+                    self::setPermissionStatusAction('authorized', 'Ustaw jako authorized', 'success'),
+                    self::setPermissionStatusAction('provisional', 'Ustaw jako provisional', 'info'),
+                    self::setPermissionStatusAction('denied', 'Ustaw jako denied', 'danger'),
+                    self::setPermissionStatusAction('not_determined', 'Ustaw jako not_determined', 'warning'),
                     Action::make('clear_error')
-                        ->label('Wyczysc blad')
+                        ->label('Wyczyść błąd')
                         ->visible(fn (UserDevice $record): bool => filled($record->last_push_error) || $record->last_push_error_at !== null)
                         ->action(function (UserDevice $record): void {
                             $record->forceFill([
@@ -144,22 +144,22 @@ class UserDeviceResource extends Resource
 
                             Notification::make()
                                 ->success()
-                                ->title('Wyczyszczono blad urzadzenia.')
+                                ->title('Wyczyszczono błąd urządzenia.')
                                 ->send();
                         }),
                     Action::make('enable')
-                        ->label('Wlacz')
+                        ->label('Włącz')
                         ->visible(fn (UserDevice $record): bool => $record->disabled_at !== null)
                         ->action(function (UserDevice $record): void {
                             $record->forceFill(['disabled_at' => null])->saveQuietly();
 
                             Notification::make()
                                 ->success()
-                                ->title('Urzadzenie zostalo wlaczone.')
+                                ->title('Urządzenie zostało włączone.')
                                 ->send();
                         }),
                     Action::make('disable')
-                        ->label('Wylacz')
+                        ->label('Wyłącz')
                         ->visible(fn (UserDevice $record): bool => $record->disabled_at === null)
                         ->color('warning')
                         ->action(function (UserDevice $record): void {
@@ -167,7 +167,7 @@ class UserDeviceResource extends Resource
 
                             Notification::make()
                                 ->success()
-                                ->title('Urzadzenie zostalo wylaczone.')
+                                ->title('Urządzenie zostało wyłączone.')
                                 ->send();
                         }),
                     DeleteAction::make(),
@@ -179,10 +179,10 @@ class UserDeviceResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     self::sendTestPushBulkAction(),
-                    self::setPermissionStatusBulkAction('authorized', 'Ustaw authorized', 'success'),
-                    self::setPermissionStatusBulkAction('provisional', 'Ustaw provisional', 'info'),
-                    self::setPermissionStatusBulkAction('denied', 'Ustaw denied', 'danger'),
-                    self::setPermissionStatusBulkAction('not_determined', 'Ustaw not_determined', 'warning'),
+                    self::setPermissionStatusBulkAction('authorized', 'Ustaw jako authorized', 'success'),
+                    self::setPermissionStatusBulkAction('provisional', 'Ustaw jako provisional', 'info'),
+                    self::setPermissionStatusBulkAction('denied', 'Ustaw jako denied', 'danger'),
+                    self::setPermissionStatusBulkAction('not_determined', 'Ustaw jako not_determined', 'warning'),
                     self::enableDevicesBulkAction(),
                     self::disableDevicesBulkAction(),
                     self::clearErrorsBulkAction(),
@@ -194,27 +194,27 @@ class UserDeviceResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Urzadzenie')
+                Section::make('Urządzenie')
                     ->columns(2)
                     ->schema([
                         TextEntry::make('id')->label('ID')->badge(),
-                        TextEntry::make('user.email')->label('Uzytkownik'),
+                        TextEntry::make('user.email')->label('Użytkownik'),
                         TextEntry::make('parish.name')->label('Parafia')->placeholder('Brak'),
                         TextEntry::make('provider')->label('Provider')->badge(),
                         TextEntry::make('platform')->label('Platforma')->badge(),
                         TextEntry::make('permission_status')->label('Zgoda')->badge(),
                         TextEntry::make('device_id')->label('Device ID')->copyable(),
-                        TextEntry::make('device_name')->label('Nazwa urzadzenia')->placeholder('Brak'),
+                        TextEntry::make('device_name')->label('Nazwa urządzenia')->placeholder('Brak'),
                         TextEntry::make('push_token')->label('Push token')->copyable()->columnSpanFull(),
-                        TextEntry::make('app_version')->label('Wersja app'),
+                        TextEntry::make('app_version')->label('Wersja aplikacji'),
                         TextEntry::make('locale')->label('Locale')->placeholder('Brak'),
                         TextEntry::make('timezone')->label('Timezone')->placeholder('Brak'),
                         TextEntry::make('push_token_updated_at')->label('Token updated')->dateTime('d.m.Y H:i')->placeholder('Brak'),
                         TextEntry::make('last_seen_at')->label('Last seen')->dateTime('d.m.Y H:i')->placeholder('Brak'),
                         TextEntry::make('last_push_sent_at')->label('Last push sent')->dateTime('d.m.Y H:i')->placeholder('Brak'),
                         TextEntry::make('last_push_error_at')->label('Last push error')->dateTime('d.m.Y H:i')->placeholder('Brak'),
-                        TextEntry::make('last_push_error')->label('Opis bledu')->columnSpanFull()->placeholder('Brak'),
-                        TextEntry::make('disabled_at')->label('Wylaczone')->dateTime('d.m.Y H:i')->placeholder('Nie'),
+                        TextEntry::make('last_push_error')->label('Opis błędu')->columnSpanFull()->placeholder('Brak'),
+                        TextEntry::make('disabled_at')->label('Wyłączone')->dateTime('d.m.Y H:i')->placeholder('Nie'),
                     ]),
             ]);
     }
@@ -261,7 +261,7 @@ class UserDeviceResource extends Resource
     protected static function openUserAction(): Action
     {
         return Action::make('open_user')
-            ->label('Otworz uzytkownika')
+            ->label('Otwórz użytkownika')
             ->icon('heroicon-o-user')
             ->visible(fn (UserDevice $record): bool => $record->user !== null)
             ->url(fn (UserDevice $record): ?string => $record->user ? UserResource::getUrl('view', ['record' => $record->user]) : null);
@@ -270,7 +270,7 @@ class UserDeviceResource extends Resource
     protected static function openParishAction(): Action
     {
         return Action::make('open_parish')
-            ->label('Otworz parafie')
+            ->label('Otwórz parafię')
             ->icon('heroicon-o-building-library')
             ->visible(fn (UserDevice $record): bool => $record->parish !== null)
             ->url(fn (UserDevice $record): ?string => $record->parish ? ParishResource::getUrl('view', ['record' => $record->parish]) : null);
@@ -296,15 +296,15 @@ class UserDeviceResource extends Resource
                     ->default('TEST_MESSAGE')
                     ->required(),
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
-                    ->default('Test push dla urzadzenia'),
+                    ->default('Test push dla urządzenia'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->rows(4)
                     ->required()
-                    ->default('Wiadomosc testowa wyslana bezposrednio do wybranego urzadzenia.'),
+                    ->default('Wiadomość testowa wysłana bezpośrednio do wybranego urządzenia.'),
             ])
             ->action(function (UserDevice $record, array $data, PushDispatchService $dispatcher): void {
                 $delivery = $dispatcher->sendTestPush(
@@ -322,10 +322,10 @@ class UserDeviceResource extends Resource
                 );
 
                 Notification::make()
-                    ->title($delivery->status === PushDelivery::STATUS_SENT ? 'Test push wyslany.' : 'Test push nieudany.')
+                    ->title($delivery->status === PushDelivery::STATUS_SENT ? 'Test push wysłany.' : 'Test push nieudany.')
                     ->body($delivery->status === PushDelivery::STATUS_SENT
-                        ? 'Sprawdz dostarczenia push po szczegoly.'
-                        : ($delivery->error_message ?: 'Szczegoly sa zapisane w dostarczeniu push.'))
+                        ? 'Sprawdź dostarczenia push po szczegóły.'
+                        : ($delivery->error_message ?: 'Szczegóły są zapisane w dostarczeniu push.'))
                     ->color($delivery->status === PushDelivery::STATUS_SENT ? 'success' : 'danger')
                     ->send();
             });
@@ -370,15 +370,15 @@ class UserDeviceResource extends Resource
                     ->default('TEST_MESSAGE')
                     ->required(),
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
-                    ->default('Test push dla zaznaczonych urzadzen'),
+                    ->default('Test push dla zaznaczonych urządzeń'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->rows(4)
                     ->required()
-                    ->default('Wiadomosc testowa wyslana do zaznaczonych urzadzen push.'),
+                    ->default('Wiadomość testowa wysłana do zaznaczonych urządzeń push.'),
             ])
             ->action(function ($records, array $data): void {
                 $devices = collect($records)
@@ -412,8 +412,8 @@ class UserDeviceResource extends Resource
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano test push do zaznaczonych urzadzen.')
-                    ->body("Queued: {$queued} · skipped: {$skipped}")
+                    ->title('Zakolejkowano test push do zaznaczonych urządzeń.')
+                    ->body("W kolejce: {$queued} · pominięte: {$skipped}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();
@@ -448,7 +448,7 @@ class UserDeviceResource extends Resource
                 Notification::make()
                     ->success()
                     ->title("Zaktualizowano permission_status = {$status}.")
-                    ->body("Liczba urzadzen: {$updated}")
+                    ->body("Liczba urządzeń: {$updated}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();

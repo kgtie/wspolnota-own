@@ -23,7 +23,7 @@ class ViewActivityLog extends ViewRecord
 
         return [
             Action::make('open_subject')
-                ->label('Otworz obiekt')
+                ->label('Otwórz obiekt')
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->visible(filled(ActivityLogResource::relationUrl(
                     $record->subject,
@@ -37,7 +37,7 @@ class ViewActivityLog extends ViewRecord
                 )),
 
             Action::make('open_causer')
-                ->label('Otworz sprawce')
+                ->label('Otwórz sprawcę')
                 ->icon('heroicon-o-user')
                 ->visible(filled(ActivityLogResource::relationUrl(
                     $record->causer,

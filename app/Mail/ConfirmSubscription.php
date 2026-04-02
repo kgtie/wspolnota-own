@@ -43,7 +43,7 @@ class ConfirmSubscription extends WspolnotaMailable
         return [
             'category_label' => 'Lista mailingowa',
             'preheader' => 'Potwierdz zapis do newslettera Wspolnoty.',
-            'footer_note' => 'Ten email pomaga bezpiecznie potwierdzic zapis do listy mailingowej Wspolnoty.',
+            'footer_note' => 'Ten e-mail pomaga bezpiecznie potwierdzić zapis do listy mailingowej Wspólnoty.',
         ];
     }
 }

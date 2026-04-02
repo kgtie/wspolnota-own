@@ -209,7 +209,7 @@ class AnnouncementSetsTable
                             'announcement_set_id' => $record->getKey(),
                             'target_status' => $status,
                         ])
-                        ->log('Proboszcz zaktualizowal status zestawu ogloszen.');
+                        ->log('Proboszcz zaktualizował status zestawu ogłoszeń.');
                 }
             })
             ->successNotificationTitle('Status zestawu zostal zaktualizowany.');
@@ -228,7 +228,7 @@ class AnnouncementSetsTable
                 if (! $exporter->hasPrintableItems($record)) {
                     Notification::make()
                         ->warning()
-                        ->title('Brak aktywnych ogloszen do wydruku.')
+                        ->title('Brak aktywnych ogłoszeń do wydruku.')
                         ->send();
 
                     return null;
@@ -244,7 +244,7 @@ class AnnouncementSetsTable
                             'announcement_set_id' => $record->getKey(),
                             'active_items_count' => $record->items()->where('is_active', true)->count(),
                         ])
-                        ->log('Proboszcz wygenerowal PDF z ogloszeniami parafialnymi.');
+                        ->log('Proboszcz wygenerował PDF z ogłoszeniami parafialnymi.');
                 }
 
                 return $exporter->download($record);
@@ -295,13 +295,13 @@ class AnnouncementSetsTable
                             'new_set_id' => $clone->getKey(),
                             'copied_items_count' => $items->count(),
                         ])
-                        ->log('Proboszcz zduplikowal zestaw ogloszen.');
+                        ->log('Proboszcz zduplikował zestaw ogłoszeń.');
                 }
 
                 Notification::make()
                     ->success()
-                    ->title('Utworzono kopie zestawu ogloszen.')
-                    ->body('Skopiowano wszystkie pojedyncze ogloszenia i przesunieto daty o 7 dni.')
+                    ->title('Utworzono kopię zestawu ogłoszeń.')
+                    ->body('Skopiowano wszystkie pojedyncze ogłoszenia i przesunięto daty o 7 dni.')
                     ->send();
             });
     }
@@ -353,12 +353,12 @@ class AnnouncementSetsTable
                             'updated_count' => $updated,
                             'updated_set_ids' => $updatedIds,
                         ])
-                        ->log('Proboszcz masowo zaktualizowal statusy zestawow ogloszen.');
+                        ->log('Proboszcz masowo zaktualizował statusy zestawów ogłoszeń.');
                 }
 
                 Notification::make()
                     ->success()
-                    ->title('Zaktualizowano statusy zestawow ogloszen.')
+                    ->title('Zaktualizowano statusy zestawów ogłoszeń.')
                     ->body("Liczba zmienionych rekordow: {$updated}")
                     ->send();
             })

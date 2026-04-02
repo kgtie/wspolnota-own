@@ -48,17 +48,17 @@ class UsersTable
                     ->imageSize(40),
 
                 TextColumn::make('full_name')
-                    ->label('Uzytkownik')
+                    ->label('Użytkownik')
                     ->placeholder('Brak imienia i nazwiska')
                     ->searchable(['full_name', 'name', 'email'])
                     ->sortable()
                     ->description(fn (User $record): ?string => $record->name ? "@{$record->name}" : null),
 
                 TextColumn::make('email')
-                    ->label('Email')
+                    ->label('E-mail')
                     ->searchable()
                     ->copyable()
-                    ->copyMessage('Skopiowano email'),
+                    ->copyMessage('Skopiowano adres e-mail'),
 
                 TextColumn::make('role')
                     ->label('Rola')
@@ -67,7 +67,7 @@ class UsersTable
                     ->formatStateUsing(fn (int $state): string => match ($state) {
                         2 => 'Superadministrator',
                         1 => 'Administrator',
-                        default => 'Uzytkownik',
+                        default => 'Użytkownik',
                     })
                     ->color(fn (int $state): string => match ($state) {
                         2 => 'danger',
@@ -98,7 +98,7 @@ class UsersTable
 
                 TextColumn::make('is_user_verified')
                     ->label('Zatwierdzenie')
-                    ->formatStateUsing(fn (bool $state): string => $state ? 'Zatwierdzony' : 'Oczekuje')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Zatwierdzony' : 'Oczekuje na zatwierdzenie')
                     ->badge()
                     ->color(fn (bool $state): string => $state ? 'success' : 'warning')
                     ->sortable(),
@@ -110,7 +110,7 @@ class UsersTable
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('verifiedBy.full_name')
-                    ->label('Zatwierdzil')
+                    ->label('Zatwierdził')
                     ->placeholder('Brak')
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -128,7 +128,7 @@ class UsersTable
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('deleted_at')
-                    ->label('Usuniety')
+                    ->label('Usunięty')
                     ->since()
                     ->placeholder('Nie')
                     ->sortable()
@@ -138,7 +138,7 @@ class UsersTable
                 SelectFilter::make('role')
                     ->label('Rola')
                     ->options([
-                        0 => 'Uzytkownik',
+                        0 => 'Użytkownik',
                         1 => 'Administrator',
                         2 => 'Superadministrator',
                     ]),
@@ -152,7 +152,7 @@ class UsersTable
                     ]),
 
                 TernaryFilter::make('email_verified_at')
-                    ->label('Email zweryfikowany')
+                    ->label('Adres e-mail potwierdzony')
                     ->nullable()
                     ->trueLabel('Tak')
                     ->falseLabel('Nie'),
@@ -203,13 +203,13 @@ class UsersTable
     protected static function verifyUserWithCodeAction(): Action
     {
         return Action::make('verify_user_with_code')
-            ->label('Zatwierdz kodem')
+                    ->label('Zatwierdź kodem')
             ->icon('heroicon-o-shield-check')
             ->color('success')
             ->visible(fn (User $record): bool => ! $record->is_user_verified)
             ->schema([
                 TextInput::make('provided_code')
-                    ->label('Kod podany przez uzytkownika')
+                    ->label('Kod podany przez użytkownika')
                     ->required()
                     ->minLength(9)
                     ->maxLength(9)
@@ -227,27 +227,27 @@ class UsersTable
 
                 if (! $wasVerified) {
                     throw ValidationException::withMessages([
-                        'provided_code' => 'Podany kod jest nieprawidlowy.',
+                        'provided_code' => 'Podany kod jest nieprawidłowy.',
                     ]);
                 }
             })
-            ->successNotificationTitle('Uzytkownik zostal zatwierdzony.');
+            ->successNotificationTitle('Użytkownik został zatwierdzony.');
     }
 
     protected static function sendInstantPushAction(): Action
     {
         return Action::make('send_instant_push')
-            ->label('Wyslij push teraz')
+            ->label('Wyślij push teraz')
             ->icon('heroicon-o-device-phone-mobile')
             ->color('info')
             ->schema([
                 TextInput::make('title')
-                    ->label('Tytul push')
+                    ->label('Tytuł push')
                     ->required()
                     ->maxLength(120)
-                    ->default('Wiadomosc od superadministratora'),
+                    ->default('Wiadomość od superadministratora'),
                 Textarea::make('body')
-                    ->label('Tresc push')
+                    ->label('Treść push')
                     ->required()
                     ->rows(5)
                     ->maxLength(1000),
@@ -262,7 +262,7 @@ class UsersTable
                 Notification::make()
                     ->success()
                     ->title('Zakolejkowano push.')
-                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · bez aktywnego tokenu: {$result['skipped']}")
+                    ->body("Użytkownicy: {$result['users']} · urządzenia: {$result['devices']} · bez aktywnego tokenu: {$result['skipped']}")
                     ->send();
             });
     }
@@ -270,7 +270,7 @@ class UsersTable
     protected static function sendInstantEmailAction(): Action
     {
         return Action::make('send_instant_email')
-            ->label('Wyslij email teraz')
+            ->label('Wyślij e-mail teraz')
             ->icon('heroicon-o-envelope')
             ->color('primary')
             ->schema([
@@ -278,9 +278,9 @@ class UsersTable
                     ->label('Temat')
                     ->required()
                     ->maxLength(200)
-                    ->default('Wiadomosc od superadministratora'),
+                    ->default('Wiadomość od superadministratora'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(8)
                     ->maxLength(12000),
@@ -296,8 +296,8 @@ class UsersTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email.')
-                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano e-mail.')
+                    ->body("Odbiorcy: {$result['users']} · w kolejce: {$result['queued']} · pominięci: {$result['skipped']}")
                     ->send();
             });
     }
@@ -318,7 +318,7 @@ class UsersTable
                     $admin instanceof User ? $admin : null,
                 );
             })
-            ->successNotificationTitle('Zatwierdzenie zostalo cofniete.');
+            ->successNotificationTitle('Zatwierdzenie zostało cofnięte.');
     }
 
     protected static function regenerateCodeAction(): Action
@@ -346,7 +346,7 @@ class UsersTable
     protected static function sendPasswordResetLinkAction(): Action
     {
         return Action::make('send_password_reset_link')
-            ->label('Wyslij link resetu hasla')
+            ->label('Wyślij link resetu hasła')
             ->icon('heroicon-o-key')
             ->color('gray')
             ->requiresConfirmation()
@@ -356,7 +356,7 @@ class UsersTable
                 if ($status !== Password::RESET_LINK_SENT) {
                     Notification::make()
                         ->danger()
-                        ->title('Nie udalo sie wyslac linku resetu hasla.')
+                        ->title('Nie udało się wysłać linku resetu hasła.')
                         ->body(__($status))
                         ->send();
 
@@ -373,12 +373,12 @@ class UsersTable
                         ->withProperties([
                             'recipient_email' => $record->email,
                         ])
-                        ->log('Superadmin wyslal uzytkownikowi link resetu hasla.');
+                        ->log('Superadmin wysłał użytkownikowi link resetu hasła.');
                 }
 
                 Notification::make()
                     ->success()
-                    ->title('Wyslano link resetu hasla.')
+                    ->title('Wysłano link resetu hasła.')
                     ->send();
             });
     }
@@ -406,8 +406,8 @@ class UsersTable
 
                 Notification::make()
                     ->success()
-                    ->title('Cofnieto zatwierdzenia.')
-                    ->body("Liczba zmienionych rekordow: {$updated}")
+                    ->title('Cofnięto zatwierdzenia.')
+                    ->body("Liczba zmienionych rekordów: {$updated}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();
@@ -416,17 +416,17 @@ class UsersTable
     protected static function sendInstantPushBulkAction(): BulkAction
     {
         return BulkAction::make('send_instant_push_bulk')
-            ->label('Wyslij push teraz')
+            ->label('Wyślij push teraz')
             ->icon('heroicon-o-device-phone-mobile')
             ->color('info')
             ->schema([
                 TextInput::make('title')
-                    ->label('Tytul push')
+                    ->label('Tytuł push')
                     ->required()
                     ->maxLength(120)
-                    ->default('Wiadomosc od superadministratora'),
+                    ->default('Wiadomość od superadministratora'),
                 Textarea::make('body')
-                    ->label('Tresc push')
+                    ->label('Treść push')
                     ->required()
                     ->rows(5)
                     ->maxLength(1000),
@@ -446,8 +446,8 @@ class UsersTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano push dla zaznaczonych uzytkownikow.')
-                    ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · bez aktywnego tokenu: {$result['skipped']}")
+                    ->title('Zakolejkowano push dla zaznaczonych użytkowników.')
+                    ->body("Użytkownicy: {$result['users']} · urządzenia: {$result['devices']} · bez aktywnego tokenu: {$result['skipped']}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();
@@ -456,7 +456,7 @@ class UsersTable
     protected static function sendInstantEmailBulkAction(): BulkAction
     {
         return BulkAction::make('send_instant_email_bulk')
-            ->label('Wyslij email teraz')
+            ->label('Wyślij e-mail teraz')
             ->icon('heroicon-o-envelope')
             ->color('primary')
             ->schema([
@@ -464,9 +464,9 @@ class UsersTable
                     ->label('Temat')
                     ->required()
                     ->maxLength(200)
-                    ->default('Wiadomosc od superadministratora'),
+                    ->default('Wiadomość od superadministratora'),
                 Textarea::make('body')
-                    ->label('Tresc')
+                    ->label('Treść')
                     ->required()
                     ->rows(8)
                     ->maxLength(12000),
@@ -486,8 +486,8 @@ class UsersTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla zaznaczonych uzytkownikow.')
-                    ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
+                    ->title('Zakolejkowano e-mail dla zaznaczonych użytkowników.')
+                    ->body("Odbiorcy: {$result['users']} · w kolejce: {$result['queued']} · pominięci: {$result['skipped']}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();
@@ -517,7 +517,7 @@ class UsersTable
                 Notification::make()
                     ->success()
                     ->title('Wygenerowano nowe kody.')
-                    ->body("Liczba zmienionych rekordow: {$updated}")
+                    ->body("Liczba zmienionych rekordów: {$updated}")
                     ->send();
             })
             ->deselectRecordsAfterCompletion();

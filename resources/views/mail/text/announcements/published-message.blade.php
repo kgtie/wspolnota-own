@@ -1,8 +1,8 @@
-Nowy zestaw ogloszen parafialnych
+Nowy zestaw ogłoszeń parafialnych
 
 Parafia: {{ $parishName }}
-Obowiazuje od: {{ $announcementSet->effective_from?->format('d.m.Y') ?? 'dzisiaj' }}
-Tytul: {{ $announcementSet->title }}
+Obowiązuje od: {{ $announcementSet->effective_from?->format('d.m.Y') ?? 'dzisiaj' }}
+Tytuł: {{ $announcementSet->title }}
 @if ($announcementSet->summary_ai)
 
 Streszczenie:

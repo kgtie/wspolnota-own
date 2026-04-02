@@ -13,8 +13,8 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 /**
  * Odczyt wpisu w panelu superadmina.
  *
- * Widok ma byc redakcyjny, ale nie moze renderowac surowego HTML z bazy bez
- * sanizacji, bo wpisy pochodza z edytora rich text i moga stac sie nosnikiem XSS.
+ * Widok ma być redakcyjny, ale nie może renderować surowego HTML z bazy bez
+ * sanityzacji, bo wpisy pochodzą z edytora rich text i mogą stać się nośnikiem XSS.
  */
 class NewsPostInfolist
 {
@@ -22,17 +22,17 @@ class NewsPostInfolist
     {
         return $schema
             ->components([
-                Section::make('Aktualnosc')
+                Section::make('Aktualność')
                     ->columns(2)
                     ->schema([
                         SpatieMediaLibraryImageEntry::make('featured_image')
-                            ->label('Zdjecie wyrozniajace')
+                            ->label('Zdjęcie wyróżniające')
                             ->collection('featured_image')
                             ->conversion('preview')
                             ->columnSpanFull(),
 
                         TextEntry::make('title')
-                            ->label('Tytul')
+                            ->label('Tytuł')
                             ->columnSpanFull(),
 
                         TextEntry::make('status')
@@ -51,7 +51,7 @@ class NewsPostInfolist
                             ->placeholder('Brak'),
 
                         TextEntry::make('is_pinned')
-                            ->label('Przypiety')
+                            ->label('Przypięty')
                             ->badge()
                             ->formatStateUsing(fn (bool $state): string => $state ? 'Tak' : 'Nie')
                             ->color(fn (bool $state): string => $state ? 'info' : 'gray'),
@@ -67,17 +67,17 @@ class NewsPostInfolist
                             ->placeholder('Nie opublikowano'),
 
                         TextEntry::make('push_notification_sent_at')
-                            ->label('Push dispatch')
+                            ->label('Wysyłka push')
                             ->dateTime('d.m.Y H:i')
                             ->placeholder('Oczekuje'),
 
                         TextEntry::make('email_notification_sent_at')
-                            ->label('Email dispatch')
+                    ->label('Wysyłka e-maili')
                             ->dateTime('d.m.Y H:i')
                             ->placeholder('Oczekuje'),
 
                         TextEntry::make('content')
-                            ->label('Pelna tresc')
+                            ->label('Pełna treść')
                             ->state(fn (NewsPost $record): string => static::sanitizeRenderedContent($record->content))
                             ->html()
                             ->columnSpanFull(),
@@ -87,19 +87,19 @@ class NewsPostInfolist
                     ->columns(2)
                     ->schema([
                         TextEntry::make('gallery_media_count')
-                            ->label('Zdjecia w galerii')
+                            ->label('Zdjęcia w galerii')
                             ->state(fn (NewsPost $record): string => (string) $record->getMedia('gallery')->count())
                             ->badge()
                             ->color('info'),
 
                         TextEntry::make('attachments_media_count')
-                            ->label('Zalaczniki')
+                            ->label('Załączniki')
                             ->state(fn (NewsPost $record): string => (string) $record->getMedia('attachments')->count())
                             ->badge()
                             ->color('gray'),
 
                         TextEntry::make('content_images_media_count')
-                            ->label('Obrazy osadzone w tresci')
+                            ->label('Obrazy osadzone w treści')
                             ->state(fn (NewsPost $record): string => (string) $record->getMedia('content_images')->count())
                             ->badge()
                             ->color('warning'),
@@ -110,11 +110,11 @@ class NewsPostInfolist
                     ->collapsible()
                     ->schema([
                         TextEntry::make('createdBy.full_name')
-                            ->label('Utworzyl')
+                            ->label('Utworzył')
                             ->placeholder('System'),
 
                         TextEntry::make('updatedBy.full_name')
-                            ->label('Edytowal')
+                            ->label('Edytował')
                             ->placeholder('Brak'),
 
                         TextEntry::make('created_at')
@@ -130,7 +130,7 @@ class NewsPostInfolist
 
     /**
      * Sanityzuje HTML tylko na potrzeby panelu administracyjnego.
-     * Front redakcyjny nadal moze korzystac z bogatszego renderu, ale w Filamencie
+     * Front redakcyjny nadal może korzystać z bogatszego renderu, ale w Filamencie
      * odcinamy potencjalnie wykonywalny markup i zostawiamy bezpieczne elementy.
      */
     protected static function sanitizeRenderedContent(?string $html): string

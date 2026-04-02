@@ -19,7 +19,7 @@ class LandingContactMessage extends WspolnotaMailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Landing kontakt: '.$this->subjectLine,
+            subject: 'Kontakt ze strony głównej: '.$this->subjectLine,
             replyTo: [
                 new Address($this->email, $this->name),
             ],
@@ -52,7 +52,7 @@ class LandingContactMessage extends WspolnotaMailable
     {
         return [
             'category_label' => 'Lead z landing page',
-            'preheader' => 'Nowa wiadomosc z formularza kontaktowego landing page.',
+            'preheader' => 'Nowa wiadomość z formularza kontaktowego na stronie głównej.',
         ];
     }
 }

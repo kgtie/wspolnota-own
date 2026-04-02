@@ -546,8 +546,8 @@
         </div>
 
         <x-filament::section
-            heading="Szybkie przejscia"
-            description="Najczesciej potrzebne moduły i obszary operacyjne superadministratora."
+            heading="Szybkie przejścia"
+            description="Najczęściej potrzebne moduły i obszary operacyjne superadministratora."
         >
             <div class="sa-ct-grid links">
                 @foreach ($this->quickLinks as $link)
@@ -561,8 +561,8 @@
 
         <div class="sa-ct-grid columns-3">
             <x-filament::section
-                heading="Uzytkownicy wymagajacy uwagi"
-                description="Najnowsi oczekujacy na zatwierdzenie."
+                heading="Użytkownicy wymagający uwagi"
+                description="Najnowsi oczekujący na zatwierdzenie."
             >
                 <div class="sa-ct-list">
                     @forelse ($this->pendingUsers as $row)
@@ -572,12 +572,12 @@
                                     <div class="sa-ct-row-title">{{ $row['name'] }}</div>
                                     <div class="sa-ct-row-meta">{{ $row['email'] }} · {{ $row['parish'] }}</div>
                                 </div>
-                                <span class="sa-ct-pill sa-ct-tone-warning">PENDING</span>
+                                <span class="sa-ct-pill sa-ct-tone-warning">OCZEKUJĄCY</span>
                             </div>
                             <div class="sa-ct-row-meta">Utworzono: {{ $row['created_at'] }}</div>
                         </a>
                     @empty
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Brak uzytkownikow oczekujacych na zatwierdzenie.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Brak użytkowników oczekujących na zatwierdzenie.</p>
                     @endforelse
                 </div>
             </x-filament::section>
@@ -598,7 +598,7 @@
                             </div>
                         </a>
                     @empty
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Brak zaleglych elementow dispatchu.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Brak zaległych elementów wysyłki.</p>
                     @endforelse
                 </div>
             </x-filament::section>
@@ -621,7 +621,7 @@
                             <div class="sa-ct-row-meta">{{ $row['created_at'] }}</div>
                         </a>
                     @empty
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Brak nieudanych dostarczen push.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Brak nieudanych dostarczeń push.</p>
                     @endforelse
                 </div>
             </x-filament::section>
@@ -630,7 +630,7 @@
         <div class="sa-ct-grid columns-2">
             <x-filament::section
                 heading="Otwarte konwersacje online"
-                description="Najswiezsze rozmowy z kancelarii wymagajace reakcji."
+                description="Najświeższe rozmowy z kancelarii wymagające reakcji."
             >
                 <div class="sa-ct-list">
                     @forelse ($this->openConversations as $row)
@@ -641,7 +641,7 @@
                                     <div class="sa-ct-row-meta">{{ $row['parish'] }} · {{ $row['user'] }}</div>
                                 </div>
                                 <span class="sa-ct-pill {{ $row['unread'] > 0 ? 'sa-ct-tone-warning' : 'sa-ct-tone-success' }}">
-                                    unread {{ $row['unread'] }}
+                                    nieprzeczytane {{ $row['unread'] }}
                                 </span>
                             </div>
                             <div class="sa-ct-row-meta">Aktualizacja: {{ $row['updated_at'] }}</div>
@@ -653,8 +653,8 @@
             </x-filament::section>
 
             <x-filament::section
-                heading="Najblizsze msze"
-                description="Nadchodzace celebracje z liczbą uczestnikow."
+                heading="Najbliższe msze"
+                description="Nadchodzące celebracje z liczbą uczestników."
             >
                 <div class="sa-ct-list">
                     @forelse ($this->upcomingMasses as $row)
@@ -668,7 +668,7 @@
                             </div>
                         </a>
                     @empty
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Brak nadchodzacych mszy w horyzoncie 3 dni.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Brak nadchodzących mszy w horyzoncie 3 dni.</p>
                     @endforelse
                 </div>
             </x-filament::section>
@@ -676,7 +676,7 @@
 
         <x-filament::section
             heading="Snapshot systemu"
-            description="Najwazniejsze parametry runtime i infrastruktury aplikacji."
+            description="Najważniejsze parametry środowiska i infrastruktury aplikacji."
         >
             <div class="sa-ct-snapshot">
                 @foreach ($this->systemSnapshot as $row)

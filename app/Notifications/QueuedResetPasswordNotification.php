@@ -29,28 +29,28 @@ class QueuedResetPasswordNotification extends ResetPassword implements ShouldQue
         ], false));
 
         return $this->wspolnotaMailMessage(
-            subject: 'Reset hasla',
+            subject: 'Reset hasła',
             htmlBodyView: 'mail.html.notifications.action-message',
             textBodyView: 'mail.text.notifications.action-message',
             bodyData: [
-                'eyebrow' => 'Bezpieczenstwo konta',
-                'title' => 'Ustaw nowe haslo.',
-                'intro' => 'Otrzymalismy prosbe o zresetowanie hasla do Twojego konta.',
+                'eyebrow' => 'Bezpieczeństwo konta',
+                'title' => 'Ustaw nowe hasło.',
+                'intro' => 'Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta.',
                 'details' => [
-                    'Adres email' => (string) data_get($notifiable, 'email'),
+                    'Adres e-mail' => (string) data_get($notifiable, 'email'),
                     'Tryb' => 'WWW / panele administracyjne',
                 ],
-                'actionLabel' => 'Ustaw nowe haslo',
+                'actionLabel' => 'Ustaw nowe hasło',
                 'actionUrl' => $resetUrl,
-                'outro' => 'Jesli to nie Ty, zignoruj te wiadomosc.',
-                'secondaryText' => 'Link przekieruje do bezpiecznej strony ustawienia nowego hasla.',
+                'outro' => 'Jeśli to nie Ty, zignoruj tę wiadomość.',
+                'secondaryText' => 'Link przekieruje do bezpiecznej strony ustawienia nowego hasła.',
             ],
             parish: $parish,
             context: [
-                'category_label' => 'Reset hasla',
-                'preheader' => 'Ustaw nowe haslo do konta Wspolnota.',
+                'category_label' => 'Reset hasła',
+                'preheader' => 'Ustaw nowe hasło do konta Wspólnota.',
                 'mobile_note_variant' => $parish ? 'parish' : 'default',
-                'footer_note' => 'To powiadomienie sluzy wyłącznie do bezpiecznej zmiany hasla.',
+                'footer_note' => 'To powiadomienie służy wyłącznie do bezpiecznej zmiany hasła.',
             ],
         );
     }

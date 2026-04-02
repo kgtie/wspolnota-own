@@ -28,25 +28,25 @@ class AnnouncementPackagePublishedMailNotification extends Notification implemen
         $serviceUrl = app(EmailThemeFactory::class)->resolveServiceUrl();
 
         return $this->wspolnotaMailMessage(
-            subject: 'Nowy pakiet ogloszen parafialnych',
+            subject: 'Nowy pakiet ogłoszeń parafialnych',
             htmlBodyView: 'mail.html.notifications.action-message',
             textBodyView: 'mail.text.notifications.action-message',
             bodyData: [
-                'eyebrow' => 'Ogloszenia parafialne',
-                'title' => 'Opublikowano nowy pakiet ogloszen.',
-                'intro' => 'Nowy pakiet ogloszen jest juz dostepny: '.$this->announcementSet->title,
+                'eyebrow' => 'Ogłoszenia parafialne',
+                'title' => 'Opublikowano nowy pakiet ogłoszeń.',
+                'intro' => 'Nowy pakiet ogłoszeń jest już dostępny: '.$this->announcementSet->title,
                 'details' => [
                     'Parafia' => $parish?->name ?? 'Nie przypisano',
-                    'Obowiazuje od' => $this->announcementSet->effective_from?->format('d.m.Y') ?? 'dzisiaj',
+                    'Obowiązuje od' => $this->announcementSet->effective_from?->format('d.m.Y') ?? 'dzisiaj',
                 ],
-                'actionLabel' => 'Otworz Wspolnote',
+                'actionLabel' => 'Otwórz Wspólnotę',
                 'actionUrl' => $serviceUrl,
-                'outro' => 'Szczegoly znajdziesz we Wspolnocie oraz na stronie parafii.',
+                'outro' => 'Szczegóły znajdziesz we Wspólnocie oraz na stronie parafii.',
             ],
             parish: $parish,
             context: [
-                'category_label' => 'Ogloszenia parafialne',
-                'preheader' => 'Opublikowano nowy pakiet ogloszen parafialnych.',
+                'category_label' => 'Ogłoszenia parafialne',
+                'preheader' => 'Opublikowano nowy pakiet ogłoszeń parafialnych.',
                 'mobile_note_variant' => 'parish',
             ],
         );

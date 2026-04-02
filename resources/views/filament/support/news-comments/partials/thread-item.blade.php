@@ -130,7 +130,7 @@
             color: #9a3412;
         }
 
-        .comment-thread__badge[data-state="Usuniety"] {
+        .comment-thread__badge[data-state="Usunięty"] {
             background: rgba(226, 232, 240, 0.95);
             color: #475569;
         }
@@ -338,7 +338,7 @@
                     type="button"
                     class="comment-thread__action"
                     data-tone="warn"
-                    x-on:click.prevent="if (confirm('Ukryc ten komentarz?')) $wire.hideComment({{ $comment->getKey() }})"
+                    x-on:click.prevent="if (confirm('Ukryć ten komentarz?')) $wire.hideComment({{ $comment->getKey() }})"
                 >
                     Ukryj
                 </button>
@@ -348,9 +348,9 @@
                 <button
                     type="button"
                     class="comment-thread__action"
-                    x-on:click.prevent="if (confirm('Przywrocic widocznosc tego komentarza?')) $wire.restoreVisibility({{ $comment->getKey() }})"
+                    x-on:click.prevent="if (confirm('Przywrócić widoczność tego komentarza?')) $wire.restoreVisibility({{ $comment->getKey() }})"
                 >
-                    Przywroc widocznosc
+                    Przywróć widoczność
                 </button>
             @endif
 
@@ -358,9 +358,9 @@
                 <button
                     type="button"
                     class="comment-thread__action"
-                    x-on:click.prevent="if (confirm('Przywrocic usuniety komentarz?')) $wire.restoreDeletedComment({{ $comment->getKey() }})"
+                    x-on:click.prevent="if (confirm('Przywrócić usunięty komentarz?')) $wire.restoreDeletedComment({{ $comment->getKey() }})"
                 >
-                    Przywroc
+                    Przywróć
                 </button>
             @endif
 
@@ -369,9 +369,9 @@
                     type="button"
                     class="comment-thread__action"
                     data-tone="danger"
-                    x-on:click.prevent="if (confirm('Usunac komentarz? Jesli ma odpowiedzi, zostanie tylko ukryty.')) $wire.deleteComment({{ $comment->getKey() }})"
+                    x-on:click.prevent="if (confirm('Usunąć komentarz? Jeśli ma odpowiedzi, zostanie tylko ukryty.')) $wire.deleteComment({{ $comment->getKey() }})"
                 >
-                    Usun
+                    Usuń
                 </button>
             @endif
         </div>
@@ -379,9 +379,9 @@
 
     <div class="comment-thread__body {{ ($isHidden || $isTrashed) ? 'comment-thread__body--placeholder' : '' }}">
         @if ($isTrashed)
-            [Komentarz zostal usuniety]
+            [Komentarz został usunięty]
         @elseif ($isHidden)
-            [Komentarz zostal ukryty, ale pozostaje w drzewie odpowiedzi]
+            [Komentarz został ukryty, ale pozostaje w drzewie odpowiedzi]
         @else
             {!! nl2br(e((string) $comment->body)) !!}
         @endif
@@ -403,7 +403,7 @@
                 class="comment-thread__reply-textarea"
                 rows="5"
                 maxlength="2000"
-                placeholder="Napisz odpowiedz..."
+                placeholder="Napisz odpowiedź..."
                 wire:model.defer="{{ $replyModel }}"
             ></textarea>
 
@@ -413,7 +413,7 @@
 
             <div class="comment-thread__reply-footer">
                 <div class="comment-thread__reply-hint">
-                    Odpowiedz zostanie dodana bez opuszczania listy komentarzy.
+                    Odpowiedź zostanie dodana bez opuszczania listy komentarzy.
                 </div>
 
                 <div class="comment-thread__reply-actions">
@@ -421,7 +421,7 @@
                         Anuluj
                     </button>
                     <button type="submit" class="comment-thread__reply-button comment-thread__reply-button--primary">
-                        Opublikuj odpowiedz
+                        Opublikuj odpowiedź
                     </button>
                 </div>
             </div>

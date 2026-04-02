@@ -39,16 +39,16 @@ class SuperAdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Red,
             ])
-            ->brandName('Wspolnota | SuperAdmin')
-            ->favicon(null)
+            ->brandName('Wspólnota | SuperAdmin')
+            ->favicon(asset('favicon/favicon-32x32.png'))
             ->navigationGroups([
                 NavigationGroup::make('Podstawowe dane')
                     ->icon('heroicon-o-building-library'),
-                NavigationGroup::make('Tresci i liturgia')
+                NavigationGroup::make('Treści i liturgia')
                     ->icon('heroicon-o-book-open'),
                 NavigationGroup::make('Komunikacja i kampanie')
                     ->icon('heroicon-o-megaphone'),
-                NavigationGroup::make('Push i urzadzenia')
+                NavigationGroup::make('Push i urządzenia')
                     ->icon('heroicon-o-device-phone-mobile'),
                 NavigationGroup::make('Media i pliki')
                     ->icon('heroicon-o-photo')

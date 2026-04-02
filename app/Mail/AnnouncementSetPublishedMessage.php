@@ -17,7 +17,7 @@ class AnnouncementSetPublishedMessage extends WspolnotaMailable
         $dateFrom = $this->announcementSet->effective_from?->format('d.m.Y') ?? 'brak daty';
 
         return new Envelope(
-            subject: "Nowe ogloszenia parafialne ({$dateFrom})",
+            subject: "Nowe ogłoszenia parafialne ({$dateFrom})",
         );
     }
 
@@ -47,8 +47,8 @@ class AnnouncementSetPublishedMessage extends WspolnotaMailable
     protected function emailContext(): array
     {
         return [
-            'category_label' => 'Ogloszenia parafialne',
-            'preheader' => 'Nowy zestaw ogloszen parafialnych jest juz gotowy.',
+            'category_label' => 'Ogłoszenia parafialne',
+            'preheader' => 'Nowy zestaw ogłoszeń parafialnych jest już gotowy.',
             'mobile_note_variant' => 'parish',
         ];
     }

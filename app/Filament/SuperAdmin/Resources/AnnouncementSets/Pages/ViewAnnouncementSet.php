@@ -79,7 +79,7 @@ class ViewAnnouncementSet extends ViewRecord
                             'target_status' => $status,
                             'context' => 'view_page',
                         ])
-                        ->log('Proboszcz zaktualizowal status zestawu ogloszen z poziomu podgladu.');
+                        ->log('Proboszcz zaktualizował status zestawu ogłoszeń z poziomu podglądu.');
                 }
             })
             ->successNotificationTitle('Status zestawu zostal zaktualizowany.');
@@ -104,7 +104,7 @@ class ViewAnnouncementSet extends ViewRecord
                 if (! $exporter->hasPrintableItems($record)) {
                     Notification::make()
                         ->warning()
-                        ->title('Brak aktywnych ogloszen do wydruku.')
+                        ->title('Brak aktywnych ogłoszeń do wydruku.')
                         ->send();
 
                     return null;
@@ -121,7 +121,7 @@ class ViewAnnouncementSet extends ViewRecord
                             'active_items_count' => $record->items()->where('is_active', true)->count(),
                             'context' => 'view_page',
                         ])
-                        ->log('Proboszcz wygenerowal PDF z ogloszeniami parafialnymi.');
+                        ->log('Proboszcz wygenerował PDF z ogłoszeniami parafialnymi.');
                 }
 
                 return $exporter->download($record);
@@ -150,7 +150,7 @@ class ViewAnnouncementSet extends ViewRecord
                     Notification::make()
                         ->warning()
                         ->title('Nie mozna wygenerowac streszczenia.')
-                        ->body('Zestaw musi byc opublikowany i zawierac co najmniej jedno aktywne ogloszenie.')
+                        ->body('Zestaw musi być opublikowany i zawierać co najmniej jedno aktywne ogłoszenie.')
                         ->send();
 
                     return;
@@ -179,7 +179,7 @@ class ViewAnnouncementSet extends ViewRecord
                                 'model' => (string) config('gemini.model'),
                                 'context' => 'view_page',
                             ])
-                            ->log('Proboszcz recznie wygenerowal streszczenie AI dla zestawu ogloszen.');
+                            ->log('Proboszcz ręcznie wygenerował streszczenie AI dla zestawu ogłoszeń.');
                     }
 
                     Notification::make()
@@ -200,7 +200,7 @@ class ViewAnnouncementSet extends ViewRecord
                                 'error' => $exception->getMessage(),
                                 'context' => 'view_page',
                             ])
-                            ->log('Reczne generowanie streszczenia AI dla zestawu ogloszen zakonczone bledem.');
+                            ->log('Ręczne generowanie streszczenia AI dla zestawu ogłoszeń zakończyło się błędem.');
                     }
 
                     Notification::make()

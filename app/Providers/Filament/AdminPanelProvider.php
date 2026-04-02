@@ -51,7 +51,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->brandName('Wspólnota')
-            ->favicon(null)
+            ->favicon(asset('favicon/favicon-32x32.png'))
 
             // Auto-discovery zasobów, stron i widgetów
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')

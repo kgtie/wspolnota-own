@@ -26,7 +26,7 @@ class NewsPostResource extends Resource
 
     protected static ?string $modelLabel = 'aktualnosc';
 
-    protected static ?string $pluralModelLabel = 'aktualnosci';
+    protected static ?string $pluralModelLabel = 'aktualności';
 
     protected static ?string $navigationLabel = 'Aktualnosci';
 

@@ -28,7 +28,7 @@ use UnitEnum;
 
 /**
  * Zaawansowany eksplorator activity_log dla superadmina.
- * Resource grupuje techniczne i biznesowe logi w jeden audyt calej uslugi.
+ * Resource grupuje techniczne i biznesowe logi w jeden audyt całej usługi.
  */
 class ActivityLogResource extends Resource
 {
@@ -38,9 +38,9 @@ class ActivityLogResource extends Resource
 
     protected static ?string $modelLabel = 'wpis logu';
 
-    protected static ?string $pluralModelLabel = 'wpisy logow';
+    protected static ?string $pluralModelLabel = 'wpisy logów';
 
-    protected static ?string $navigationLabel = 'Logi aktywnosci';
+    protected static ?string $navigationLabel = 'Logi aktywności';
 
     protected static string|UnitEnum|null $navigationGroup = 'System i diagnostyka';
 
@@ -55,65 +55,65 @@ class ActivityLogResource extends Resource
         'api-office' => ['label' => 'Kancelaria API', 'color' => 'warning'],
         'office-conversations' => ['label' => 'Kancelaria', 'color' => 'warning'],
         'api-parish-approvals' => ['label' => 'Zatwierdzenia parafian', 'color' => 'primary'],
-        'admin-user-management' => ['label' => 'User management (admin)', 'color' => 'primary'],
-        'superadmin-user-management' => ['label' => 'User management (superadmin)', 'color' => 'danger'],
+        'admin-user-management' => ['label' => 'Zarządzanie użytkownikami (admin)', 'color' => 'primary'],
+        'superadmin-user-management' => ['label' => 'Zarządzanie użytkownikami (superadmin)', 'color' => 'danger'],
         'parish-admin-management' => ['label' => 'Admini parafii', 'color' => 'warning'],
-        'admin-announcement-management' => ['label' => 'Ogloszenia', 'color' => 'info'],
-        'announcements-ai' => ['label' => 'AI ogloszen', 'color' => 'gray'],
-        'news-posts' => ['label' => 'Aktualnosci', 'color' => 'info'],
+        'admin-announcement-management' => ['label' => 'Ogłoszenia', 'color' => 'info'],
+        'announcements-ai' => ['label' => 'AI ogłoszeń', 'color' => 'gray'],
+        'news-posts' => ['label' => 'Aktualności', 'color' => 'info'],
         'admin-mass-management' => ['label' => 'Msze i intencje', 'color' => 'success'],
         'scheduler-reports' => ['label' => 'Raporty schedulera', 'color' => 'gray'],
         'superadmin-daily-reports' => ['label' => 'Raporty superadmina', 'color' => 'gray'],
         'parish-weekly-digests' => ['label' => 'Digesty parafialne', 'color' => 'gray'],
         'superadmin-communication-center' => ['label' => 'Centrum komunikacji', 'color' => 'primary'],
-        'default' => ['label' => 'Domyslny', 'color' => 'gray'],
+        'default' => ['label' => 'Domyślny', 'color' => 'gray'],
     ];
 
     /**
      * @var array<string, string>
      */
     private const EVENT_LABELS = [
-        'api_user_registered' => 'Rejestracja usera przez API',
+        'api_user_registered' => 'Rejestracja użytkownika przez API',
         'api_login_succeeded' => 'Logowanie udane',
         'api_login_failed' => 'Logowanie nieudane',
         'api_login_blocked_inactive_account' => 'Logowanie zablokowane',
-        'api_email_verification_resent' => 'Ponowne wyslanie weryfikacji email',
-        'api_email_verified' => 'Email potwierdzony',
+        'api_email_verification_resent' => 'Ponowne wysłanie weryfikacji adresu e-mail',
+        'api_email_verified' => 'Adres e-mail potwierdzony',
         'api_refresh_rotated' => 'Odnowienie sesji',
-        'api_refresh_reuse_detected' => 'Wykryto reuse refresh tokenu',
+        'api_refresh_reuse_detected' => 'Wykryto ponowne użycie tokenu odświeżania',
         'api_logout' => 'Wylogowanie',
         'api_logout_all' => 'Wylogowanie wszystkich sesji',
-        'api_password_reset_requested' => 'Prosba o reset hasla',
-        'api_password_reset_completed' => 'Reset hasla zakonczony',
+        'api_password_reset_requested' => 'Prośba o reset hasła',
+        'api_password_reset_completed' => 'Reset hasła zakończony',
         'api_profile_updated' => 'Aktualizacja profilu',
-        'api_profile_updated_with_parish_change' => 'Zmiana profilu i parafii domyslnej',
-        'api_email_changed' => 'Zmiana adresu email',
-        'api_password_changed' => 'Zmiana hasla',
-        'api_avatar_uploaded' => 'Wgranie avatara',
-        'api_avatar_deleted' => 'Usuniecie avatara',
+        'api_profile_updated_with_parish_change' => 'Zmiana profilu i parafii domyślnej',
+        'api_email_changed' => 'Zmiana adresu e-mail',
+        'api_password_changed' => 'Zmiana hasła',
+        'api_avatar_uploaded' => 'Wgranie awatara',
+        'api_avatar_deleted' => 'Usunięcie awatara',
         'api_parish_approval_code_regenerated' => 'Nowy kod parafialny',
         'api_parish_approval_lookup_succeeded' => 'Lookup parafianina po kodzie',
         'api_parish_approval_failed_invalid_code' => 'Nieudany lookup po kodzie',
         'user_verified_by_code_api' => 'Zatwierdzenie parafianina przez API',
         'api_office_chat_created' => 'Nowa rozmowa w kancelarii',
-        'api_office_message_sent' => 'Nowa wiadomosc w kancelarii',
-        'api_office_attachments_sent' => 'Nowe zalaczniki w kancelarii',
-        'office_attachment_downloaded_via_api' => 'Pobranie zalacznika kancelarii przez API',
+        'api_office_message_sent' => 'Nowa wiadomość w kancelarii',
+        'api_office_attachments_sent' => 'Nowe załączniki w kancelarii',
+        'office_attachment_downloaded_via_api' => 'Pobranie załącznika kancelarii przez API',
     ];
 
     /**
      * @var array<string, string>
      */
     private const CATEGORY_LABELS = [
-        'security' => 'Bezpieczenstwo',
+        'security' => 'Bezpieczeństwo',
         'api_auth' => 'Autoryzacja API',
         'user_profile' => 'Profil i konto',
         'parish_approvals' => 'Zatwierdzanie parafian',
         'office' => 'Kancelaria online',
-        'content' => 'Tresci i komunikacja',
+        'content' => 'Treści i komunikacja',
         'liturgy' => 'Liturgia',
         'system' => 'System i automaty',
-        'other' => 'Pozostale',
+        'other' => 'Pozostałe',
     ];
 
     /**

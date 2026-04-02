@@ -320,15 +320,15 @@
         <section class="dispatch-hero">
             <div class="dispatch-hero-top">
                 <div>
-                    <p class="dispatch-kicker">Dispatch Control Room</p>
+                    <p class="dispatch-kicker">Centrum wysyłki</p>
                     <h1 class="dispatch-title">Centrum dispatchu</h1>
                     <p class="dispatch-subtitle">
-                        Widok operacyjny dla content dispatch, przypomnien mszalnych i retry maili.
+                        Widok operacyjny dla wysyłki treści, przypomnień mszalnych i ponawiania e-maili.
                         Priorytetem nie jest historia, tylko to, co wymaga reakcji teraz.
                     </p>
                 </div>
                 <div class="dispatch-badge">
-                    <span>Auto-refresh</span>
+                    <span>Automatyczne odświeżanie</span>
                     <strong>30s</strong>
                 </div>
             </div>
@@ -359,9 +359,9 @@
                 <section class="dispatch-panel">
                     <div class="dispatch-panel-head">
                         <div>
-                            <h2 class="dispatch-panel-title">Backlog content dispatch</h2>
+                            <h2 class="dispatch-panel-title">Backlog wysyłki treści</h2>
                             <p class="dispatch-panel-copy">
-                                Rekordy, ktore juz kwalifikuja sie do opoznionego dispatchu i nadal nie maja kompletu wysylek.
+                                Rekordy, które kwalifikują się już do opóźnionej wysyłki i nadal nie mają kompletu dostarczeń.
                             </p>
                         </div>
                         <div class="dispatch-mini-actions">
@@ -374,7 +374,7 @@
                     <div class="dispatch-split">
                         <div class="dispatch-list">
                             <div class="dispatch-chip-row">
-                                <span class="dispatch-chip" data-tone="warning">News pending: {{ count($this->pendingNews) }}</span>
+                                <span class="dispatch-chip" data-tone="warning">Aktualności oczekujące: {{ count($this->pendingNews) }}</span>
                             </div>
 
                             @forelse ($this->pendingNews as $row)
@@ -393,21 +393,21 @@
                                             <span class="dispatch-status" data-tone="{{ $row['status']['tone'] }}">{{ $row['status']['label'] }}</span>
                                         </div>
                                     </div>
-                                    <div class="dispatch-item-meta mt-3">Opoznienie: {{ number_format($row['delay_minutes'], 0, ',', ' ') }} min</div>
+                                    <div class="dispatch-item-meta mt-3">Opóźnienie: {{ number_format($row['delay_minutes'], 0, ',', ' ') }} min</div>
                                     <div class="dispatch-mini-actions mt-4">
                                         <x-filament::button tag="a" size="sm" color="gray" :href="$row['url']">
-                                            Otworz rekord
+                                            Otwórz rekord
                                         </x-filament::button>
                                     </div>
                                 </article>
                             @empty
-                                <div class="dispatch-empty">Brak newsow wymagajacych dispatchu.</div>
+                                <div class="dispatch-empty">Brak aktualności wymagających wysyłki.</div>
                             @endforelse
                         </div>
 
                         <div class="dispatch-list">
                             <div class="dispatch-chip-row">
-                                <span class="dispatch-chip" data-tone="warning">Ogloszenia pending: {{ count($this->pendingAnnouncementSets) }}</span>
+                                <span class="dispatch-chip" data-tone="warning">Ogłoszenia oczekujące: {{ count($this->pendingAnnouncementSets) }}</span>
                             </div>
 
                             @forelse ($this->pendingAnnouncementSets as $row)
@@ -426,15 +426,15 @@
                                             <span class="dispatch-status" data-tone="{{ $row['status']['tone'] }}">{{ $row['status']['label'] }}</span>
                                         </div>
                                     </div>
-                                    <div class="dispatch-item-meta mt-3">Opoznienie: {{ number_format($row['delay_minutes'], 0, ',', ' ') }} min</div>
+                                    <div class="dispatch-item-meta mt-3">Opóźnienie: {{ number_format($row['delay_minutes'], 0, ',', ' ') }} min</div>
                                     <div class="dispatch-mini-actions mt-4">
                                         <x-filament::button tag="a" size="sm" color="gray" :href="$row['url']">
-                                            Otworz rekord
+                                            Otwórz rekord
                                         </x-filament::button>
                                     </div>
                                 </article>
                             @empty
-                                <div class="dispatch-empty">Brak zestawow ogloszen wymagajacych dispatchu.</div>
+                                <div class="dispatch-empty">Brak zestawów ogłoszeń wymagających wysyłki.</div>
                             @endforelse
                         </div>
                     </div>
@@ -445,15 +445,15 @@
                         <div>
                             <h2 class="dispatch-panel-title">Przypomnienia mszalne</h2>
                             <p class="dispatch-panel-copy">
-                                Najblizsze msze, zalegle okna 24h/8h/1h oraz digest 5:00 per uzytkownik.
+                                Najbliższe Msze, zaległe okna 24 h / 8 h / 1 h oraz poranny skrót o 5:00 dla użytkownika.
                             </p>
                         </div>
                         <div class="dispatch-mini-actions">
                             <x-filament::button color="info" size="sm" wire:click="mountAction('run_mass_push_dispatch')">
-                                Push reminders
+                                Wyślij przypomnienia push
                             </x-filament::button>
                             <x-filament::button color="gray" size="sm" wire:click="mountAction('run_mass_digest_dispatch')">
-                                Digest 5:00
+                                Wyślij skrót 5:00
                             </x-filament::button>
                         </div>
                     </div>
@@ -462,10 +462,10 @@
                         $massSummary = $this->massReminderSummary;
                     @endphp
                     <div class="dispatch-chip-row">
-                        <span class="dispatch-chip" data-tone="warning">24h pending: {{ $massSummary['due_24h'] }}</span>
-                        <span class="dispatch-chip" data-tone="warning">8h pending: {{ $massSummary['due_8h'] }}</span>
-                        <span class="dispatch-chip" data-tone="danger">1h pending: {{ $massSummary['due_1h'] }}</span>
-                        <span class="dispatch-chip" data-tone="info">Digest users: {{ $massSummary['due_digest_users'] }}</span>
+                        <span class="dispatch-chip" data-tone="warning">24h oczekujące: {{ $massSummary['due_24h'] }}</span>
+                        <span class="dispatch-chip" data-tone="warning">8h oczekujące: {{ $massSummary['due_8h'] }}</span>
+                        <span class="dispatch-chip" data-tone="danger">1h oczekujące: {{ $massSummary['due_1h'] }}</span>
+                        <span class="dispatch-chip" data-tone="info">Użytkownicy skrótu: {{ $massSummary['due_digest_users'] }}</span>
                     </div>
 
                     <div class="dispatch-list mt-4">
@@ -483,7 +483,7 @@
                                     <div>
                                         <div class="dispatch-item-title">
                                             <a href="{{ $row['url'] }}" class="hover:underline">
-                                                {{ $row['title'] ?: 'Msza bez tytulu intencji' }}
+                                                {{ $row['title'] ?: 'Msza bez tytułu intencji' }}
                                             </a>
                                         </div>
                                         <div class="dispatch-item-meta">{{ $row['parish'] }} · {{ $row['celebration_at'] }} · uczestnicy {{ $row['participants'] }}</div>
@@ -491,16 +491,16 @@
                                     <div class="text-right">
                                         <div class="dispatch-item-id">#{{ $row['id'] }}</div>
                                         <span class="dispatch-status" data-tone="{{ $totalDue > 0 ? 'warning' : 'success' }}">
-                                            {{ $totalDue > 0 ? 'Pending' : 'Czysto' }}
+                                            {{ $totalDue > 0 ? 'Oczekuje' : 'Czysto' }}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div class="dispatch-chip-row mt-3">
-                                    <span class="dispatch-chip" data-tone="warning">24h pending {{ $row['due_24h'] }}</span>
-                                    <span class="dispatch-chip" data-tone="warning">8h pending {{ $row['due_8h'] }}</span>
-                                    <span class="dispatch-chip" data-tone="danger">1h pending {{ $row['due_1h'] }}</span>
-                                    <span class="dispatch-chip" data-tone="info">digest pending {{ $row['digest_pending'] }}</span>
+                                    <span class="dispatch-chip" data-tone="warning">24h oczekujące {{ $row['due_24h'] }}</span>
+                                    <span class="dispatch-chip" data-tone="warning">8h oczekujące {{ $row['due_8h'] }}</span>
+                                    <span class="dispatch-chip" data-tone="danger">1h oczekujące {{ $row['due_1h'] }}</span>
+                                    <span class="dispatch-chip" data-tone="info">skrót oczekujący {{ $row['digest_pending'] }}</span>
                                 </div>
 
                                 <div class="dispatch-progress">
@@ -523,12 +523,12 @@
                                 </div>
                                 <div class="dispatch-mini-actions mt-4">
                                     <x-filament::button tag="a" size="sm" color="gray" :href="$row['url']">
-                                        Otworz msze
+                                        Otwórz mszę
                                     </x-filament::button>
                                 </div>
                             </article>
                         @empty
-                            <div class="dispatch-empty">Brak nadchodzacych mszy w horyzoncie 3 dni.</div>
+                            <div class="dispatch-empty">Brak nadchodzących mszy w horyzoncie 3 dni.</div>
                         @endforelse
                     </div>
                 </section>
@@ -538,14 +538,14 @@
                 <section class="dispatch-panel">
                     <div class="dispatch-panel-head">
                         <div>
-                            <h2 class="dispatch-panel-title">Failed mail jobs</h2>
+                            <h2 class="dispatch-panel-title">Nieudane zadania e-mail</h2>
                             <p class="dispatch-panel-copy">
-                                Szybki widok problemow mailowych. Retry i forget sa dostepne bez wychodzenia z tej strony.
+                                Szybki widok problemów z e-mailami. Ponowienie i usunięcie wpisu są dostępne bez wychodzenia z tej strony.
                             </p>
                         </div>
                         <div class="dispatch-mini-actions">
                             <x-filament::button color="warning" size="sm" wire:click="mountAction('retry_all_failed_mail_jobs')">
-                                Retry all
+                                Ponów wszystkie
                             </x-filament::button>
                         </div>
                     </div>
@@ -554,7 +554,7 @@
                         @forelse ($this->failedMailStats as $row)
                             <span class="dispatch-chip" data-tone="danger">{{ $row['type'] }}: {{ $row['count'] }}</span>
                         @empty
-                            <span class="dispatch-chip" data-tone="success">Brak failed mail jobs</span>
+                            <span class="dispatch-chip" data-tone="success">Brak nieudanych zadań e-mail</span>
                         @endforelse
                     </div>
 
@@ -564,24 +564,24 @@
                                 <div class="dispatch-item-top">
                                     <div>
                                         <div class="dispatch-item-title">{{ $row['type'] }}</div>
-                                        <div class="dispatch-item-meta">job #{{ $row['id'] }} · queue {{ $row['queue'] }} · {{ $row['failed_at'] }}</div>
+                                        <div class="dispatch-item-meta">zadanie #{{ $row['id'] }} · kolejka {{ $row['queue'] }} · {{ $row['failed_at'] }}</div>
                                     </div>
-                                    <span class="dispatch-status" data-tone="danger">Failed</span>
+                                    <span class="dispatch-status" data-tone="danger">Błąd</span>
                                 </div>
 
                                 <div class="dispatch-item-meta mt-3">{{ $row['exception_headline'] }}</div>
 
                                 <div class="dispatch-mini-actions mt-4">
                                     <x-filament::button color="warning" size="sm" wire:click="retryFailedJob({{ $row['id'] }})">
-                                        Retry
+                                        Ponów
                                     </x-filament::button>
                                     <x-filament::button color="gray" size="sm" wire:click="forgetFailedJob({{ $row['id'] }})">
-                                        Forget
+                                        Usuń wpis
                                     </x-filament::button>
                                 </div>
                             </article>
                         @empty
-                            <div class="dispatch-empty">Brak nieudanych mail jobs.</div>
+                            <div class="dispatch-empty">Brak nieudanych zadań e-mail.</div>
                         @endforelse
                     </div>
                 </section>
@@ -589,9 +589,9 @@
                 <section class="dispatch-panel">
                     <div class="dispatch-panel-head">
                         <div>
-                            <h2 class="dispatch-panel-title">Ostatnio zamkniete dispatchy</h2>
+                            <h2 class="dispatch-panel-title">Ostatnio zamknięte wysyłki</h2>
                             <p class="dispatch-panel-copy">
-                                Ostatnie rekordy contentu, dla ktorych dispatch push juz zostal zamkniety.
+                                Ostatnie rekordy treści, dla których wysyłka push została już zamknięta.
                             </p>
                         </div>
                     </div>
@@ -612,12 +612,12 @@
                                 </div>
                                 <div class="dispatch-mini-actions mt-4">
                                     <x-filament::button tag="a" size="sm" color="gray" :href="$row['url']">
-                                        Otworz rekord
+                                        Otwórz rekord
                                     </x-filament::button>
                                 </div>
                             </article>
                         @empty
-                            <div class="dispatch-empty">Brak swiezo zakonczonych dispatchy contentu.</div>
+                            <div class="dispatch-empty">Brak świeżo zakończonych wysyłek treści.</div>
                         @endforelse
                     </div>
                 </section>

@@ -13,6 +13,7 @@
     <meta name="description" content="{{ $guestDescription }}">
     <meta name="robots" content="noindex,nofollow,noarchive">
     <link rel="canonical" href="{{ $guestCanonical }}">
+    @include('partials.favicon')
     <title>{{ $guestTitle }}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">

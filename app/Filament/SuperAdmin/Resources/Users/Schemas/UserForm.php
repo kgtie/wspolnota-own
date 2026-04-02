@@ -34,11 +34,11 @@ class UserForm
                             ->columnSpanFull(),
 
                         TextInput::make('full_name')
-                            ->label('Imie i nazwisko')
+                            ->label('Imię i nazwisko')
                             ->maxLength(255),
 
                         TextInput::make('name')
-                            ->label('Nazwa uzytkownika')
+                            ->label('Nazwa użytkownika')
                             ->required()
                             ->maxLength(255),
 
@@ -50,7 +50,7 @@ class UserForm
                             ->maxLength(255),
 
                         TextInput::make('password')
-                            ->label('Haslo')
+                            ->label('Hasło')
                             ->password()
                             ->revealable()
                             ->required(fn (string $operation): bool => $operation === 'create')
@@ -62,7 +62,7 @@ class UserForm
                             ->label('Rola')
                             ->required()
                             ->options([
-                                0 => 'Uzytkownik',
+                                0 => 'Użytkownik',
                                 1 => 'Administrator',
                                 2 => 'Superadministrator',
                             ])
@@ -81,7 +81,7 @@ class UserForm
                             ->default('active'),
                     ]),
 
-                Section::make('Powiazania parafialne')
+                Section::make('Powiązania parafialne')
                     ->columns(2)
                     ->schema([
                         Select::make('home_parish_id')
@@ -99,7 +99,7 @@ class UserForm
                             ->native(false),
 
                         Select::make('last_managed_parish_id')
-                            ->label('Ostatnio zarzadzana parafia')
+                            ->label('Ostatnio zarządzana parafia')
                             ->options(fn (): array => Parish::query()->orderBy('name')->pluck('name', 'id')->all())
                             ->searchable()
                             ->preload()
@@ -125,7 +125,7 @@ class UserForm
                             ->maxLength(9),
 
                         DateTimePicker::make('email_verified_at')
-                            ->label('Email zweryfikowany')
+                            ->label('E-mail zweryfikowany')
                             ->seconds(false)
                             ->native(false),
 

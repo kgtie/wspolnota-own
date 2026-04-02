@@ -157,7 +157,7 @@ class ParishesTable
                     ->default('parishioners')
                     ->required(),
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
                     ->default(fn (Parish $record): string => 'Wiadomosc: '.$record->name),
@@ -192,7 +192,7 @@ class ParishesTable
     protected static function sendInstantEmailAction(): Action
     {
         return Action::make('send_parish_email_now')
-            ->label('Wyslij email')
+            ->label('Wyślij e-mail')
             ->icon('heroicon-o-envelope')
             ->color('primary')
             ->schema([
@@ -234,7 +234,7 @@ class ParishesTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla parafii.')
+                    ->title('Zakolejkowano e-mail dla parafii.')
                     ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
                     ->send();
             });
@@ -257,7 +257,7 @@ class ParishesTable
                     ->default('parishioners')
                     ->required(),
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
                     ->default('Wiadomosc do zaznaczonych parafii'),
@@ -344,7 +344,7 @@ class ParishesTable
     protected static function sendInstantEmailBulkAction(): BulkAction
     {
         return BulkAction::make('send_parish_email_bulk')
-            ->label('Wyslij email')
+            ->label('Wyślij e-mail')
             ->icon('heroicon-o-envelope')
             ->color('primary')
             ->schema([
@@ -386,7 +386,7 @@ class ParishesTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla zaznaczonych parafii.')
+                    ->title('Zakolejkowano e-mail dla zaznaczonych parafii.')
                     ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
                     ->send();
             })

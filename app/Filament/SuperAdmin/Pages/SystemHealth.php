@@ -19,10 +19,10 @@ use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 /**
- * Przekrojowy pulpit kondycji calej platformy.
+ * Przekrojowy pulpit kondycji całej platformy.
  *
- * Metryki sa policzone globalnie, bez tenantowych ograniczen, i maja pomagac w
- * szybkim wykrywaniu problemow z tresciami, kolejka, FCM, mediami i ruchem.
+ * Metryki są policzone globalnie, bez tenantowych ograniczeń, i mają pomagać w
+ * szybkim wykrywaniu problemów z treściami, kolejką, FCM, mediami i ruchem.
  */
 class SystemHealth extends Page
 {
@@ -40,7 +40,7 @@ class SystemHealth extends Page
 
     protected ?string $pollingInterval = '30s';
 
-    protected ?string $subheading = 'Przekrojowa kondycja calej platformy, bez ograniczen tenantowych.';
+    protected ?string $subheading = 'Przekrojowa kondycja całej platformy, bez ograniczeń tenantowych.';
 
     public static function getNavigationBadge(): ?string
     {
@@ -98,19 +98,19 @@ class SystemHealth extends Page
             [
                 'label' => 'Parafie',
                 'value' => number_format($parishesCount, 0, ',', ' '),
-                'hint' => "Aktywne: {$activeParishes} · wygasaja <=30 dni: {$expiringParishes}",
+                'hint' => "Aktywne: {$activeParishes} · wygasają w ciągu 30 dni: {$expiringParishes}",
                 'color' => $expiringParishes > 0 ? 'warning' : 'success',
             ],
             [
-                'label' => 'Uzytkownicy',
+                'label' => 'Użytkownicy',
                 'value' => number_format($usersCount, 0, ',', ' '),
-                'hint' => "Superadmin: {$superAdminsCount} · admin: {$adminsCount} · niezatwierdzeni: {$unverifiedUsers}",
+                'hint' => "Superadministratorzy: {$superAdminsCount} · administratorzy: {$adminsCount} · niezatwierdzeni: {$unverifiedUsers}",
                 'color' => $unverifiedUsers > 0 ? 'warning' : 'success',
             ],
             [
-                'label' => 'Liturgia i tresci',
+                'label' => 'Liturgia i treści',
                 'value' => number_format($massesUpcoming, 0, ',', ' '),
-                'hint' => "Nadchodzace msze · news published: {$publishedNews} · ogloszenia published: {$publishedAnnouncements}",
+                'hint' => "Nadchodzące msze · opublikowane aktualności: {$publishedNews} · opublikowane ogłoszenia: {$publishedAnnouncements}",
                 'color' => 'info',
             ],
             [
@@ -122,7 +122,7 @@ class SystemHealth extends Page
             [
                 'label' => 'Mailing',
                 'value' => number_format($mailingCount, 0, ',', ' '),
-                'hint' => "Subskrybenci lacznie · potwierdzeni: {$mailingConfirmed}",
+                'hint' => "Subskrybenci łącznie · potwierdzeni: {$mailingConfirmed}",
                 'color' => 'primary',
             ],
             [
@@ -134,7 +134,7 @@ class SystemHealth extends Page
             [
                 'label' => 'Media (pliki)',
                 'value' => number_format($mediaFiles, 0, ',', ' '),
-                'hint' => 'Laczny rozmiar: '.$this->formatBytes($mediaSize),
+                'hint' => 'Łączny rozmiar: '.$this->formatBytes($mediaSize),
                 'color' => $mediaFiles > 0 ? 'gray' : 'warning',
             ],
         ];
@@ -154,8 +154,8 @@ class SystemHealth extends Page
         return [
             [
                 'label' => 'Baza danych',
-                'value' => $dbHealthy ? 'OK' : 'BLAD',
-                'hint' => 'Polaczenie i zapytania podstawowe',
+                'value' => $dbHealthy ? 'OK' : 'BŁĄD',
+                'hint' => 'Połączenie i podstawowe zapytania',
                 'color' => $dbHealthy ? 'success' : 'danger',
             ],
             [
@@ -165,7 +165,7 @@ class SystemHealth extends Page
                 'color' => $settingsCount > 0 ? 'primary' : 'warning',
             ],
             [
-                'label' => 'Logi aktywnosci 24h',
+                'label' => 'Logi aktywności 24h',
                 'value' => number_format($activityCount24h, 0, ',', ' '),
                 'hint' => 'Ostatnia godzina: '.number_format($activityCount1h, 0, ',', ' '),
                 'color' => $activityCount24h > 0 ? 'info' : 'gray',
@@ -173,7 +173,7 @@ class SystemHealth extends Page
             [
                 'label' => 'Queue jobs',
                 'value' => number_format($jobsCount, 0, ',', ' '),
-                'hint' => 'Oczekujace zadania',
+                'hint' => 'Oczekujące zadania',
                 'color' => $jobsCount > 0 ? 'warning' : 'success',
             ],
             [
@@ -196,7 +196,7 @@ class SystemHealth extends Page
         $fcmSettings = app(FcmSettings::class);
 
         return [
-            ['label' => 'Srodowisko', 'value' => (string) config('app.env')],
+            ['label' => 'Środowisko', 'value' => (string) config('app.env')],
             ['label' => 'Debug', 'value' => config('app.debug') ? 'true' : 'false'],
             ['label' => 'PHP', 'value' => PHP_VERSION],
             ['label' => 'Laravel', 'value' => app()->version()],

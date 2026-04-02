@@ -40,7 +40,7 @@ class AnnouncementSetFormLayout
 
     protected static function overviewSection(): Section
     {
-        return Section::make('Zestaw ogloszen')
+        return Section::make('Zestaw ogłoszeń')
             ->description('Najpierw ustaw nazwę, opis tygodnia oraz okres obowiązywania zestawu.')
             ->columns(2)
             ->schema([
@@ -48,19 +48,19 @@ class AnnouncementSetFormLayout
                     ->label('Nazwa zestawu')
                     ->required()
                     ->maxLength(255)
-                    ->placeholder('np. Ogloszenia parafialne - XII tydzien zwykly')
+                    ->placeholder('np. Ogłoszenia parafialne - XII tydzień zwykły')
                     ->helperText('To nazwa widoczna na liście ogłoszeń oraz na wydruku PDF.')
                     ->columnSpanFull(),
 
                 TextInput::make('week_label')
                     ->label('Opis tygodnia')
-                    ->placeholder('np. XII tydzien zwykly')
+                    ->placeholder('np. XII tydzień zwykły')
                     ->helperText('Pole opcjonalne, ale bardzo pomaga w późniejszym wyszukiwaniu zestawów.')
                     ->maxLength(255)
                     ->columnSpanFull(),
 
                 DatePicker::make('effective_from')
-                    ->label('Obowiazuje od')
+                    ->label('Obowiązuje od')
                     ->required()
                     ->native(false)
                     ->live()
@@ -77,7 +77,7 @@ class AnnouncementSetFormLayout
                     }),
 
                 DatePicker::make('effective_to')
-                    ->label('Obowiazuje do')
+                    ->label('Obowiązuje do')
                     ->native(false)
                     ->live()
                     ->rule('after_or_equal:effective_from')
@@ -99,7 +99,7 @@ class AnnouncementSetFormLayout
             ->description('Krótki wstęp jest opcjonalny, ale porządkuje ogłoszenia i będzie widoczny na wydruku.')
             ->schema([
                 Textarea::make('lead')
-                    ->label('Wstep')
+                    ->label('Wstęp')
                     ->rows(3)
                     ->autosize()
                     ->maxLength(5000)
@@ -110,7 +110,7 @@ class AnnouncementSetFormLayout
 
     protected static function itemsSection(): Section
     {
-        return Section::make('Pojedyncze ogloszenia')
+        return Section::make('Pojedyncze ogłoszenia')
             ->description('Tutaj tworzysz właściwą treść zestawu. Kolejność z formularza przejdzie do aplikacji i do PDF.')
             ->schema([
                 Placeholder::make('items_overview')
@@ -128,7 +128,7 @@ class AnnouncementSetFormLayout
             ->columns(2)
             ->schema([
                 Textarea::make('footer_notes')
-                    ->label('Slowo koncowe')
+                    ->label('Słowo końcowe')
                     ->rows(3)
                     ->autosize()
                     ->maxLength(5000)
@@ -150,7 +150,7 @@ class AnnouncementSetFormLayout
                     ->visible(fn (Get $get): bool => in_array($get('status'), ['published', 'archived'], true)),
 
                 Placeholder::make('publication_readiness')
-                    ->label('Gotowosc do publikacji')
+                    ->label('Gotowość do publikacji')
                     ->content(fn (Get $get): string => self::buildPublicationReadiness(
                         $get('status'),
                         $get('items'),
@@ -180,11 +180,11 @@ class AnnouncementSetFormLayout
                     ->content(fn ($record): string => $record?->summary_generated_at?->format('d.m.Y H:i') ?? 'Brak'),
 
                 Placeholder::make('notifications_sent_at_info')
-                    ->label('Wysylka email')
-                    ->content(fn ($record): string => $record?->notifications_sent_at?->format('d.m.Y H:i') ?? 'Nie wyslano'),
+                    ->label('Wysyłka e-maili')
+                    ->content(fn ($record): string => $record?->notifications_sent_at?->format('d.m.Y H:i') ?? 'Nie wysłano'),
 
                 Placeholder::make('notifications_recipients_info')
-                    ->label('Liczba odbiorcow')
+                    ->label('Liczba odbiorców')
                     ->content(fn ($record): string => (string) ($record?->notifications_recipients_count ?? 0)),
             ]);
     }
@@ -196,11 +196,11 @@ class AnnouncementSetFormLayout
             ->hiddenLabel()
             ->defaultItems(1)
             ->minItems(1)
-            ->addActionLabel('Dodaj kolejne ogloszenie')
+            ->addActionLabel('Dodaj kolejne ogłoszenie')
             ->helperText('Dodawaj ogłoszenia w kolejności od najważniejszych do końcowych. Możesz przeciągać pozycje i klonować podobne komunikaty.')
             ->itemNumbers()
             ->truncateItemLabel(false)
-            ->labelBetweenItems('Kolejne ogloszenie')
+            ->labelBetweenItems('Kolejne ogłoszenie')
             ->collapsible()
             ->reorderableWithDragAndDrop()
             ->reorderableWithButtons()
@@ -211,8 +211,8 @@ class AnnouncementSetFormLayout
             ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => self::mutateItemData($data))
             ->schema([
                 TextInput::make('title')
-                    ->label('Krotki naglowek')
-                    ->placeholder('Opcjonalny, np. Zbiorka charytatywna')
+                    ->label('Krótki nagłówek')
+                    ->placeholder('Opcjonalny, np. Zbiórka charytatywna')
                     ->maxLength(255)
                     ->live(onBlur: true)
                     ->helperText('Nagłówek ułatwia późniejsze odnalezienie pozycji, ale nie jest obowiązkowy.')
@@ -238,7 +238,7 @@ class AnnouncementSetFormLayout
                 ])->columnSpanFull(),
 
                 Textarea::make('content')
-                    ->label('Tresc ogloszenia')
+                    ->label('Treść ogłoszenia')
                     ->required()
                     ->rows(4)
                     ->autosize()
@@ -328,7 +328,7 @@ class AnnouncementSetFormLayout
         $summary = "W zestawie jest {$totalItems} pozycji. Kompletnych: {$completedItems}, aktywnych: {$activeItems}, waznych: {$importantItems}.";
 
         if ($draftItems > 0) {
-            $summary .= " {$draftItems} pozycji wymaga jeszcze uzupelnienia tresci.";
+            $summary .= " {$draftItems} pozycji wymaga jeszcze uzupełnienia treści.";
         }
 
         return $summary;
@@ -344,7 +344,7 @@ class AnnouncementSetFormLayout
             : trim((string) ($state['content'] ?? ''));
 
         if ($title === '') {
-            $title = 'Nowe ogloszenie';
+            $title = 'Nowe ogłoszenie';
         }
 
         $flags = [];

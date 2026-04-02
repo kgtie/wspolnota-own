@@ -32,29 +32,29 @@ class NewsPostForm
                 Hidden::make('updated_by_user_id'),
 
                 Section::make('Edytor wpisu')
-                    ->description('Główny obszar redakcyjny jak w panelu CMS: tytul, permalink i tresc.')
+                    ->description('Główny obszar redakcyjny jak w panelu CMS: tytuł, permalink i treść.')
                     ->columnSpan([
                         'default' => 1,
                         'xl' => 8,
                     ])
                     ->schema([
                         TextInput::make('title')
-                            ->label('Dodaj tytul')
+                            ->label('Dodaj tytuł')
                             ->required()
                             ->maxLength(255)
                             ->extraInputAttributes([
                                 'class' => 'text-lg md:text-xl font-semibold',
-                                'placeholder' => 'np. Ogloszenia parafialne na najblizsza niedziele',
+                                'placeholder' => 'np. Ogłoszenia parafialne na najbliższą niedzielę',
                             ]),
 
                         TextInput::make('slug')
                             ->label('Permalink (slug)')
                             ->maxLength(255)
                             ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? Str::slug((string) $state) : null)
-                            ->helperText('Opcjonalnie. Jesli puste, slug zostanie wygenerowany automatycznie z tytulu.'),
+                            ->helperText('Opcjonalnie. Jeśli pole pozostanie puste, slug zostanie wygenerowany automatycznie z tytułu.'),
 
                         QuillEditor::make('content')
-                            ->label('Tresc')
+                            ->label('Treść')
                             ->required()
                             ->minHeight(760)
                             ->maxLength(65000)
@@ -62,8 +62,8 @@ class NewsPostForm
                             ->imageUploadUrl(fn (?NewsPost $record): ?string => $record
                                 ? route('admin.news-posts.inline-image', ['newsPost' => $record])
                                 : null)
-                            ->placeholder('Napisz aktualnosc...')
-                            ->helperText('Aby osadzac zdjecia bezposrednio w tresci, zapisz wpis i dodawaj obrazy z paska edytora.')
+                            ->placeholder('Napisz aktualność...')
+                            ->helperText('Aby osadzać zdjęcia bezpośrednio w treści, zapisz wpis i dodawaj obrazy z paska edytora.')
                             ->columnSpanFull(),
                     ]),
 
@@ -107,14 +107,14 @@ class NewsPostForm
                             ->visible(fn (Get $get): bool => in_array((string) $get('status'), ['published', 'archived'], true)),
 
                         Toggle::make('is_pinned')
-                            ->label('Przypnij na gorze listy')
+                            ->label('Przypnij na górze listy')
                             ->inline(false),
 
                         Toggle::make('comments_enabled')
-                            ->label('Zezwol na komentarze')
+                            ->label('Zezwól na komentarze')
                             ->default(true)
                             ->inline(false)
-                            ->helperText('Komentarze sa domyslnie wlaczone. Na froncie komentowac moga tylko zalogowani i zatwierdzeni uzytkownicy.'),
+                            ->helperText('Komentarze są domyślnie włączone. Na stronie mogą komentować tylko zalogowani i zatwierdzeni użytkownicy.'),
 
                         Placeholder::make('comments_shortcut')
                             ->label('Komentarze do wpisu')
@@ -123,27 +123,27 @@ class NewsPostForm
                                     'filters' => [
                                         'news_post_id' => ['value' => $record->getKey()],
                                     ],
-                                ])).'" class="text-primary-600 underline">Otworz komentarze tego wpisu</a>'
-                                : 'Link do komentarzy pojawi sie po zapisaniu wpisu.')),
+                                ])).'" class="text-primary-600 underline">Otwórz komentarze tego wpisu</a>'
+                                : 'Link do komentarzy pojawi się po zapisaniu wpisu.')),
                     ]),
 
-                Section::make('Obraz wyrozniajacy')
-                    ->description('Zdjecie miniatury wpisu wyswietlane na listach aktualnosci.')
+                Section::make('Obraz wyróżniający')
+                    ->description('Zdjęcie miniatury wpisu wyświetlane na listach aktualności.')
                     ->columnSpan([
                         'default' => 1,
                         'xl' => 4,
                     ])
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('featured_image')
-                            ->label('Obraz glowny')
+                            ->label('Obraz główny')
                             ->collection('featured_image')
                             ->image()
                             ->imageEditor()
                             ->maxSize(5120),
                     ]),
 
-                Section::make('Galeria i zalaczniki')
-                    ->description('Dodatkowe materialy do wpisu.')
+                Section::make('Galeria i załączniki')
+                    ->description('Dodatkowe materiały do wpisu.')
                     ->columnSpan([
                         'default' => 1,
                         'xl' => 4,
@@ -172,8 +172,8 @@ class NewsPostForm
                             ->maxSize(10240),
 
                         Placeholder::make('inline_media_hint')
-                            ->label('Wskazowka redakcyjna')
-                            ->content('Grafiki osadzane bezposrednio w edytorze zapisuja sie jako kolekcja "content_images".'),
+                            ->label('Wskazówka redakcyjna')
+                            ->content('Grafiki osadzane bezpośrednio w edytorze zapisują się jako kolekcja "content_images".'),
                     ]),
             ]);
     }

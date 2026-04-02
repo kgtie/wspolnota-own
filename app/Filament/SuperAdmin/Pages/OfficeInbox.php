@@ -246,7 +246,7 @@ class OfficeInbox extends Page
         $uploadsEnabled = (bool) $conversation->parish->getSetting('office_file_upload_enabled', true);
 
         if (! $uploadsEnabled && count($this->attachments) > 0) {
-            $this->addError('attachments', 'Wysylanie zalacznikow jest wylaczone dla tej parafii.');
+            $this->addError('attachments', 'Wysyłanie załączników jest wyłączone dla tej parafii.');
 
             return;
         }
@@ -286,7 +286,7 @@ class OfficeInbox extends Page
         $this->logOfficeEvent(
             event: 'office_message_sent_by_superadmin',
             conversation: $conversation,
-            description: 'Superadmin wyslal wiadomosc w kancelarii online.',
+            description: 'Superadmin wysłał wiadomość w kancelarii online.',
             properties: [
                 'office_message_id' => $message->getKey(),
                 'has_body' => filled($message->body),

@@ -11,13 +11,13 @@
     </p>
 
     <p class="body-font" style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4B5563;">
-        Cieszymy się, że będziemy mogli dzielić się z Tobą informacjami o nadchodzącej Usłudze oraz o
+        Cieszymy się, że będziemy mogli dzielić się z Tobą informacjami o nadchodzącej usłudze oraz o
         postępach prac. :)
     </p>
 
     <p class="body-font" style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4B5563;">
-        Aby otrzymywać powiadomienia, prosimy jeszcze tylko o potwierdzenie adresu email. A jeśli prośba o zapisanie do
-        newslettera nie wyszła od Ciebie - po prostu zignoruj tę wiadomość.
+        Aby otrzymywać powiadomienia, prosimy jeszcze tylko o potwierdzenie adresu e-mail. Jeśli prośba o zapisanie do
+        newslettera nie wyszła od Ciebie, po prostu zignoruj tę wiadomość.
     </p>
 
     <x-mail::button :url="route('landing.mailing.confirm', ['token' => $subscriber->confirmation_token])" class="btn">
@@ -28,7 +28,7 @@
 
     <hr />
 
-    <small>Jeśli nie chcesz otrzymywać już maili z tej listy ("Oczekujący na uruchomienie usługi Wspólnota") - możesz
+<small>Jeśli nie chcesz już otrzymywać wiadomości z tej listy ("Oczekujący na uruchomienie usługi Wspólnota"), możesz
         wypisać
         się z niej:
         <x-mail::button :url="route('landing.mailing.unsubscribe', ['token' => $subscriber->unsubscribe_token])">

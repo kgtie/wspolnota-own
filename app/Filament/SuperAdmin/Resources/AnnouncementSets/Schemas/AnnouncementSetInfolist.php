@@ -13,7 +13,7 @@ class AnnouncementSetInfolist
     {
         return $schema
             ->components([
-                Section::make('Zestaw ogloszen')
+                Section::make('Zestaw ogłoszeń')
                     ->columns(2)
                     ->schema([
                         TextEntry::make('title')
@@ -44,33 +44,33 @@ class AnnouncementSetInfolist
                             ->placeholder('Nie opublikowano'),
 
                         TextEntry::make('effective_from')
-                            ->label('Obowiazuje od')
+                            ->label('Obowiązuje od')
                             ->date('d.m.Y'),
 
                         TextEntry::make('effective_to')
-                            ->label('Obowiazuje do')
+                            ->label('Obowiązuje do')
                             ->date('d.m.Y')
-                            ->placeholder('Bez daty koncowej'),
+                            ->placeholder('Bez daty końcowej'),
 
                         TextEntry::make('items_count')
-                            ->label('Liczba ogloszen')
+                            ->label('Liczba ogłoszeń')
                             ->state(fn (AnnouncementSet $record): string => (string) ($record->items_count ?? $record->items()->count()))
                             ->badge()
                             ->color('info'),
 
                         TextEntry::make('important_items_count')
-                            ->label('Ogloszenia wazne')
+                            ->label('Ogłoszenia ważne')
                             ->state(fn (AnnouncementSet $record): string => (string) ($record->important_items_count ?? $record->items()->where('is_important', true)->count()))
                             ->badge()
                             ->color('danger'),
 
                         TextEntry::make('lead')
-                            ->label('Wstep')
+                            ->label('Wstęp')
                             ->placeholder('Brak')
                             ->columnSpanFull(),
 
                         TextEntry::make('footer_notes')
-                            ->label('Notatki koncowe')
+                            ->label('Notatki końcowe')
                             ->placeholder('Brak')
                             ->columnSpanFull(),
                     ]),
@@ -93,22 +93,22 @@ class AnnouncementSetInfolist
                             ->placeholder('Brak'),
 
                         TextEntry::make('notifications_sent_at')
-                            ->label('Wysylka email')
+                            ->label('Wysyłka e-maili')
                             ->dateTime('d.m.Y H:i')
-                            ->placeholder('Nie wyslano'),
+                            ->placeholder('Nie wysłano'),
 
                         TextEntry::make('push_notification_sent_at')
-                            ->label('Push dispatch')
+                            ->label('Wysyłka push')
                             ->dateTime('d.m.Y H:i')
                             ->placeholder('Oczekuje'),
 
                         TextEntry::make('email_notification_sent_at')
-                            ->label('Email dispatch')
+                            ->label('Wysyłka e-maili')
                             ->dateTime('d.m.Y H:i')
                             ->placeholder('Oczekuje'),
 
                         TextEntry::make('notifications_recipients_count')
-                            ->label('Liczba odbiorcow')
+                            ->label('Liczba odbiorców')
                             ->placeholder('0'),
                     ]),
 
@@ -117,11 +117,11 @@ class AnnouncementSetInfolist
                     ->collapsible()
                     ->schema([
                         TextEntry::make('createdBy.full_name')
-                            ->label('Utworzyl')
+                            ->label('Utworzył')
                             ->placeholder('System'),
 
                         TextEntry::make('updatedBy.full_name')
-                            ->label('Ostatnio edytowal')
+                            ->label('Ostatnio edytował')
                             ->placeholder('Brak danych'),
 
                         TextEntry::make('created_at')

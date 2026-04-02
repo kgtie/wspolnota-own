@@ -75,7 +75,7 @@ class CommunicationBroadcastMessage extends WspolnotaMailable
             'category_label' => $this->campaignName ?: 'Kampania email',
             'preheader' => (string) $this->preheader,
             'mobile_note_variant' => 'campaign',
-            'footer_note' => 'Ta wiadomosc jest czescia komunikacji przygotowanej w centrum kampanii Wspolnoty.',
+            'footer_note' => 'Ta wiadomość jest częścią komunikacji przygotowanej w centrum kampanii Wspólnoty.',
         ];
     }
 }

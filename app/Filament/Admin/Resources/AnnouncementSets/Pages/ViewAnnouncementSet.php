@@ -76,7 +76,7 @@ class ViewAnnouncementSet extends ViewRecord
                             'target_status' => $status,
                             'context' => 'view_page',
                         ])
-                        ->log('Proboszcz zaktualizowal status zestawu ogloszen z poziomu podgladu.');
+                        ->log('Proboszcz zaktualizował status zestawu ogłoszeń z poziomu podglądu.');
                 }
             })
             ->successNotificationTitle('Status zestawu zostal zaktualizowany.');
@@ -101,7 +101,7 @@ class ViewAnnouncementSet extends ViewRecord
                 if (! $exporter->hasPrintableItems($record)) {
                     Notification::make()
                         ->warning()
-                        ->title('Brak aktywnych ogloszen do wydruku.')
+                        ->title('Brak aktywnych ogłoszeń do wydruku.')
                         ->send();
 
                     return null;
@@ -118,7 +118,7 @@ class ViewAnnouncementSet extends ViewRecord
                             'active_items_count' => $record->items()->where('is_active', true)->count(),
                             'context' => 'view_page',
                         ])
-                        ->log('Proboszcz wygenerowal PDF z ogloszeniami parafialnymi.');
+                        ->log('Proboszcz wygenerował PDF z ogłoszeniami parafialnymi.');
                 }
 
                 return $exporter->download($record);

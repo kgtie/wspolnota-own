@@ -604,12 +604,12 @@
                     <span class="admin-dashboard__eyebrow">Centrum dowodzenia parafii</span>
 
                     <h1 class="admin-dashboard__title">
-                        Dashboard ma prowadzic proboszcza przez realna prace, a nie tylko pokazywac liczby.
+                        Dashboard ma prowadzić proboszcza przez realną pracę, a nie tylko pokazywać liczby.
                     </h1>
 
                     <p class="admin-dashboard__lead">
-                        W jednym miejscu widac dzisiejszy stan parafii, priorytety na kolejne dni, szybkie przejscia do kluczowych sekcji
-                        i ogolna spojnosci przeplywu: od liturgii, przez wspolnote, po komunikacje i ustawienia.
+                        W jednym miejscu widać dzisiejszy stan parafii, priorytety na kolejne dni, szybkie przejścia do kluczowych sekcji
+                        i ogólną spójność przepływu: od liturgii, przez wspólnotę, po komunikację i ustawienia.
                     </p>
 
                     <div class="admin-dashboard__meta">
@@ -649,14 +649,14 @@
                             <p class="admin-dashboard__identity-label">Aktywna parafia</p>
                             <h2 class="admin-dashboard__identity-name">{{ $parish['short_name'] }}</h2>
                             <p class="admin-dashboard__identity-copy">
-                                Glowny tenant uslugi z priorytetami dobranymi pod codzienna prace proboszcza.
+                                Główna parafia w usłudze, z priorytetami dobranymi do codziennej pracy proboszcza.
                             </p>
                         </div>
                     </div>
 
                     <div class="admin-dashboard__completion">
                         <div class="admin-dashboard__completion-top">
-                            <span class="admin-dashboard__completion-label">Kompletnosc profilu</span>
+                            <span class="admin-dashboard__completion-label">Kompletność profilu</span>
                             <span class="admin-dashboard__completion-value">{{ $parish['profile_completion'] }}%</span>
                         </div>
 
@@ -668,7 +668,7 @@
                         </div>
 
                         <p class="admin-dashboard__completion-copy">
-                            Im bardziej dopiety profil parafii, tym spojniej wyglada aplikacja i tym mniej improwizacji w codziennej obsludze.
+                            Im bardziej dopięty profil parafii, tym spójniej wygląda aplikacja i tym mniej improwizacji w codziennej obsłudze.
                         </p>
 
                         @if (! empty($parish['profile_missing']))
@@ -689,9 +689,9 @@
             <div class="admin-dashboard__section-heading">
                 <div>
                     <p class="admin-dashboard__grid-title">Puls dnia</p>
-                    <h2 class="admin-dashboard__section-title">Najwazniejsze sygnaly operacyjne</h2>
+                    <h2 class="admin-dashboard__section-title">Najważniejsze sygnały operacyjne</h2>
                     <p class="admin-dashboard__section-copy">
-                        Jeden rzut oka ma wystarczyc, by wiedziec czy uwaga proboszcza idzie dzis w liturgie, wspolnote, komunikacje czy ustawienia.
+                        Jeden rzut oka ma wystarczyć, by wiedzieć, czy uwaga proboszcza idzie dziś w liturgię, wspólnotę, komunikację czy ustawienia.
                     </p>
                 </div>
             </div>
@@ -720,7 +720,7 @@
                     <p class="admin-dashboard__grid-title">Priorytety</p>
                     <h2 class="admin-dashboard__section-title">To wymaga najpierw uwagi</h2>
                     <p class="admin-dashboard__section-copy">
-                        Karty maja prowadzic do konkretnej pracy. Kazda z nich jest podlinkowana do miejsca, w ktorym temat faktycznie sie domyka.
+                        Karty mają prowadzić do konkretnej pracy. Każda z nich jest podlinkowana do miejsca, w którym temat faktycznie się domyka.
                     </p>
                 </div>
             </div>
@@ -751,10 +751,10 @@
         <section>
             <div class="admin-dashboard__section-heading">
                 <div>
-                    <p class="admin-dashboard__grid-title">Szybkie przejscia</p>
-                    <h2 class="admin-dashboard__section-title">Najkrotsza droga do pracy</h2>
+                    <p class="admin-dashboard__grid-title">Szybkie przejścia</p>
+                    <h2 class="admin-dashboard__section-title">Najkrótsza droga do pracy</h2>
                     <p class="admin-dashboard__section-copy">
-                        Zamiast szukac po nawigacji, dashboard ma dawac skroty do najczesciej uzywanych operacji i kolejek roboczych.
+                        Zamiast szukać po nawigacji, dashboard ma dawać skróty do najczęściej używanych operacji i kolejek roboczych.
                     </p>
                 </div>
             </div>
@@ -773,7 +773,7 @@
 
                             <h3 class="admin-dashboard__action-label">{{ $action['label'] }}</h3>
                             <p class="admin-dashboard__action-copy">{{ $action['description'] }}</p>
-                            <div class="admin-dashboard__action-cta">Przejdz</div>
+                            <div class="admin-dashboard__action-cta">Przejdź</div>
                         </a>
                     </article>
                 @endforeach
@@ -784,9 +784,9 @@
             <div class="admin-dashboard__section-heading">
                 <div>
                     <p class="admin-dashboard__grid-title">Obszary pracy</p>
-                    <h2 class="admin-dashboard__section-title">Czy flow zarzadzania parafia jest spojny?</h2>
+                    <h2 class="admin-dashboard__section-title">Czy sposób zarządzania parafią jest spójny?</h2>
                     <p class="admin-dashboard__section-copy">
-                        To syntetyczny przeglad calej uslugi Wspolnota z perspektywy proboszcza: wspolnota, liturgia, komunikacja i tozsamosc parafii.
+                        To syntetyczny przegląd całej usługi Wspólnota z perspektywy proboszcza: wspólnota, liturgia, komunikacja i tożsamość parafii.
                     </p>
                 </div>
             </div>
@@ -824,10 +824,10 @@
         </section>
 
         <section class="admin-dashboard__monitoring">
-            <p class="admin-dashboard__grid-title">Monitoring na zywo</p>
+            <p class="admin-dashboard__grid-title">Monitoring na żywo</p>
             <h2 class="admin-dashboard__section-title">Widgety operacyjne</h2>
             <p class="admin-dashboard__monitoring-copy">
-                Nizej zostaje biezacy monitoring liczb, kontroli i najblizszych terminow. Gora strony sluzy do decyzji, dol do obserwacji.
+                Niżej zostaje bieżący monitoring liczb, kontroli i najbliższych terminów. Góra strony służy do decyzji, dół do obserwacji.
             </p>
         </section>
     @endif

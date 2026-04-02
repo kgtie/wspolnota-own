@@ -24,13 +24,13 @@ class AnnouncementSetResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = null;
 
-    protected static ?string $modelLabel = 'zestaw ogloszen';
+    protected static ?string $modelLabel = 'zestaw ogłoszeń';
 
-    protected static ?string $pluralModelLabel = 'zestawy ogloszen';
+    protected static ?string $pluralModelLabel = 'zestawy ogłoszeń';
 
-    protected static ?string $navigationLabel = 'Ogloszenia mszalne';
+    protected static ?string $navigationLabel = 'Ogłoszenia mszalne';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Tresci i liturgia';
+    protected static string|UnitEnum|null $navigationGroup = 'Treści i liturgia';
 
     protected static ?int $navigationSort = 20;
 

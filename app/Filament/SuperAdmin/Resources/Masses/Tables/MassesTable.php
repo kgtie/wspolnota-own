@@ -291,7 +291,7 @@ class MassesTable
             ->visible(fn (Mass $record): bool => $record->status === 'scheduled' && ($record->participants_count ?? 0) > 0)
             ->schema([
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
                     ->default(fn (): string => 'Przypomnienie o mszy'),
@@ -361,7 +361,7 @@ class MassesTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla uczestnikow mszy.')
+                    ->title('Zakolejkowano e-mail dla uczestników Mszy.')
                     ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
                     ->send();
             });
@@ -427,7 +427,7 @@ class MassesTable
             ->color('info')
             ->schema([
                 TextInput::make('title')
-                    ->label('Tytul')
+                    ->label('Tytuł')
                     ->required()
                     ->maxLength(120)
                     ->default('Przypomnienie o wybranych mszach'),
@@ -509,7 +509,7 @@ class MassesTable
 
                 Notification::make()
                     ->success()
-                    ->title('Zakolejkowano email dla uczestnikow zaznaczonych mszy.')
+                    ->title('Zakolejkowano e-mail dla uczestników zaznaczonych Mszy.')
                     ->body("Odbiorcy: {$result['users']} · queued: {$result['queued']} · skipped: {$result['skipped']}")
                     ->send();
             })

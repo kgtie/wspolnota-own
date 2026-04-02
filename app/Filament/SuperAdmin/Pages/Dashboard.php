@@ -33,8 +33,8 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Startowy pulpit operacyjny superadministratora.
  *
- * Dashboard zbiera w jednym miejscu KPI, alerty, trendy i skroty do
- * najwazniejszych modulow, zeby /superadmin pelnil role control tower.
+ * Dashboard zbiera w jednym miejscu KPI, alerty, trendy i skróty do
+ * najważniejszych modułów, żeby /superadmin pełnił rolę centrum nadzoru.
  */
 class Dashboard extends BaseDashboard
 {
@@ -48,7 +48,7 @@ class Dashboard extends BaseDashboard
 
     protected static ?int $navigationSort = -10;
 
-    protected ?string $subheading = 'Globalny pulpit operacyjny superadministratora: platforma, tresci, push, kolejki i kancelaria online.';
+    protected ?string $subheading = 'Globalny pulpit operacyjny superadministratora: platforma, treści, push, kolejki i kancelaria online.';
 
     protected string $view = 'filament.superadmin.pages.dashboard';
 
@@ -69,7 +69,7 @@ class Dashboard extends BaseDashboard
     {
         return [
             Action::make('dispatch')
-                ->label('Centrum dispatchu')
+                ->label('Centrum wysyłki')
                 ->icon('heroicon-o-bolt')
                 ->url(NotificationDispatchCenter::getUrl()),
             Action::make('communication')
@@ -81,7 +81,7 @@ class Dashboard extends BaseDashboard
                 ->icon('heroicon-o-chart-bar-square')
                 ->url(SystemHealth::getUrl()),
             Action::make('failed_jobs')
-                ->label('Failed Jobs')
+                ->label('Nieudane zadania')
                 ->icon('heroicon-o-exclamation-triangle')
                 ->color('danger')
                 ->url(FailedJobsCenter::getUrl()),
@@ -116,33 +116,33 @@ class Dashboard extends BaseDashboard
                 'tone' => Parish::query()->where('is_active', false)->exists() ? 'warning' : 'success',
             ],
             [
-                'label' => 'Uzytkownicy',
+                'label' => 'Użytkownicy',
                 'value' => number_format(User::withTrashed()->count(), 0, ',', ' '),
                 'hint' => 'Oczekuje na zatwierdzenie: '.number_format($pendingUsers, 0, ',', ' '),
                 'tone' => $pendingUsers > 0 ? 'warning' : 'success',
             ],
             [
-                'label' => 'Push i urzadzenia',
+                'label' => 'Push i urządzenia',
                 'value' => number_format($pushableDevices, 0, ',', ' '),
-                'hint' => "Push failed 24h: {$failedPush24h}",
+                'hint' => "Nieudane powiadomienia push w 24 h: {$failedPush24h}",
                 'tone' => $failedPush24h > 0 ? 'danger' : 'success',
             ],
             [
                 'label' => 'Kancelaria online',
                 'value' => number_format($openConversations, 0, ',', ' '),
-                'hint' => "Nieprzeczytane watki: {$unreadOffice}",
+                'hint' => "Nieprzeczytane wątki: {$unreadOffice}",
                 'tone' => $unreadOffice > 0 ? 'warning' : 'info',
             ],
             [
-                'label' => 'Tresci opublikowane',
+                'label' => 'Opublikowane treści',
                 'value' => number_format($publishedNews + $publishedAnnouncements, 0, ',', ' '),
-                'hint' => "News: {$publishedNews} · ogloszenia: {$publishedAnnouncements}",
+                'hint' => "Aktualności: {$publishedNews} · ogłoszenia: {$publishedAnnouncements}",
                 'tone' => 'primary',
             ],
             [
                 'label' => 'Kolejka i awarie',
                 'value' => number_format($failedJobs, 0, ',', ' '),
-                'hint' => 'Pending jobs: '.number_format($this->jobsCount(), 0, ',', ' '),
+                'hint' => 'Oczekujące zadania: '.number_format($this->jobsCount(), 0, ',', ' '),
                 'tone' => $failedJobs > 0 ? 'danger' : 'success',
             ],
         ];
@@ -159,21 +159,21 @@ class Dashboard extends BaseDashboard
 
         return [
             [
-                'label' => 'Failed jobs',
+                'label' => 'Nieudane zadania',
                 'value' => $this->failedJobsCount(),
-                'description' => 'Bledy kolejki wymagajace retry lub forget.',
+                'description' => 'Błędy kolejki wymagające ponowienia albo usunięcia.',
                 'url' => FailedJobsCenter::getUrl(),
                 'tone' => $this->failedJobsCount() > 0 ? 'danger' : 'success',
             ],
             [
-                'label' => 'Dispatch zalegly',
+                'label' => 'Zaległa wysyłka',
                 'value' => $dispatch['news'] + $dispatch['announcements'],
-                'description' => "News: {$dispatch['news']} · ogloszenia: {$dispatch['announcements']}",
+                'description' => "Aktualności: {$dispatch['news']} · ogłoszenia: {$dispatch['announcements']}",
                 'url' => NotificationDispatchCenter::getUrl(),
                 'tone' => ($dispatch['news'] + $dispatch['announcements']) > 0 ? 'warning' : 'success',
             ],
             [
-                'label' => 'Push failed 24h',
+                'label' => 'Nieudane powiadomienia push w 24 h',
                 'value' => $failedPush24h,
                 'description' => 'Nieudane dostarczenia push z ostatnich 24 godzin.',
                 'url' => PushDeliveryResource::getUrl('index'),
@@ -182,7 +182,7 @@ class Dashboard extends BaseDashboard
             [
                 'label' => 'Martwe tokeny',
                 'value' => $deadTokens,
-                'description' => 'Urzadzenia z bledem UNREGISTERED / INVALID_ARGUMENT.',
+                'description' => 'Urządzenia z błędem UNREGISTERED / INVALID_ARGUMENT.',
                 'url' => UserDeviceResource::getUrl('index'),
                 'tone' => $deadTokens > 0 ? 'warning' : 'success',
             ],
@@ -192,17 +192,17 @@ class Dashboard extends BaseDashboard
     public function getQuickLinksProperty(): array
     {
         return [
-            ['label' => 'Parafie', 'description' => 'Pelna administracja tenantami.', 'url' => ParishResource::getUrl('index')],
-            ['label' => 'Uzytkownicy', 'description' => 'Parafianie, admini, weryfikacje i avatary.', 'url' => UserResource::getUrl('index')],
-            ['label' => 'Aktualnosci', 'description' => 'Publikacja i dystrybucja newsow.', 'url' => NewsPostResource::getUrl('index')],
-            ['label' => 'Ogloszenia', 'description' => 'Pakiety ogloszen i ich dispatch.', 'url' => AnnouncementSetResource::getUrl('index')],
+            ['label' => 'Parafie', 'description' => 'Pełna administracja tenantami.', 'url' => ParishResource::getUrl('index')],
+            ['label' => 'Użytkownicy', 'description' => 'Parafianie, administratorzy, weryfikacje i awatary.', 'url' => UserResource::getUrl('index')],
+            ['label' => 'Aktualności', 'description' => 'Publikacja i dystrybucja aktualności.', 'url' => NewsPostResource::getUrl('index')],
+            ['label' => 'Ogłoszenia', 'description' => 'Pakiety ogłoszeń i ich wysyłka.', 'url' => AnnouncementSetResource::getUrl('index')],
             ['label' => 'Msze i intencje', 'description' => 'Liturgia, uczestnicy i przypomnienia.', 'url' => MassResource::getUrl('index')],
             ['label' => 'Centrum komunikacji', 'description' => 'Kampanie mailowe i push.', 'url' => CommunicationCenter::getUrl()],
             ['label' => 'Konwersacje online', 'description' => 'Globalny inbox kancelarii.', 'url' => OfficeInbox::getUrl()],
-            ['label' => 'FCM i push', 'description' => 'Konfiguracja i testy dostarczen.', 'url' => FcmSettingsPage::getUrl()],
-            ['label' => 'Media', 'description' => 'Wszystkie pliki i kolekcje mediow.', 'url' => MediaResource::getUrl('index')],
-            ['label' => 'Ustawienia aplikacji', 'description' => 'Settings i klucze konfiguracyjne.', 'url' => SettingResource::getUrl('index')],
-            ['label' => 'Logi aktywnosci', 'description' => 'Audyt dzialan w systemie.', 'url' => ActivityLogResource::getUrl('index')],
+            ['label' => 'FCM i push', 'description' => 'Konfiguracja i testy dostarczeń.', 'url' => FcmSettingsPage::getUrl()],
+            ['label' => 'Media', 'description' => 'Wszystkie pliki i kolekcje mediów.', 'url' => MediaResource::getUrl('index')],
+            ['label' => 'Ustawienia aplikacji', 'description' => 'Ustawienia i klucze konfiguracyjne.', 'url' => SettingResource::getUrl('index')],
+            ['label' => 'Logi aktywności', 'description' => 'Audyt działań w systemie.', 'url' => ActivityLogResource::getUrl('index')],
             ['label' => 'Globalne metryki', 'description' => 'Rozszerzona kondycja platformy.', 'url' => SystemHealth::getUrl()],
         ];
     }
@@ -294,18 +294,18 @@ class Dashboard extends BaseDashboard
             $this->buildTrendPanel(
                 key: 'platform',
                 title: 'Platforma',
-                description: 'Aktywnosc systemowa, wzrost uzytkownikow i awarie kolejki.',
+                description: 'Aktywność systemowa, wzrost liczby użytkowników i awarie kolejki.',
                 config: $config,
                 series: [
                     [
                         'key' => 'activity_logs',
-                        'label' => 'Logi aktywnosci',
+                        'label' => 'Logi aktywności',
                         'tone' => 'primary',
                         'values' => $this->bucketizeTimestamps($activityRows, $start, $config['steps'], $config['bucket']),
                     ],
                     [
                         'key' => 'new_users',
-                        'label' => 'Nowi uzytkownicy',
+                        'label' => 'Nowi użytkownicy',
                         'tone' => 'info',
                         'values' => $this->bucketizeTimestamps($usersRows, $start, $config['steps'], $config['bucket']),
                     ],
@@ -325,13 +325,13 @@ class Dashboard extends BaseDashboard
                 series: [
                     [
                         'key' => 'news',
-                        'label' => 'Opublikowane newsy',
+                        'label' => 'Opublikowane aktualności',
                         'tone' => 'success',
                         'values' => $this->bucketizeTimestamps($newsRows, $start, $config['steps'], $config['bucket']),
                     ],
                     [
                         'key' => 'announcements',
-                        'label' => 'Opublikowane ogloszenia',
+                        'label' => 'Opublikowane ogłoszenia',
                         'tone' => 'warning',
                         'values' => $this->bucketizeTimestamps($announcementRows, $start, $config['steps'], $config['bucket']),
                     ],
@@ -346,12 +346,12 @@ class Dashboard extends BaseDashboard
             $this->buildTrendPanel(
                 key: 'push',
                 title: 'Push',
-                description: 'Wydajnosc dostarczen, bledy i przyrost aktywnych tokenow.',
+                description: 'Wydajność dostarczeń, błędy i przyrost aktywnych tokenów.',
                 config: $config,
                 series: [
                     [
                         'key' => 'push_sent',
-                        'label' => 'Push sent',
+                        'label' => 'Push wysłane',
                         'tone' => 'success',
                         'values' => $this->bucketizeTimestamps(
                             $pushRows->where('status', PushDelivery::STATUS_SENT)->pluck('sent_at')->filter(),
@@ -362,7 +362,7 @@ class Dashboard extends BaseDashboard
                     ],
                     [
                         'key' => 'push_failed',
-                        'label' => 'Push failed',
+                        'label' => 'Push błędne',
                         'tone' => 'danger',
                         'values' => $this->bucketizeTimestamps(
                             $pushRows->where('status', PushDelivery::STATUS_FAILED)->pluck('created_at'),
@@ -373,7 +373,7 @@ class Dashboard extends BaseDashboard
                     ],
                     [
                         'key' => 'token_updates',
-                        'label' => 'Token updates',
+                        'label' => 'Aktualizacje tokenów',
                         'tone' => 'info',
                         'values' => $this->bucketizeTimestamps($deviceTokenRows, $start, $config['steps'], $config['bucket']),
                     ],
@@ -382,7 +382,7 @@ class Dashboard extends BaseDashboard
             $this->buildTrendPanel(
                 key: 'office',
                 title: 'Kancelaria',
-                description: 'Naplyw nowych spraw i tempo ich domykania.',
+                description: 'Napływ nowych spraw i tempo ich domykania.',
                 config: $config,
                 series: [
                     [
@@ -393,13 +393,13 @@ class Dashboard extends BaseDashboard
                     ],
                     [
                         'key' => 'new_messages',
-                        'label' => 'Nowe wiadomosci',
+                        'label' => 'Nowe wiadomości',
                         'tone' => 'info',
                         'values' => $this->bucketizeTimestamps($officeMessageRows, $start, $config['steps'], $config['bucket']),
                     ],
                     [
                         'key' => 'closed_conversations',
-                        'label' => 'Zamkniete konwersacje',
+                        'label' => 'Zamknięte konwersacje',
                         'tone' => 'success',
                         'values' => $this->bucketizeTimestamps($officeClosedRows, $start, $config['steps'], $config['bucket']),
                     ],
@@ -493,7 +493,7 @@ class Dashboard extends BaseDashboard
                 'type' => (string) $delivery->type,
                 'user' => (string) ($delivery->user?->email ?? 'Brak'),
                 'platform' => strtoupper((string) ($delivery->device?->platform ?? $delivery->platform ?? '-')),
-                'error' => (string) str($delivery->error_message ?: $delivery->error_code ?: 'Nieznany blad')->limit(96),
+                'error' => (string) str($delivery->error_message ?: $delivery->error_code ?: 'Nieznany błąd')->limit(96),
                 'created_at' => $delivery->created_at?->format('d.m.Y H:i') ?? '-',
                 'url' => PushDeliveryResource::getUrl('view', ['record' => $delivery]),
             ])

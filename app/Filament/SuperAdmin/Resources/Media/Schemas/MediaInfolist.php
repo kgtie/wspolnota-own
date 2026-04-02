@@ -15,7 +15,7 @@ class MediaInfolist
     {
         return $schema
             ->components([
-                Section::make('Podglad')
+                Section::make('Podgląd')
                     ->schema([
                         ImageEntry::make('preview')
                             ->hiddenLabel()

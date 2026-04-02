@@ -267,8 +267,8 @@
                 <span class="news-post-workbench__eyebrow">Panel redakcyjny</span>
                 <h1 class="news-post-workbench__title">Pracuj na wpisie jak na gotowym szkicu, nie jak na pustym formularzu.</h1>
                 <p class="news-post-workbench__copy">
-                    Wpis istnieje w bazie od momentu wejscia do edycji, dlatego media i obrazy osadzane w tresci sa dostepne od razu.
-                    Uklad strony celowo eksponuje tresc jako glowny obszar pracy, a publikacje i media trzyma w osobnym panelu bocznym.
+                    Wpis istnieje w bazie od momentu wejścia do edycji, dlatego media i obrazy osadzane w treści są dostępne od razu.
+                    Układ strony celowo eksponuje treść jako główny obszar pracy, a publikację i media trzyma w osobnym panelu bocznym.
                 </p>
             </div>
 
@@ -282,9 +282,9 @@
                             autosaveState === 'saving'
                                 ? 'Trwa zapisywanie...'
                                 : autosaveState === 'pending'
-                                    ? 'Czekaja zmiany'
+                                    ? 'Czekają zmiany'
                                     : autosaveState === 'manual'
-                                        ? 'Tryb reczny'
+                                        ? 'Tryb ręczny'
                                         : (lastSavedAt ? `Zapisano o ${lastSavedAt}` : 'Gotowe')
                         "></span>
                     </div>

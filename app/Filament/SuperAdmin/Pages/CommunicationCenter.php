@@ -26,8 +26,8 @@ use Throwable;
 /**
  * Globalne centrum komunikacji superadministratora.
  *
- * Strona scala listy mailingowe, subskrybentow, szkice kampanii oraz reczna
- * wysylke email/push w jeden workflow operatorski bez ograniczen tenantowych.
+ * Strona scala listy mailingowe, subskrybentów, szkice kampanii oraz ręczną
+ * wysyłkę e-maili i push w jeden przepływ operatorski bez ograniczeń tenantowych.
  */
 class CommunicationCenter extends Page
 {
@@ -41,7 +41,7 @@ class CommunicationCenter extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected ?string $subheading = 'Listy mailingowe, subskrybenci, szkice kampanii i wysylka email / push w jednym miejscu.';
+    protected ?string $subheading = 'Listy mailingowe, subskrybenci, szkice kampanii i wysyłka e-maili oraz push w jednym miejscu.';
 
     protected string $view = 'filament.superadmin.pages.communication-center';
 
@@ -142,8 +142,8 @@ class CommunicationCenter extends Page
     }
 
     /**
-     * Czyści pola zalezne od wybranego scope, aby stan formularza nie "przeciekał"
-     * miedzy trybami wysylki i nie wysylał kampanii do niezamierzonych odbiorcow.
+     * Czyści pola zależne od wybranego zakresu, aby stan formularza nie "przeciekał"
+     * między trybami wysyłki i nie kierował kampanii do niezamierzonych odbiorców.
      */
     public function updatedRecipientScope(): void
     {
@@ -170,7 +170,7 @@ class CommunicationCenter extends Page
             ['label' => 'Listy mailingowe', 'value' => MailingList::query()->count()],
             ['label' => 'Subskrybenci aktywni', 'value' => MailingMail::query()->count()],
             ['label' => 'Subskrybenci potwierdzeni', 'value' => MailingMail::query()->whereNotNull('confirmed_at')->count()],
-            ['label' => 'Kampanie email', 'value' => CommunicationCampaign::query()->where('channel', 'email')->count()],
+            ['label' => 'Kampanie e-mail', 'value' => CommunicationCampaign::query()->where('channel', 'email')->count()],
             ['label' => 'Szablony kampanii', 'value' => CommunicationCampaign::query()->where('is_template', true)->count()],
             ['label' => 'Parafianie', 'value' => User::query()->where('role', 0)->count()],
             ['label' => 'Administratorzy', 'value' => User::query()->where('role', 1)->count()],
@@ -209,30 +209,30 @@ class CommunicationCenter extends Page
     public function getRecipientScopeOptionsProperty(): array
     {
         return [
-            'single_users' => 'Pojedynci uzytkownicy',
+            'single_users' => 'Pojedynczy użytkownicy',
             'parishioners_all' => 'Wszyscy parafianie',
             'admins_all' => 'Wszyscy administratorzy',
             'admins_and_superadmins' => 'Administratorzy + superadmini',
-            'users_by_parish' => 'Uzytkownicy wybranej parafii',
-            'verified_users' => 'Tylko zweryfikowani uzytkownicy',
+            'users_by_parish' => 'Użytkownicy wybranej parafii',
+            'verified_users' => 'Tylko zweryfikowani użytkownicy',
             'mailing_list' => 'Subskrybenci listy mailingowej',
-            'users_with_push_devices' => 'Uzytkownicy z aktywnymi urzadzeniami push',
-            'email_topic_opt_in' => 'Uzytkownicy z opt-in email dla kategorii',
-            'all_users' => 'Wszyscy uzytkownicy systemu',
-            'custom_emails' => 'Wlasna lista emaili',
+            'users_with_push_devices' => 'Użytkownicy z aktywnymi urządzeniami push',
+            'email_topic_opt_in' => 'Użytkownicy z aktywną zgodą e-mail dla kategorii',
+            'all_users' => 'Wszyscy użytkownicy systemu',
+            'custom_emails' => 'Własna lista adresów e-mail',
         ];
     }
 
     public function getEmailTopicOptionsProperty(): array
     {
         return [
-            'manual_messages' => 'Komunikaty reczne i kampanie',
-            'announcements' => 'Ogloszenia',
-            'news' => 'Aktualnosci',
+            'manual_messages' => 'Komunikaty ręczne i kampanie',
+            'announcements' => 'Ogłoszenia',
+            'news' => 'Aktualności',
             'mass_reminders' => 'Przypomnienia o mszach',
             'office_messages' => 'Kancelaria online',
             'parish_approval_status' => 'Status zatwierdzenia parafialnego',
-            'auth_security' => 'Bezpieczenstwo konta',
+            'auth_security' => 'Bezpieczeństwo konta',
         ];
     }
 
@@ -317,7 +317,7 @@ class CommunicationCenter extends Page
             htmlBodyView: 'mail.html.communication.broadcast-message',
             textBodyView: 'mail.text.communication.broadcast-message',
             bodyData: [
-                'subjectLine' => $payload['subject_line'] !== '' ? $payload['subject_line'] : 'Podglad kampanii',
+                'subjectLine' => $payload['subject_line'] !== '' ? $payload['subject_line'] : 'Podgląd kampanii',
                 'messageBody' => $payload['message_body'],
                 'senderName' => $this->replyToName !== '' ? $this->replyToName : 'Zespol Wspolnoty',
                 'senderEmail' => $this->replyToEmail,
@@ -333,7 +333,7 @@ class CommunicationCenter extends Page
                 'category_label' => $payload['campaign_name'] !== '' ? $payload['campaign_name'] : 'Kampania email',
                 'preheader' => $payload['preheader'],
                 'mobile_note_variant' => $parish ? 'parish' : 'campaign',
-                'footer_note' => 'Podglad kampanii email przygotowanej w centrum komunikacji Wspolnoty.',
+                'footer_note' => 'Podgląd kampanii e-mail przygotowanej w centrum komunikacji Wspólnoty.',
             ],
         );
 
@@ -350,7 +350,7 @@ class CommunicationCenter extends Page
             htmlBodyView: 'mail.html.communication.broadcast-message',
             textBodyView: 'mail.text.communication.broadcast-message',
             bodyData: [
-                'subjectLine' => $payload['subject_line'] !== '' ? $payload['subject_line'] : 'Podglad kampanii',
+                'subjectLine' => $payload['subject_line'] !== '' ? $payload['subject_line'] : 'Podgląd kampanii',
                 'messageBody' => $payload['message_body'],
                 'senderName' => $this->replyToName !== '' ? $this->replyToName : 'Zespol Wspolnoty',
                 'senderEmail' => $this->replyToEmail,
@@ -366,7 +366,7 @@ class CommunicationCenter extends Page
                 'category_label' => $payload['campaign_name'] !== '' ? $payload['campaign_name'] : 'Kampania email',
                 'preheader' => $payload['preheader'],
                 'mobile_note_variant' => $parish ? 'parish' : 'campaign',
-                'footer_note' => 'Podglad kampanii email przygotowanej w centrum komunikacji Wspolnoty.',
+                'footer_note' => 'Podgląd kampanii e-mail przygotowanej w centrum komunikacji Wspólnoty.',
             ],
         );
 
@@ -376,8 +376,8 @@ class CommunicationCenter extends Page
     public function getImageEditorHintProperty(): string
     {
         return $this->loadedCampaignId
-            ? 'Mozesz osadzac obrazy bezposrednio w tresci kampanii.'
-            : 'Najpierw zapisz kampanie jako szkic, aby odblokowac osadzanie obrazow w edytorze.';
+            ? 'Możesz osadzać obrazy bezpośrednio w treści kampanii.'
+            : 'Najpierw zapisz kampanię jako szkic, aby odblokować osadzanie obrazów w edytorze.';
     }
 
     public function createList(): void
@@ -409,7 +409,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Utworzono liste mailingowa.')
+            ->title('Utworzono listę mailingową.')
             ->send();
     }
 
@@ -451,7 +451,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Zmieniono nazwe listy.')
+            ->title('Zmieniono nazwę listy.')
             ->send();
     }
 
@@ -479,7 +479,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Usunieto liste oraz subskrybentow z tej listy.')
+            ->title('Usunięto listę oraz jej subskrybentów.')
             ->send();
     }
 
@@ -523,7 +523,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Subskrybent zostal dodany / zaktualizowany.')
+            ->title('Subskrybent został dodany lub zaktualizowany.')
             ->send();
     }
 
@@ -558,7 +558,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Subskrybent zostal zarchiwizowany.')
+            ->title('Subskrybent został zarchiwizowany.')
             ->send();
     }
 
@@ -574,7 +574,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Subskrybent zostal przywrocony.')
+            ->title('Subskrybent został przywrócony.')
             ->send();
     }
 
@@ -590,7 +590,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Subskrybent zostal trwale usuniety.')
+            ->title('Subskrybent został trwale usunięty.')
             ->send();
     }
 
@@ -643,7 +643,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Wczytano kampanie.')
+            ->title('Wczytano kampanię.')
             ->send();
     }
 
@@ -673,7 +673,7 @@ class CommunicationCenter extends Page
         if (! $this->campaignHasContent()) {
             Notification::make()
                 ->danger()
-                ->title('Dodaj tresc kampanii.')
+                ->title('Dodaj treść kampanii.')
                 ->body('Wypelnij edytor kampanii lub pole skrotu tekstowego.')
                 ->send();
 
@@ -699,7 +699,7 @@ class CommunicationCenter extends Page
         if (! $this->campaignHasContent()) {
             Notification::make()
                 ->danger()
-                ->title('Dodaj tresc szablonu.')
+                ->title('Dodaj treść szablonu.')
                 ->send();
 
             return;
@@ -727,7 +727,7 @@ class CommunicationCenter extends Page
         if (! $this->campaignHasContent()) {
             Notification::make()
                 ->danger()
-                ->title('Dodaj tresc kampanii.')
+                ->title('Dodaj treść kampanii.')
                 ->send();
 
             return;
@@ -773,7 +773,7 @@ class CommunicationCenter extends Page
         if (! $this->campaignHasContent()) {
             Notification::make()
                 ->danger()
-                ->title('Dodaj tresc kampanii.')
+                ->title('Dodaj treść kampanii.')
                 ->send();
 
             return;
@@ -784,7 +784,7 @@ class CommunicationCenter extends Page
         if ($recipients->isEmpty()) {
             Notification::make()
                 ->danger()
-                ->title('Brak odbiorcow dla wybranych kryteriow.')
+                ->title('Brak odbiorców dla wybranych kryteriów.')
                 ->send();
 
             return;
@@ -819,12 +819,12 @@ class CommunicationCenter extends Page
                     'subject' => $this->subjectLine,
                     'scheduled_for' => $scheduledAt?->toIso8601String(),
                 ])
-                ->log('Superadmin przygotowal kampanie email do wysylki.');
+                ->log('Superadmin przygotował kampanię e-mail do wysyłki.');
         }
 
         Notification::make()
             ->success()
-            ->title($status === CommunicationCampaign::STATUS_SCHEDULED ? 'Zaplanowano kampanie email' : 'Zakolejkowano wysylke kampanii')
+            ->title($status === CommunicationCampaign::STATUS_SCHEDULED ? 'Zaplanowano kampanię e-mail' : 'Zakolejkowano wysyłkę kampanii')
             ->body($status === CommunicationCampaign::STATUS_SCHEDULED
                 ? 'Kampania '.$campaign->getKey().' zostanie uruchomiona o '.$scheduledAt?->format('d.m.Y H:i')
                 : 'Kampania '.$campaign->getKey().' trafila do joba dispatchujacego.')
@@ -843,7 +843,7 @@ class CommunicationCenter extends Page
         if ($body === '') {
             Notification::make()
                 ->danger()
-                ->title('Brak tresci kampanii push.')
+                ->title('Brak treści kampanii push.')
                 ->body('Uzupelnij edytor kampanii lub skrot tekstowy.')
                 ->send();
 
@@ -855,8 +855,8 @@ class CommunicationCenter extends Page
         if ($users->isEmpty()) {
             Notification::make()
                 ->danger()
-                ->title('Brak odbiorcow push dla wybranych kryteriow.')
-                ->body('Push wymaga rzeczywistych kont uzytkownikow z aktywnymi urzadzeniami.')
+                ->title('Brak odbiorców push dla wybranych kryteriów.')
+                ->body('Push wymaga rzeczywistych kont użytkowników z aktywnymi urządzeniami.')
                 ->send();
 
             return;
@@ -875,7 +875,7 @@ class CommunicationCenter extends Page
 
         Notification::make()
             ->success()
-            ->title('Zakolejkowano kampanie push')
+            ->title('Zakolejkowano kampanię push')
             ->body("Uzytkownicy: {$result['users']} · urzadzenia: {$result['devices']} · skipped: {$result['skipped']}")
             ->send();
     }
@@ -1067,7 +1067,7 @@ class CommunicationCenter extends Page
             CommunicationCampaign::STATUS_SCHEDULED => 'zaplanowana',
             CommunicationCampaign::STATUS_DISPATCHING => 'w przygotowaniu',
             CommunicationCampaign::STATUS_QUEUED => 'zakolejkowana',
-            CommunicationCampaign::STATUS_FAILED => 'blad',
+            CommunicationCampaign::STATUS_FAILED => 'błąd',
             default => $status,
         };
     }

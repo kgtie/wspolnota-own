@@ -1,54 +1,54 @@
 <x-mail::message>
-# Dobowy raport operacyjny Wspolnota
+# Dobowy raport operacyjny Wspólnoty
 
 Data raportu: {{ $report['date_label'] }}  
 Zakres: {{ $report['window']['start']->format('d.m.Y H:i') }} - {{ $report['window']['end']->format('d.m.Y H:i') }}
 
-## Executive summary
+## Podsumowanie
 
 <x-mail::panel>
-Nowi uzytkownicy: **{{ $report['overview']['new_users'] }}**  
+Nowi użytkownicy: **{{ $report['overview']['new_users'] }}**  
 Nowe parafie: **{{ $report['overview']['new_parishes'] }}**  
-Opublikowane aktualnosci: **{{ $report['overview']['published_news'] }}**  
-Opublikowane zestawy ogloszen: **{{ $report['overview']['published_announcements'] }}**  
+Opublikowane aktualności: **{{ $report['overview']['published_news'] }}**  
+Opublikowane zestawy ogłoszeń: **{{ $report['overview']['published_announcements'] }}**  
 Nowe / odprawiane msze: **{{ $report['overview']['masses_created'] }} / {{ $report['overview']['masses_celebrated'] }}**  
-Nowe konwersacje / wiadomosci kancelarii: **{{ $report['overview']['office_conversations'] }} / {{ $report['overview']['office_messages'] }}**  
-Push sent / failed: **{{ $report['overview']['push_sent'] }} / {{ $report['overview']['push_failed'] }}**  
-Failed jobs: **{{ $report['overview']['failed_jobs'] }}**  
-Activity entries: **{{ $report['overview']['activity_entries'] }}**  
+Nowe konwersacje / wiadomości kancelarii: **{{ $report['overview']['office_conversations'] }} / {{ $report['overview']['office_messages'] }}**  
+Push wysłane / błędne: **{{ $report['overview']['push_sent'] }} / {{ $report['overview']['push_failed'] }}**  
+Nieudane zadania: **{{ $report['overview']['failed_jobs'] }}**  
+Wpisy aktywności: **{{ $report['overview']['activity_entries'] }}**  
 Wgrane media: **{{ $report['overview']['media_uploaded'] }}**
 </x-mail::panel>
 
-## Uzytkownicy i parafie
+## Użytkownicy i parafie
 
-- Nowi uzytkownicy: {{ $report['overview']['new_users'] }}
+- Nowi użytkownicy: {{ $report['overview']['new_users'] }}
 - Zatwierdzenia parafialne: {{ $report['overview']['verified_users'] }}
 - Nowe parafie: {{ $report['overview']['new_parishes'] }}
 - Nowi parafianie / administratorzy / superadmini: {{ $report['users']['by_role']['parafianie'] }} / {{ $report['users']['by_role']['administratorzy'] }} / {{ $report['users']['by_role']['superadmini'] }}
 
 @if (! empty($report['users']['items']))
-Najwazniejsze nowe konta:
+Najważniejsze nowe konta:
 @foreach ($report['users']['items'] as $user)
 - {{ $user['name'] }} ({{ $user['email'] }}) | {{ $user['role'] }}@if($user['parish']) | {{ $user['parish'] }}@endif | Zatwierdzony: {{ $user['verified'] ? 'tak' : 'nie' }}
 @endforeach
 @endif
 
-## Tresci i liturgia
+## Treści i liturgia
 
-- Opublikowane aktualnosci: {{ $report['overview']['published_news'] }}
-- Opublikowane ogloszenia: {{ $report['overview']['published_announcements'] }}
+- Opublikowane aktualności: {{ $report['overview']['published_news'] }}
+- Opublikowane ogłoszenia: {{ $report['overview']['published_announcements'] }}
 - Utworzone msze: {{ $report['overview']['masses_created'] }}
 - Msze przypadajace w raportowanej dobie: {{ $report['overview']['masses_celebrated'] }}
 
 @if (! empty($report['content']['news']))
-### Aktualnosci
+### Aktualności
 @foreach ($report['content']['news'] as $item)
 - {{ $item['published_at'] }} | {{ $item['parish'] ?? 'Brak parafii' }} | {{ $item['title'] }}
 @endforeach
 @endif
 
 @if (! empty($report['content']['announcements']))
-### Ogloszenia
+### Ogłoszenia
 @foreach ($report['content']['announcements'] as $item)
 - {{ $item['published_at'] }} | {{ $item['parish'] ?? 'Brak parafii' }} | {{ $item['title'] }} | {{ $item['effective'] }}
 @endforeach
@@ -64,8 +64,8 @@ Najwazniejsze nowe konta:
 ## Kancelaria online
 
 - Nowe konwersacje: {{ $report['overview']['office_conversations'] }}
-- Nowe wiadomosci: {{ $report['overview']['office_messages'] }}
-- Zamkniete konwersacje: {{ $report['office']['closed_in_window'] }}
+- Nowe wiadomości: {{ $report['overview']['office_messages'] }}
+- Zamknięte konwersacje: {{ $report['office']['closed_in_window'] }}
 - Otwarte konwersacje teraz: {{ $report['office']['open_total_now'] }}
 
 @if (! empty($report['office']['new_conversations']))
@@ -75,11 +75,11 @@ Najwazniejsze nowe konta:
 @endforeach
 @endif
 
-## Push, feed i jakosc komunikacji
+## Push, feed i jakość komunikacji
 
 - Wygenerowane notification items: {{ $report['overview']['notification_items'] }}
-- Push sent: {{ $report['overview']['push_sent'] }}
-- Push failed: {{ $report['overview']['push_failed'] }}
+- Push wysłane: {{ $report['overview']['push_sent'] }}
+- Push błędne: {{ $report['overview']['push_failed'] }}
 
 @if (! empty($report['push']['by_type']))
 ### Push by type
@@ -96,21 +96,21 @@ Najwazniejsze nowe konta:
 @endif
 
 @if (! empty($report['push']['top_failures']))
-### Ostatnie bledy push
+### Ostatnie błędy push
 @foreach ($report['push']['top_failures'] as $failure)
-- {{ $failure['when'] }} | {{ $failure['type'] }} | {{ $failure['platform'] ?: 'brak platformy' }} | {{ $failure['error'] ?: 'brak bledu' }}
+- {{ $failure['when'] }} | {{ $failure['type'] }} | {{ $failure['platform'] ?: 'brak platformy' }} | {{ $failure['error'] ?: 'brak błędu' }}
 @endforeach
 @endif
 
 ## System, kolejka i telemetry
 
-Aktualne laczne stany:
+Aktualne łączne stany:
 @foreach ($report['system']['totals_now'] as $label => $value)
 - {{ str_replace('_', ' ', $label) }}: {{ $value }}
 @endforeach
 
 @if (! empty($report['system']['top_activity_events']))
-### Najczestsze eventy activity log
+### Najczęstsze zdarzenia w activity logu
 @foreach ($report['system']['top_activity_events'] as $event => $count)
 - {{ $event }}: {{ $count }}
 @endforeach

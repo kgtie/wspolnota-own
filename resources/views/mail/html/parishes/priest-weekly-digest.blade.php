@@ -31,11 +31,11 @@
             <strong>Aktywni parafianie:</strong> {{ number_format($report['stats']['parishioners_total'], 0, ',', ' ') }}<br>
             <strong>Zatwierdzeni parafianie:</strong> {{ number_format($report['stats']['parishioners_verified'], 0, ',', ' ') }}<br>
             <strong>Administratorzy parafii:</strong> {{ number_format($report['stats']['admins_total'], 0, ',', ' ') }}<br>
-            <strong>Wszystkie zestawy ogloszen:</strong> {{ number_format($report['stats']['announcement_sets_total'], 0, ',', ' ') }}<br>
-            <strong>Opublikowane zestawy ogloszen:</strong> {{ number_format($report['stats']['announcement_sets_published'], 0, ',', ' ') }}<br>
+            <strong>Wszystkie zestawy ogłoszeń:</strong> {{ number_format($report['stats']['announcement_sets_total'], 0, ',', ' ') }}<br>
+            <strong>Opublikowane zestawy ogłoszeń:</strong> {{ number_format($report['stats']['announcement_sets_published'], 0, ',', ' ') }}<br>
             <strong>Wszystkie msze:</strong> {{ number_format($report['stats']['masses_total'], 0, ',', ' ') }}<br>
             <strong>Msze na 10 dni:</strong> {{ number_format($report['stats']['masses_next_10_days'], 0, ',', ' ') }}<br>
-            <strong>Wszystkie aktualnosci:</strong> {{ number_format($report['stats']['news_total'], 0, ',', ' ') }}<br>
+            <strong>Wszystkie aktualności:</strong> {{ number_format($report['stats']['news_total'], 0, ',', ' ') }}<br>
             <strong>Aktualnosci z 30 dni:</strong> {{ number_format($report['stats']['news_published_30d'], 0, ',', ' ') }}<br>
             <strong>Otwarte konwersacje kancelarii:</strong> {{ number_format($report['stats']['office_open_for_priest'], 0, ',', ' ') }}<br>
             <strong>Nieprzeczytane lub czekajace:</strong> {{ number_format($report['stats']['office_unread_for_priest'], 0, ',', ' ') }}

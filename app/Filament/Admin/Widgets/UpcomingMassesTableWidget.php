@@ -23,7 +23,7 @@ class UpcomingMassesTableWidget extends TableWidget
 
         return $table
             ->heading('Najblizsze msze swiete')
-            ->description('Podglad najblizszych terminow i intencji bez wychodzenia z dashboardu.')
+            ->description('Podgląd najbliższych terminów i intencji bez wychodzenia z pulpitu.')
             ->headerActions([
                 Action::make('all_masses')
                     ->label('Pelna lista')
